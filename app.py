@@ -51,3 +51,19 @@ player.play()
 
 #GPIO.cleanup()
 ###############
+
+GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+while True:
+    input_state = GPIO.input(18)
+    if input_state == False:
+        lcd.clear()
+        playingChannel = playingChannel + 1
+
+        player.stop()
+        player = vlc.MediaPlayer(channels[playingChannel])
+        player.play()
+
+        print("Channel " + str(playingChannel) + " (" + channels[playingChannel] + ")")
+        lcd.write_string(channelNames[playingChannel])
+        time.sleep(0.2)
