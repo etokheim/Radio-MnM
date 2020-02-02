@@ -4,6 +4,35 @@ from RPi import GPIO
 import time
 import vlc
 
+playingChannel = 0
+channels = ["http://lyd.nrk.no/nrk_radio_p1_ostlandssendingen_mp3_m", "http://lyd.nrk.no/nrk_radio_alltid_nyheter_mp3_m", "http://lyd.nrk.no/nrk_radio_jazz_mp3_m"]
+channelNames = ["NRK P1", "NRK P2", "NRK P3"]
+
+
+# Skips to the next channel. If you are on the last channel
+# skip to the first instead.
+def nextChannel():
+    # Using global variables outside of necessity is usually frowned upon by Python developers
+    global playingChannel, channels, player
+
+    lcd.clear()
+
+    if playingChannel + 1 > len(channels) - 1:
+        playingChannel = 0
+
+    else:
+        playingChannel = playingChannel + 1
+
+    print("Next channel is" + str(playingChannel))
+
+    player.stop()
+    player = vlc.MediaPlayer(channels[playingChannel])
+    player.play()
+
+    print("Channel " + str(playingChannel) + " (" + channels[playingChannel] + ")")
+    lcd.write_string(channelNames[playingChannel])
+
+
 GPIO.setmode(GPIO.BCM)
 
 lcd = CharLCD(cols=16,
@@ -34,11 +63,6 @@ lcd.write_string('Got 3 streams')
 time.sleep(1)
 lcd.clear()
 
-
-playingChannel = 0
-channels = ["http://lyd.nrk.no/nrk_radio_p1_ostlandssendingen_mp3_m", "http://lyd.nrk.no/nrk_radio_alltid_nyheter_mp3_m", "http://lyd.nrk.no/nrk_radio_jazz_mp3_m"]
-channelNames = ["NRK P1", "NRK P2", "NRK P3"]
-
 lcd.write_string(channelNames[playingChannel])
 
 player = vlc.MediaPlayer(channels[playingChannel])
@@ -57,13 +81,5 @@ GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 while True:
     input_state = GPIO.input(18)
     if input_state == False:
-        lcd.clear()
-        playingChannel = playingChannel + 1
-
-        player.stop()
-        player = vlc.MediaPlayer(channels[playingChannel])
-        player.play()
-
-        print("Channel " + str(playingChannel) + " (" + channels[playingChannel] + ")")
-        lcd.write_string(channelNames[playingChannel])
+        nextChannel()
         time.sleep(0.2)
