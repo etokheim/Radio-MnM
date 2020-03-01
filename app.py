@@ -7,7 +7,6 @@ from datetime import datetime
 import threading
 import zope.event
 
-# GPIO.cleanup()
 
 playingChannel = 0
 channels = ["http://lyd.nrk.no/nrk_radio_p1_ostlandssendingen_mp3_m", "http://lyd.nrk.no/nrk_radio_alltid_nyheter_mp3_m", "http://lyd.nrk.no/nrk_radio_jazz_mp3_m"]
@@ -55,6 +54,9 @@ lcd = CharLCD(cols=16,
               charmap = 'A02'
 )
 
+player = vlc.MediaPlayer(channels[playingChannel])
+player.play()
+
 lcd.clear()
 
 lcd.write_string('Radio M&M')
@@ -74,17 +76,15 @@ lcd.clear()
 
 lcd.write_string(channelNames[playingChannel])
 
-player = vlc.MediaPlayer(channels[playingChannel])
-player.play()
-
 #####
 
-time.sleep(5)
-player.stop()
-player = vlc.MediaPlayer(channels[2])
-player.play()
+# time.sleep(5)
+# player.stop()
+# player = vlc.MediaPlayer(channels[2])
+# player.play()
 
 ##############
+# GPIO.cleanup()
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -108,34 +108,42 @@ class button1Click(object):
     def __repr__(self):
         return self.__class__.__name__
 
-# Skips to the next channel. If you are on the last channel
-# skip to the first instead.
 # Event is set to the the event which calls it. In this function's case it should be
 # set to "click".
-def nextChannel(event):
-    print("nextChannel %r" % event)
+def button1ClickHandler(event):
+    print("button1Click %r" % event)
 
+    nextChannel(1)
+
+
+# Switches channel. If you are on the last channel
+# skip to the first instead.
+def nextChannel(channelsToSkip):
     # Using global variables outside of necessity is usually frowned upon by Python developers
     global playingChannel, channels, player
 
-    lcd.clear()
+    # Make the default be to skip to next channel
+    if channelsToSkip is None:
+        channelsToSkip = 1
 
-    if playingChannel + 1 > len(channels) - 1:
-        playingChannel = 0
+    remaining = (len(channels) + channelsToSkip) % len(channels)
+
+    if playingChannel + remaining > len(channels) - 1:
+        playingChannel = playingChannel - len(channels) + remaining
+
+    elif playingChannel + remaining < 0:
+        playingChannel = len(channels) + playingChannel + remaining
 
     else:
-        playingChannel = playingChannel + 1
-
-    print("Next channel is" + str(playingChannel))
+        playingChannel = playingChannel + remaining
 
     player.stop()
     player = vlc.MediaPlayer(channels[playingChannel])
     player.play()
 
     print("Channel " + str(playingChannel) + " (" + channels[playingChannel] + ")")
+    lcd.clear()
     lcd.write_string(channelNames[playingChannel])
-
-
 
 class button1Down(object):
     def __repr__(self):
@@ -176,12 +184,13 @@ def button1LongPressHandler(event):
     global longClickThreshold
     
     print("button1LongPressHandler %r" % event)
+    nextChannel(-1)
 
 
 zope.event.classhandler.handler(button1LongPress, button1LongPressHandler)
 zope.event.classhandler.handler(button1Up, button1UpHandler)
 zope.event.classhandler.handler(button1Down, button1DownHandler)
-zope.event.classhandler.handler(button1Click, nextChannel)
+zope.event.classhandler.handler(button1Click, button1ClickHandler)
 
 
 
