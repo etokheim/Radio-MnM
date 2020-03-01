@@ -6,6 +6,7 @@ import vlc
 from datetime import datetime
 import threading
 import zope.event
+# import requests
 
 
 playingChannel = 0
@@ -37,10 +38,17 @@ class ThreadJob(threading.Thread):
         while not self.event.wait(self.interval):
             self.callback()
 
-
-
 event = threading.Event()
 
+# import requests
+# def getChannels():
+#     response = requests.get("https://radio.tokheimgrafisk.no/channels")
+#     response = response.json()
+#     print response[0]
+#     print response[0]["streams"]
+#     print response[0]["name"]
+
+# getChannels()
 
 
 lcd = CharLCD(cols=16,
@@ -53,11 +61,11 @@ lcd = CharLCD(cols=16,
               dotsize = 8,
               charmap = 'A02'
 )
+lcd.clear()
 
 player = vlc.MediaPlayer(channels[playingChannel])
 player.play()
 
-lcd.clear()
 
 lcd.write_string('Radio M&M')
 
