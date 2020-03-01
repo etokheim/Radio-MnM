@@ -18,3 +18,5 @@ Install python dependencies:
  5. `pulseaudio --start`
  6. Set the audio jack output as the primary output device:
     - `raspi-config` -> advanced -> audio -> output, force 3.5 mm audio jack
+ 7. `pip install zope.event`
+    - Event system
