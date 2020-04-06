@@ -62,37 +62,8 @@ lcd = CharLCD(cols=16,
               charmap = 'A02'
 )
 lcd.clear()
+lcd.cursor_pos = (0, 0)
 
-player = vlc.MediaPlayer(channels[playingChannel])
-player.play()
-
-
-lcd.write_string('Radio M&M')
-
-time.sleep(1.5)
-lcd.clear()
-
-lcd.write_string('Fetching audio streams')
-
-time.sleep(1)
-lcd.clear()
-
-lcd.write_string('Got 3 streams')
-
-time.sleep(1)
-lcd.clear()
-
-lcd.write_string(channelNames[playingChannel])
-
-#####
-
-# time.sleep(5)
-# player.stop()
-# player = vlc.MediaPlayer(channels[2])
-# player.play()
-
-##############
-# GPIO.cleanup()
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -134,6 +105,9 @@ def nextChannel(channelsToSkip):
     if channelsToSkip is None:
         channelsToSkip = 1
 
+    # Number of channels to skip which remains after removing overflow.
+    # (Overflow: if you are playing channel 3 of 10 and is instructed to skip 202 channels ahead,
+    # you would end up on channel 205. The overflow is 200, and we should return channel 5 (3 + 2))
     remaining = (len(channels) + channelsToSkip) % len(channels)
 
     if playingChannel + remaining > len(channels) - 1:
