@@ -10,11 +10,13 @@ import zope.event
 
 
 playingChannel = 0
-channels = ["http://lyd.nrk.no/nrk_radio_p1_ostlandssendingen_mp3_m", "http://lyd.nrk.no/nrk_radio_alltid_nyheter_mp3_m", "http://lyd.nrk.no/nrk_radio_jazz_mp3_m"]
-channelNames = ["NRK P1", "NRK P2", "NRK P3"]
+# Will be populated by an API request
+channels = None
 longClickThreshold = 1500
 button1DownStart = 0
 GPIO.setmode(GPIO.BCM)
+on = False
+player = None
 
 # Non-blocking interval execution
 import threading
@@ -40,15 +42,20 @@ class ThreadJob(threading.Thread):
 
 event = threading.Event()
 
-# import requests
-# def getChannels():
-#     response = requests.get("https://radio.tokheimgrafisk.no/channels")
-#     response = response.json()
-#     print response[0]
-#     print response[0]["streams"]
-#     print response[0]["name"]
+def getChannels():
+    global channels
 
-# getChannels()
+    response = requests.get("https://radio.tokheimgrafisk.no/channels")
+    response = response.json()
+    print(response[0])
+    print(response[0]["streams"])
+    print(response[0]["name"])
+
+    channels = response
+
+    player = vlc.MediaPlayer(channels[playingChannel]["streams"][0])
+
+getChannels()
 
 
 # We are using the GPIO numbering scheme
@@ -128,12 +135,15 @@ def nextChannel(channelsToSkip):
         playingChannel = playingChannel + remaining
 
     player.stop()
-    player = vlc.MediaPlayer(channels[playingChannel])
+    player = vlc.MediaPlayer(channels[playingChannel]["streams"][0])
     player.play()
 
-    print("Channel " + str(playingChannel) + " (" + channels[playingChannel] + ")")
+    print("Channel " + str(playingChannel) + " (" + channels[playingChannel]["name"] + ")")
+    
     lcd.clear()
-    lcd.write_string(channelNames[playingChannel])
+    
+    print(channels[playingChannel]["name"])
+    lcd.write_string(channels[playingChannel]["name"])
 
 class button1Down(object):
     def __repr__(self):
