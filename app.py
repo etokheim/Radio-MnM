@@ -101,11 +101,7 @@ def getChannels():
 
     channels = response
 
-    display("Got " + str(len(channels)) + " channels")
-
     player = vlc.MediaPlayer(channels[playingChannel]["streams"][0])
-
-getChannels()
 
 
 
@@ -220,11 +216,19 @@ def button2DownHandler(event):
     on = True
     print("button2DownHandler %r" % event)
 
+    getChannels()
+
     player.play()
 
-    # display('Radio M&M')
+    # \n for new line \r for moving to the beginning of current line
+    display(">- RADIO M&M -<\n\rGot " + str(len(channels)) + " channels")
 
-    display(channels[playingChannel]["name"])
+    # Wait 2 seconds before displaying the channel name
+    # (So the user gets time to read the previous message)
+    timer = threading.Timer(4, lambda:
+        display(channels[playingChannel]["name"])
+    )
+    timer.start()
 
 
 
