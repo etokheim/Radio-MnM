@@ -60,6 +60,7 @@ def display(message):
     if debug:
         print(message)
     
+    lcd.clear()
     lcd.write_string(message)
 
 # We are using the GPIO numbering scheme
@@ -99,6 +100,8 @@ def getChannels():
     response = response.json()
 
     channels = response
+
+    display("Got " + str(len(channels)) + " channels")
 
     player = vlc.MediaPlayer(channels[playingChannel]["streams"][0])
 
@@ -168,8 +171,6 @@ def channel(channelNumber):
 
     print("Channel " + str(playingChannel) + " (" + channels[playingChannel]["name"] + ")")
     
-    lcd.clear()
-    
     display(channels[playingChannel]["name"])
 
 class button1Down(object):
@@ -219,24 +220,9 @@ def button2DownHandler(event):
     on = True
     print("button2DownHandler %r" % event)
 
-    lcd.clear()
-
     player.play()
 
-
-    display('Radio M&M')
-
-    time.sleep(2)
-    lcd.clear()
-
-    display('Fetching audio streams')
-    time.sleep(1.5)
-    lcd.clear()
-
-    display('Got 3 streams')
-
-    time.sleep(1.5)
-    lcd.clear()
+    # display('Radio M&M')
 
     display(channels[playingChannel]["name"])
 
