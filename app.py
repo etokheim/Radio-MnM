@@ -6,7 +6,7 @@ import vlc
 from datetime import datetime
 import threading
 import zope.event
-# import requests
+import requests
 
 # config
 
@@ -52,22 +52,6 @@ class ThreadJob(threading.Thread):
 
 event = threading.Event()
 
-def getChannels():
-    global channels
-
-    response = requests.get("https://radio.tokheimgrafisk.no/channels")
-    response = response.json()
-    print(response[0])
-    print(response[0]["streams"])
-    print(response[0]["name"])
-
-    channels = response
-
-    player = vlc.MediaPlayer(channels[playingChannel]["streams"][0])
-
-getChannels()
-
-
 # We are using the GPIO numbering scheme
 lcd = CharLCD(cols=16,
               rows=2,
@@ -95,6 +79,24 @@ pushing = False
 pushStart = 0
 
 button2Pushing = False
+
+def getChannels():
+    global channels, player, lcd
+
+    print("Fetching channels")
+    lcd.write_string("Fetching channels")
+
+    response = requests.get("https://radio.tokheimgrafisk.no/channels")
+    response = response.json()
+    print(response[0])
+    print(response[0]["streams"])
+    print(response[0]["name"])
+
+    channels = response
+
+    player = vlc.MediaPlayer(channels[playingChannel]["streams"][0])
+
+getChannels()
 
 
 
@@ -298,7 +300,7 @@ while True:
         else:
             zope.event.notify(button1Click())
         pushStart = 0
-
+    
     # If pushing
     if button2State == False:
         if button2Pushing == False:
