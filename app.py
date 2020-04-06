@@ -125,24 +125,18 @@ class button1Click(object):
 def button1ClickHandler(event):
     print("button1Click %r" % event)
 
-    bumpChannel(1)
+    bumpChannel()
 
 
 # Bumps the channel n times. Loops around if bumping past the last channel.
-def bumpChannel(channelsToSkip):
+def bumpChannel(bumps = 1):
     global playingChannel, channels
     bumpTo = playingChannel
 
-    # Make the default be to skip to next channel
-    if channelsToSkip is None:
-        channelsToSkip = 1
-
-    print("channels:")
-    print(channels)
     # Number of channels to skip which remains after removing overflow.
     # (Overflow: if you are playing channel 3 of 10 and is instructed to skip 202 channels ahead,
     # you would end up on channel 205. The overflow is 200, and we should return channel 5 (3 + 2))
-    remaining = (len(channels) + channelsToSkip) % len(channels)
+    remaining = (len(channels) + bumps) % len(channels)
 
     if bumpTo + remaining > len(channels) - 1:
         bumpTo = bumpTo - len(channels) + remaining
@@ -153,17 +147,20 @@ def bumpChannel(channelsToSkip):
     else:
         bumpTo = bumpTo + remaining
 
+    print("bumps " + str(bumps) + ", bumping to: " + str(bumpTo))
     channel(bumpTo)
 
     
 
 # Takes the parameter (int) and switches to that channel
 def channel(channelNumber):
-    global player, on, channels
+    global player, on, channels, playingChannel
 
     if on == False:
         print("Can't switch channel when radio is off!")
         return
+
+    playingChannel = channelNumber
 
     player.stop()
     player = vlc.MediaPlayer(channels[playingChannel]["streams"][0])
