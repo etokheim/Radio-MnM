@@ -51,6 +51,7 @@ event = threading.Event()
 # getChannels()
 
 
+# We are using the GPIO numbering scheme
 lcd = CharLCD(cols=16,
               rows=2,
               pin_rs=26,
@@ -66,10 +67,17 @@ lcd.cursor_pos = (0, 0)
 
 
 GPIO.setmode(GPIO.BCM)
+
+# Button 1
 GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+# Button 2
+GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 pushing = False
 pushStart = 0
+
+button2Pushing = False
 
 
 
@@ -153,6 +161,53 @@ def button1UpHandler(event):
     button1DownStart = 0
 
 
+class button2Up(object):
+    def __repr__(self):
+        return self.__class__.__name__
+
+def button2UpHandler(event):
+    global on
+    on = False
+    print("button2UpHandler %r" % event)
+    player.stop()
+    lcd.clear()
+
+
+class button2Down(object):
+    def __repr__(self):
+        return self.__class__.__name__
+
+def button2DownHandler(event):
+    global on, channels
+    on = True
+    print("button2DownHandler %r" % event)
+
+    lcd.clear()
+
+    player.play()
+
+
+    print('Radio M&M')
+    lcd.write_string('Radio M&M')
+
+    time.sleep(2)
+    lcd.clear()
+
+    print('Fetching audio streams')
+    lcd.write_string('Fetching audio streams')
+    time.sleep(1.5)
+    lcd.clear()
+
+    print('Got 3 streams')
+    lcd.write_string('Got 3 streams')
+
+    time.sleep(1.5)
+    lcd.clear()
+
+    print(channels[playingChannel]["name"])
+    lcd.write_string(channels[playingChannel]["name"])
+
+
 
 
 # import zope.event.classhandler
@@ -173,25 +228,28 @@ zope.event.classhandler.handler(button1LongPress, button1LongPressHandler)
 zope.event.classhandler.handler(button1Up, button1UpHandler)
 zope.event.classhandler.handler(button1Down, button1DownHandler)
 zope.event.classhandler.handler(button1Click, button1ClickHandler)
+zope.event.classhandler.handler(button2Down, button2DownHandler)
+zope.event.classhandler.handler(button2Up, button2UpHandler)
 
 
 
 def logButtonState():
-    print(pushing)
+    print(button2Pushing)
 
 # interval = ThreadJob(logButtonState,event,0.5)
 # interval.start()
 
 while True:
-    global pushing, pushStart
+    time.sleep(0.01)
 
-    input_state = GPIO.input(18)
+    button1State = GPIO.input(18)
+    button2State = GPIO.input(17)
 
-    if input_state == True and pushing == True:
+    if button1State == True and pushing == True:
         pushing = False
 
     # If pushing
-    if input_state == False and pushStart == 0:
+    if button1State == False and pushStart == 0:
         pushStart = int(round(time.time() * 1000))
         pushing = True
         zope.event.notify(button1Down())
@@ -207,3 +265,18 @@ while True:
         else:
             zope.event.notify(button1Click())
         pushStart = 0
+
+    # If pushing
+    if button2State == False:
+        if button2Pushing == False:
+            # Send wake event
+            zope.event.notify(button2Down())
+
+        button2Pushing = True
+
+    else:
+        if button2Pushing == True:
+            # Send sleep event
+            zope.event.notify(button2Up())
+
+        button2Pushing = False
