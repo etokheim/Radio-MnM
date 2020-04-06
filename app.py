@@ -201,7 +201,7 @@ class button2Down(object):
         return self.__class__.__name__
 
 def button2DownHandler(event):
-    global on, channels
+    global on, player
     on = True
     print("button2DownHandler %r" % event)
 
