@@ -34,45 +34,45 @@ player = None
 import threading
 
 class ThreadJob(threading.Thread):
-    def __init__(self,callback,event,interval):
-        '''runs the callback function after interval seconds
+	def __init__(self,callback,event,interval):
+		'''runs the callback function after interval seconds
 
-        :param callback:  callback function to invoke
-        :param event: external event for controlling the update operation
-        :param interval: time in seconds after which are required to fire the callback
-        :type callback: function
-        :type interval: int
-        '''
-        self.callback = callback
-        self.event = event
-        self.interval = interval
-        super(ThreadJob,self).__init__()
+		:param callback:  callback function to invoke
+		:param event: external event for controlling the update operation
+		:param interval: time in seconds after which are required to fire the callback
+		:type callback: function
+		:type interval: int
+		'''
+		self.callback = callback
+		self.event = event
+		self.interval = interval
+		super(ThreadJob,self).__init__()
 
-    def run(self):
-        while not self.event.wait(self.interval):
-            self.callback()
+	def run(self):
+		while not self.event.wait(self.interval):
+			self.callback()
 
 event = threading.Event()
 
 def display(message):
-    global lcd
+	global lcd
 
-    if debug:
-        print(message)
-    
-    lcd.clear()
-    lcd.write_string(message)
+	if debug:
+		print(message)
+	
+	lcd.clear()
+	lcd.write_string(message)
 
 # We are using the GPIO numbering scheme
 lcd = CharLCD(cols=16,
-              rows=2,
-              pin_rs=26,
-              pin_e=19,
-              pins_data=[13, 6, 5, 11],
-              numbering_mode=GPIO.BCM,
-              compat_mode = True,
-              dotsize = 8,
-              charmap = 'A02'
+			  rows=2,
+			  pin_rs=26,
+			  pin_e=19,
+			  pins_data=[13, 6, 5, 11],
+			  numbering_mode=GPIO.BCM,
+			  compat_mode = True,
+			  dotsize = 8,
+			  charmap = 'A02'
 )
 lcd.clear()
 lcd.cursor_pos = (0, 0)
@@ -92,18 +92,16 @@ pushStart = 0
 button2Pushing = False
 
 def getChannels():
-    global channels, player, lcd
+	global channels, player, lcd
 
-    display("Fetching channels")
+	display("Fetching channels")
 
-    response = requests.get("https://radio.tokheimgrafisk.no/channels")
-    response = response.json()
+	response = requests.get("https://radio.tokheimgrafisk.no/channels")
+	response = response.json()
 
-    channels = response
+	channels = response
 
-    player = vlc.MediaPlayer(channels[playingChannel]["streams"][0])
-
-
+	player = vlc.MediaPlayer(channels[playingChannel]["streams"][0])
 
 # I really have no idea how Zope events works, but this project is a very "learn
 # as we go" project. Anyways, what I wanted to do here was to create an event system
@@ -116,119 +114,119 @@ import zope.event.classhandler
 # import zope.event
 
 class button1Click(object):
-    def __repr__(self):
-        return self.__class__.__name__
+	def __repr__(self):
+		return self.__class__.__name__
 
 # Event is set to the the event which calls it. In this function's case it should be
 # set to "click".
 def button1ClickHandler(event):
-    print("button1Click %r" % event)
+	print("button1Click %r" % event)
 
-    bumpChannel()
+	bumpChannel()
 
 
 # Bumps the channel n times. Loops around if bumping past the last channel.
 def bumpChannel(bumps = 1):
-    global playingChannel, channels
-    bumpTo = playingChannel
+	global playingChannel, channels
+	bumpTo = playingChannel
 
-    # Number of channels to skip which remains after removing overflow.
-    # (Overflow: if you are playing channel 3 of 10 and is instructed to skip 202 channels ahead,
-    # you would end up on channel 205. The overflow is 200, and we should return channel 5 (3 + 2))
-    remaining = (len(channels) + bumps) % len(channels)
+	# Number of channels to skip which remains after removing overflow.
+	# (Overflow: if you are playing channel 3 of 10 and is instructed to skip 202 channels ahead,
+	# you would end up on channel 205. The overflow is 200, and we should return channel 5 (3 + 2))
+	remaining = (len(channels) + bumps) % len(channels)
 
-    if bumpTo + remaining > len(channels) - 1:
-        bumpTo = bumpTo - len(channels) + remaining
+	if bumpTo + remaining > len(channels) - 1:
+		bumpTo = bumpTo - len(channels) + remaining
 
-    elif bumpTo + remaining < 0:
-        bumpTo = len(channels) + bumpTo + remaining
+	elif bumpTo + remaining < 0:
+		bumpTo = len(channels) + bumpTo + remaining
 
-    else:
-        bumpTo = bumpTo + remaining
+	else:
+		bumpTo = bumpTo + remaining
 
-    print("bumps " + str(bumps) + ", bumping to: " + str(bumpTo))
-    channel(bumpTo)
+	print("bumps " + str(bumps) + ", bumping to: " + str(bumpTo))
+	channel(bumpTo)
 
-    
+	
 
 # Takes the parameter (int) and switches to that channel
 def channel(channelNumber):
-    global player, on, channels, playingChannel
+	global player, on, channels, playingChannel
 
-    if on == False:
-        print("Can't switch channel when radio is off!")
-        return
+	if on == False:
+		print("Can't switch channel when radio is off!")
+		return
 
-    playingChannel = channelNumber
+	playingChannel = channelNumber
 
-    player.stop()
-    player = vlc.MediaPlayer(channels[playingChannel]["streams"][0])
-    player.play()
+	player.stop()
+	player = vlc.MediaPlayer(channels[playingChannel]["streams"][0])
+	player.play()
 
-    print("Channel " + str(playingChannel) + " (" + channels[playingChannel]["name"] + ")")
-    
-    display(channels[playingChannel]["name"])
+	print("Channel " + str(playingChannel) + " (" + channels[playingChannel]["name"] + ")")
+	
+	display(channels[playingChannel]["name"])
 
 class button1Down(object):
-    def __repr__(self):
-        return self.__class__.__name__
+	def __repr__(self):
+		return self.__class__.__name__
 
 def button1DownHandler(event):
-    global button1DownStart
+	global button1DownStart
 
-    button1DownStart = int(round(time.time() * 1000))
+	button1DownStart = int(round(time.time() * 1000))
 
-    print("button1DownHandler %r" % event)
+	print("button1DownHandler %r" % event)
 
 
 
 
 class button1Up(object):
-    def __repr__(self):
-        return self.__class__.__name__
+	def __repr__(self):
+		return self.__class__.__name__
 
 def button1UpHandler(event):
-    global button1DownStart
-    
-    print("button1UpHandler %r" % event)
+	global button1DownStart
+	
+	print("button1UpHandler %r" % event)
 
-    button1DownStart = 0
+	button1DownStart = 0
 
 
 class button2Up(object):
-    def __repr__(self):
-        return self.__class__.__name__
+	def __repr__(self):
+		return self.__class__.__name__
 
 def button2UpHandler(event):
-    global on
-    on = False
-    print("button2UpHandler %r" % event)
-    player.stop()
-    lcd.clear()
+	global on
+	on = False
+	print("button2UpHandler %r" % event)
+	player.stop()
+	lcd.clear()
 
 
 class button2Down(object):
-    def __repr__(self):
-        return self.__class__.__name__
+	def __repr__(self):
+		return self.__class__.__name__
 
 def button2DownHandler(event):
-    global on, player
-    on = True
-    print("button2DownHandler %r" % event)
+	global on, player
+	on = True
+	print("button2DownHandler %r" % event)
 
-    getChannels()
+	getChannels()
 
-    player.play()
+	player.play()
 
-    # \n for new line \r for moving to the beginning of current line
-    display(">- RADIO M&M -<\n\rGot " + str(len(channels)) + " channels")
+	# \n for new line \r for moving to the beginning of current line
+	display(">- RADIO M&M -<\n\rGot " + str(len(channels)) + " channels")
 
-    # Wait 2 seconds before displaying the channel name
-    # (So the user gets time to read the previous message)
-    timer = threading.Timer(4, lambda:
-        display(channels[playingChannel]["name"])
-    )
-    timer.start()
+	# Wait 2 seconds before displaying the channel name
+	# (So the user gets time to read the previous message)
+	timer = threading.Timer(4, lambda:
+		display(channels[playingChannel]["name"])
+	)
+	timer.start()
 
 
 
@@ -237,14 +235,14 @@ def button2DownHandler(event):
 # import zope.event
 
 class button1LongPress(object):
-    def __repr__(self):
-        return self.__class__.__name__
+	def __repr__(self):
+		return self.__class__.__name__
 
 def button1LongPressHandler(event):
-    global longClickThreshold
-    
-    print("button1LongPressHandler %r" % event)
-    bumpChannel(-1)
+	global longClickThreshold
+	
+	print("button1LongPressHandler %r" % event)
+	bumpChannel(-1)
 
 
 zope.event.classhandler.handler(button1LongPress, button1LongPressHandler)
@@ -257,49 +255,49 @@ zope.event.classhandler.handler(button2Up, button2UpHandler)
 
 
 def logButtonState():
-    print(button2Pushing)
+	print(button2Pushing)
 
 # interval = ThreadJob(logButtonState,event,0.5)
 # interval.start()
 
 while True:
-    time.sleep(0.01)
+	time.sleep(0.01)
 
-    button1State = GPIO.input(18)
-    button2State = GPIO.input(17)
+	button1State = GPIO.input(18)
+	button2State = GPIO.input(17)
 
-    if button1State == True and pushing == True:
-        pushing = False
+	if button1State == True and pushing == True:
+		pushing = False
 
-    # If pushing
-    if button1State == False and pushStart == 0:
-        pushStart = int(round(time.time() * 1000))
-        pushing = True
-        zope.event.notify(button1Down())
+	# If pushing
+	if button1State == False and pushStart == 0:
+		pushStart = int(round(time.time() * 1000))
+		pushing = True
+		zope.event.notify(button1Down())
 
-    elif pushStart != 0 and pushing == False:
-        now = int(round(time.time() * 1000))
-        holdTime = now - pushStart
+	elif pushStart != 0 and pushing == False:
+		now = int(round(time.time() * 1000))
+		holdTime = now - pushStart
 
-        zope.event.notify(button1Up())
-        # print("Held the button for " + str(holdTime) + " (" + str(now) + " - " + str(pushStart) + ")")
-        if holdTime >= longClickThreshold:
-            zope.event.notify(button1LongPress())
-        else:
-            zope.event.notify(button1Click())
-        pushStart = 0
-    
-    # If pushing
-    if button2State == False:
-        if button2Pushing == False:
-            # Send wake event
-            zope.event.notify(button2Down())
+		zope.event.notify(button1Up())
+		# print("Held the button for " + str(holdTime) + " (" + str(now) + " - " + str(pushStart) + ")")
+		if holdTime >= longClickThreshold:
+			zope.event.notify(button1LongPress())
+		else:
+			zope.event.notify(button1Click())
+		pushStart = 0
+	
+	# If pushing
+	if button2State == False:
+		if button2Pushing == False:
+			# Send wake event
+			zope.event.notify(button2Down())
 
-        button2Pushing = True
+		button2Pushing = True
 
-    else:
-        if button2Pushing == True:
-            # Send sleep event
-            zope.event.notify(button2Up())
+	else:
+		if button2Pushing == True:
+			# Send sleep event
+			zope.event.notify(button2Up())
 
-        button2Pushing = False
+		button2Pushing = False
