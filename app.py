@@ -110,11 +110,9 @@ def button1ClickHandler(event):
     nextChannel(1)
 
 
-# Switches channel. If you are on the last channel
-# skip to the first instead.
-def nextChannel(channelsToSkip):
-    # Using global variables outside of necessity is usually frowned upon by Python developers
-    global playingChannel, channels, player
+    if on == False:
+        print("Can't switch channel when radio is off!")
+        return
 
     # Make the default be to skip to next channel
     if channelsToSkip is None:
