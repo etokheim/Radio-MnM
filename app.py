@@ -107,30 +107,45 @@ class button1Click(object):
 def button1ClickHandler(event):
     print("button1Click %r" % event)
 
-    nextChannel(1)
+    bumpChannel(1)
 
 
-    if on == False:
-        print("Can't switch channel when radio is off!")
-        return
+# Bumps the channel n times. Loops around if bumping past the last channel.
+def bumpChannel(channelsToSkip):
+    global playingChannel, channels
+    bumpTo = playingChannel
 
     # Make the default be to skip to next channel
     if channelsToSkip is None:
         channelsToSkip = 1
 
+    print("channels:")
+    print(channels)
     # Number of channels to skip which remains after removing overflow.
     # (Overflow: if you are playing channel 3 of 10 and is instructed to skip 202 channels ahead,
     # you would end up on channel 205. The overflow is 200, and we should return channel 5 (3 + 2))
     remaining = (len(channels) + channelsToSkip) % len(channels)
 
-    if playingChannel + remaining > len(channels) - 1:
-        playingChannel = playingChannel - len(channels) + remaining
+    if bumpTo + remaining > len(channels) - 1:
+        bumpTo = bumpTo - len(channels) + remaining
 
-    elif playingChannel + remaining < 0:
-        playingChannel = len(channels) + playingChannel + remaining
+    elif bumpTo + remaining < 0:
+        bumpTo = len(channels) + bumpTo + remaining
 
     else:
-        playingChannel = playingChannel + remaining
+        bumpTo = bumpTo + remaining
+
+    channel(bumpTo)
+
+    
+
+# Takes the parameter (int) and switches to that channel
+def channel(channelNumber):
+    global player, on, channels
+
+    if on == False:
+        print("Can't switch channel when radio is off!")
+        return
 
     player.stop()
     player = vlc.MediaPlayer(channels[playingChannel]["streams"][0])
@@ -229,7 +244,7 @@ def button1LongPressHandler(event):
     global longClickThreshold
     
     print("button1LongPressHandler %r" % event)
-    nextChannel(-1)
+    bumpChannel(-1)
 
 
 zope.event.classhandler.handler(button1LongPress, button1LongPressHandler)
