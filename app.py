@@ -8,7 +8,9 @@ import threading
 import zope.event
 import requests
 
+
 # config
+debug = True
 
 # Qualities
 # Put a number in the quality variable, and the stream closest to that bitrate will be used.
@@ -52,6 +54,14 @@ class ThreadJob(threading.Thread):
 
 event = threading.Event()
 
+def display(message):
+    global lcd
+
+    if debug:
+        print(message)
+    
+    lcd.write_string(message)
+
 # We are using the GPIO numbering scheme
 lcd = CharLCD(cols=16,
               rows=2,
@@ -83,14 +93,10 @@ button2Pushing = False
 def getChannels():
     global channels, player, lcd
 
-    print("Fetching channels")
-    lcd.write_string("Fetching channels")
+    display("Fetching channels")
 
     response = requests.get("https://radio.tokheimgrafisk.no/channels")
     response = response.json()
-    print(response[0])
-    print(response[0]["streams"])
-    print(response[0]["name"])
 
     channels = response
 
@@ -167,8 +173,7 @@ def channel(channelNumber):
     
     lcd.clear()
     
-    print(channels[playingChannel]["name"])
-    lcd.write_string(channels[playingChannel]["name"])
+    display(channels[playingChannel]["name"])
 
 class button1Down(object):
     def __repr__(self):
@@ -222,25 +227,21 @@ def button2DownHandler(event):
     player.play()
 
 
-    print('Radio M&M')
-    lcd.write_string('Radio M&M')
+    display('Radio M&M')
 
     time.sleep(2)
     lcd.clear()
 
-    print('Fetching audio streams')
-    lcd.write_string('Fetching audio streams')
+    display('Fetching audio streams')
     time.sleep(1.5)
     lcd.clear()
 
-    print('Got 3 streams')
-    lcd.write_string('Got 3 streams')
+    display('Got 3 streams')
 
     time.sleep(1.5)
     lcd.clear()
 
-    print(channels[playingChannel]["name"])
-    lcd.write_string(channels[playingChannel]["name"])
+    display(channels[playingChannel]["name"])
 
 
 
