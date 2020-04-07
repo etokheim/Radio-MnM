@@ -1,5 +1,8 @@
 from RPi import GPIO
 import time
+from controls import channels
+
+downStart = 0
 
 GPIO.setmode(GPIO.BCM)
 
@@ -18,7 +21,7 @@ class click(object):
 def clickHandler(event):
 	print("click %r" % event)
 
-	bumpChannel()
+	channels.bump()
 
 
 class down(object):
@@ -48,10 +51,8 @@ class longPress(object):
 		return self.__class__.__name__
 
 def longPressHandler(event):
-	global longClickThreshold
-	
 	print("longPressHandler %r" % event)
-	bumpChannel(-1)
+	channels.bump(-1)
 
 zope.event.classhandler.handler(longPress, longPressHandler)
 zope.event.classhandler.handler(up, upHandler)
