@@ -30,6 +30,13 @@ GPIO.setmode(GPIO.BCM)
 on = False
 player = None
 
+# Button 1
+pushing = False
+pushStart = 0
+
+# Button 2
+button2Pushing = False
+
 # Non-blocking interval execution
 import threading
 
@@ -85,11 +92,6 @@ GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 # Button 2
 GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-pushing = False
-pushStart = 0
-
-button2Pushing = False
 
 def getChannels():
 	global channels, player, lcd
@@ -260,44 +262,46 @@ def logButtonState():
 # interval = ThreadJob(logButtonState,event,0.5)
 # interval.start()
 
-while True:
-	time.sleep(0.01)
+def run():
+	global pushing, pushStart, pushStart, button2Pushing
+	while True:
+		time.sleep(0.01)
 
-	button1State = GPIO.input(18)
-	button2State = GPIO.input(17)
+		button1State = GPIO.input(18)
+		button2State = GPIO.input(17)
 
-	if button1State == True and pushing == True:
-		pushing = False
+		if button1State == True and pushing == True:
+			pushing = False
 
-	# If pushing
-	if button1State == False and pushStart == 0:
-		pushStart = int(round(time.time() * 1000))
-		pushing = True
-		zope.event.notify(button1Down())
+		# If pushing
+		if button1State == False and pushStart == 0:
+			pushStart = int(round(time.time() * 1000))
+			pushing = True
+			zope.event.notify(button1Down())
 
-	elif pushStart != 0 and pushing == False:
-		now = int(round(time.time() * 1000))
-		holdTime = now - pushStart
+		elif pushStart != 0 and pushing == False:
+			now = int(round(time.time() * 1000))
+			holdTime = now - pushStart
 
-		zope.event.notify(button1Up())
-		# print("Held the button for " + str(holdTime) + " (" + str(now) + " - " + str(pushStart) + ")")
-		if holdTime >= longClickThreshold:
-			zope.event.notify(button1LongPress())
+			zope.event.notify(button1Up())
+			# print("Held the button for " + str(holdTime) + " (" + str(now) + " - " + str(pushStart) + ")")
+			if holdTime >= longClickThreshold:
+				zope.event.notify(button1LongPress())
+			else:
+				zope.event.notify(button1Click())
+			pushStart = 0
+		
+		# If pushing
+		if button2State == False:
+			if button2Pushing == False:
+				# Send wake event
+				zope.event.notify(button2Down())
+
+			button2Pushing = True
+
 		else:
-			zope.event.notify(button1Click())
-		pushStart = 0
-	
-	# If pushing
-	if button2State == False:
-		if button2Pushing == False:
-			# Send wake event
-			zope.event.notify(button2Down())
+			if button2Pushing == True:
+				# Send sleep event
+				zope.event.notify(button2Up())
 
-		button2Pushing = True
-
-	else:
-		if button2Pushing == True:
-			# Send sleep event
-			zope.event.notify(button2Up())
-
-		button2Pushing = False
+			button2Pushing = False
