@@ -3,6 +3,8 @@ import time
 from controls import channels
 import zope.event.classhandler
 
+pushing = False
+pushStart = 0
 downStart = 0
 
 GPIO.setmode(GPIO.BCM)
