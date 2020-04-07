@@ -11,15 +11,13 @@ import zope.event.classhandler
 
 from config import config
 import switches.switch1
+from switches import power
 from display import display
 from controls import channels
 
 # Button 1
 pushing = False
 pushStart = 0
-
-# Button 2
-button2Pushing = False
 
 # Non-blocking interval execution
 import threading
@@ -45,62 +43,8 @@ class ThreadJob(threading.Thread):
 
 event = threading.Event()
 
-# Button 2
-GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-# I really have no idea how Zope events works, but this project is a very "learn
-# as we go" project. Anyways, what I wanted to do here was to create an event system
-# where I could subscribe to several events: click, down, up, longClick. This I
-# figured out, but I'm still unable to pass arguments down to the event handlers.
-# But as I don't need to pass down arguments yet, It's not a big problem yet. An
-# example of arguments could be an event for clicking the mouse. That should resolve
-# in an event, click, with arguments like pointer position x and y.
-
-class button2Up(object):
-	def __repr__(self):
-		return self.__class__.__name__
-
-def button2UpHandler(event):
-	config.on = False
-	print("button2UpHandler %r" % event)
-	player.stop()
-	display.clear()
-
-class button2Down(object):
-	def __repr__(self):
-		return self.__class__.__name__
-
-def button2DownHandler(event):
-	config.on = True
-	print("button2DownHandler %r" % event)
-
-	channels.fetch()
-
-	config.player.play()
-
-	# \n for new line \r for moving to the beginning of current line
-	display.write(">- RADIO M&M -<\n\rGot " + str(len(channels.list)) + " channels")
-
-	# Wait 2 seconds before displaying the channel name
-	# (So the user gets time to read the previous message)
-	timer = threading.Timer(4, lambda:
-		display.write(channels.list[config.playingChannel]["name"])
-	)
-	timer.start()
-
-zope.event.classhandler.handler(button2Down, button2DownHandler)
-zope.event.classhandler.handler(button2Up, button2UpHandler)
-
-
-
-def logButtonState():
-	print(button2Pushing)
-
-# interval = ThreadJob(logButtonState,event,0.5)
-# interval.start()
-
 def run():
-	global pushing, pushStart, pushStart, button2Pushing
+	global pushing, pushStart, pushStart
 	while True:
 		time.sleep(0.01)
 
@@ -130,15 +74,15 @@ def run():
 		
 		# If pushing
 		if button2State == False:
-			if button2Pushing == False:
+			if switches.power.pushing == False:
 				# Send wake event
-				zope.event.notify(button2Down())
+				zope.event.notify(switches.power.down())
 
-			button2Pushing = True
+			switches.power.pushing = True
 
 		else:
-			if button2Pushing == True:
+			if switches.power.pushing == True:
 				# Send sleep event
-				zope.event.notify(button2Up())
+				zope.event.notify(switches.power.up())
 
-			button2Pushing = False
+			switches.power.pushing = False

@@ -1,6 +1,7 @@
 from RPi import GPIO
 import time
 from controls import channels
+import zope.event.classhandler
 
 downStart = 0
 
@@ -8,9 +9,6 @@ GPIO.setmode(GPIO.BCM)
 
 # Button 1
 GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-import zope.event.classhandler
-# import zope.event
 
 class click(object):
 	def __repr__(self):
