@@ -8,6 +8,11 @@ import threading
 import zope.event
 import requests
 
+import zope.event.classhandler
+
+import switches.switch1
+import channel.channel
+
 
 # config
 debug = True
@@ -25,8 +30,7 @@ playingChannel = 0
 # Will be populated by an API request
 channels = None
 longClickThreshold = 1500
-button1DownStart = 0
-GPIO.setmode(GPIO.BCM)
+switches.switch1.DownStart = 0
 on = False
 player = None
 
@@ -85,10 +89,6 @@ lcd.clear()
 lcd.cursor_pos = (0, 0)
 
 
-GPIO.setmode(GPIO.BCM)
-
-# Button 1
-GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 # Button 2
 GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -112,19 +112,6 @@ def getChannels():
 # But as I don't need to pass down arguments yet, It's not a big problem yet. An
 # example of arguments could be an event for clicking the mouse. That should resolve
 # in an event, click, with arguments like pointer position x and y.
-import zope.event.classhandler
-# import zope.event
-
-class button1Click(object):
-	def __repr__(self):
-		return self.__class__.__name__
-
-# Event is set to the the event which calls it. In this function's case it should be
-# set to "click".
-def button1ClickHandler(event):
-	print("button1Click %r" % event)
-
-	bumpChannel()
 
 
 # Bumps the channel n times. Loops around if bumping past the last channel.
@@ -169,31 +156,6 @@ def channel(channelNumber):
 	
 	display(channels[playingChannel]["name"])
 
-class button1Down(object):
-	def __repr__(self):
-		return self.__class__.__name__
-
-def button1DownHandler(event):
-	global button1DownStart
-
-	button1DownStart = int(round(time.time() * 1000))
-
-	print("button1DownHandler %r" % event)
-
-
-
-
-class button1Up(object):
-	def __repr__(self):
-		return self.__class__.__name__
-
-def button1UpHandler(event):
-	global button1DownStart
-	
-	print("button1UpHandler %r" % event)
-
-	button1DownStart = 0
-
 
 class button2Up(object):
 	def __repr__(self):
@@ -233,24 +195,6 @@ def button2DownHandler(event):
 
 
 
-# import zope.event.classhandler
-# import zope.event
-
-class button1LongPress(object):
-	def __repr__(self):
-		return self.__class__.__name__
-
-def button1LongPressHandler(event):
-	global longClickThreshold
-	
-	print("button1LongPressHandler %r" % event)
-	bumpChannel(-1)
-
-
-zope.event.classhandler.handler(button1LongPress, button1LongPressHandler)
-zope.event.classhandler.handler(button1Up, button1UpHandler)
-zope.event.classhandler.handler(button1Down, button1DownHandler)
-zope.event.classhandler.handler(button1Click, button1ClickHandler)
 zope.event.classhandler.handler(button2Down, button2DownHandler)
 zope.event.classhandler.handler(button2Up, button2UpHandler)
 
@@ -277,18 +221,18 @@ def run():
 		if button1State == False and pushStart == 0:
 			pushStart = int(round(time.time() * 1000))
 			pushing = True
-			zope.event.notify(button1Down())
+			zope.event.notify(switches.switch1.down())
 
 		elif pushStart != 0 and pushing == False:
 			now = int(round(time.time() * 1000))
 			holdTime = now - pushStart
 
-			zope.event.notify(button1Up())
+			zope.event.notify(switches.switch1.up())
 			# print("Held the button for " + str(holdTime) + " (" + str(now) + " - " + str(pushStart) + ")")
 			if holdTime >= longClickThreshold:
-				zope.event.notify(button1LongPress())
+				zope.event.notify(switches.switch1.longPress())
 			else:
-				zope.event.notify(button1Click())
+				zope.event.notify(switches.switch1.click())
 			pushStart = 0
 		
 		# If pushing
