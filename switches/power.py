@@ -10,12 +10,10 @@ from controls import channels
 from display import display
 from config import config
 import zope.event.classhandler
-import threading
+from threading import Thread
 
 # Button 2
 GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-pushing = False
 
 # I really have no idea how Zope events works, but this project is a very "learn
 # as we go" project. Anyways, what I wanted to do here was to create an event system
@@ -29,33 +27,50 @@ class up(object):
 	def __repr__(self):
 		return self.__class__.__name__
 
-def upHandler(event):
-	config.on = False
-	print("powerUpHandler %r" % event)
-	config.player.stop()
-	display.clear()
-
 class down(object):
 	def __repr__(self):
 		return self.__class__.__name__
 
-def downHandler(event):
-	config.on = True
-	print("powerDownHandler %r" % event)
+class Switch(Thread):
+	def __init__(self, gpioPin):
+		Thread.__init__(self)
+		self.running = True
+		self.gpioPin = gpioPin
 
-	channels.fetch()
+		# Add class handlers
+		self.down = down
+		self.up = up
 
-	config.player.play()
+		self.pushing = False
 
-	# \n for new line \r for moving to the beginning of current line
-	display.write(">- RADIO M&M -<\n\rGot " + str(len(channels.list)) + " channels")
+		self.listen = zope.event.classhandler.handler
 
-	# Wait 2 seconds before displaying the channel name
-	# (So the user gets time to read the previous message)
-	timer = threading.Timer(4, lambda:
-		display.write(channels.list[config.playingChannel]["name"])
-	)
-	timer.start()
+	# Use Switch.start(), not Switch.run() to start thread
+	# run() would just start a blocking loop
+	def run(self):
+		print("Listening on power button (GPIO " + str(self.gpioPin) + ")")
 
-zope.event.classhandler.handler(down, downHandler)
-zope.event.classhandler.handler(up, upHandler)
+		while self.running:
+			time.sleep(config.checkSwitchStateInterval)
+		
+			button2State = GPIO.input(self.gpioPin)
+
+			# If pushing
+			if button2State == False:
+				# Only send wake event if state changed
+				if self.pushing == False:
+					# Send wake event
+					zope.event.notify(self.down())
+
+				self.pushing = True
+
+			else:
+				if self.pushing == True:
+					# Send sleep event
+					zope.event.notify(self.up())
+
+					self.pushing = False
+
+	def stop(self):
+		self.running = False
+		print("Stopped power monitoring thread")

@@ -1,3 +1,15 @@
+# A button is a button which has the same state before as after you pushed it.
+# A switch on the other hand permanently changes state when pushed. A button
+# just temporarily changes state while being pushed.
+#
+# This means a button can have several events:
+# - Down
+# - Up
+# - Click
+# - LongPress
+# - VeryLongPress
+# - etc.
+
 from config import config
 
 if config.raspberry == True:
@@ -37,9 +49,10 @@ class longPress(object):
 
 
 class Button(Thread):
-	def __init__(self):
+	def __init__(self, gpioPin):
 		Thread.__init__(self)
 		self.running = True
+		self.gpioPin = gpioPin
 
 		# Add class handlers
 		self.click = click
@@ -53,12 +66,15 @@ class Button(Thread):
 
 		self.listen = zope.event.classhandler.handler
 
-	# Use Button.start(), now Button.run() to start thread
+	# Use Button.start(), not Button.run() to start thread
+	# run() would just start a blocking loop
 	def run(self):
+		print("Listening on button (GPIO " + str(self.gpioPin) + ")")
+
 		while self.running:
 			time.sleep(0.01)
 
-			button1State = GPIO.input(18)
+			button1State = GPIO.input(self.gpioPin)
 
 			if button1State == True and self.pushing == True:
 				self.pushing = False

@@ -20,8 +20,7 @@ from controls import channels
 
 import threading
 
-button = switches.button.Button()
-button.start()
+button = switches.button.Button(18)
 
 # Event is set to the the event which calls it. In this function's case it should be
 # set to "click".
@@ -59,29 +58,42 @@ def buttonLongPressHandler(event):
 
 button.listen(button.longPress, buttonLongPressHandler)
 
+powerSwitch = switches.power.Switch(17)
+
+def powerSwitchUpHandler(event):
+	config.on = False
+	print("powerSwitchUpHandler %r" % event)
+	config.player.stop()
+	display.clear()
+
+powerSwitch.listen(powerSwitch.up, powerSwitchUpHandler)
+
+def powerSwitchDownHandler(event):
+	config.on = True
+	print("powerSwitchDownHandler %r" % event)
+
+	channels.fetch()
+
+	config.player.play()
+
+	# \n for new line \r for moving to the beginning of current line
+	display.write(">- RADIO M&M -<\n\rGot " + str(len(channels.list)) + " channels")
+
+	# Wait 2 seconds before displaying the channel name
+	# (So the user gets time to read the previous message)
+	timer = threading.Timer(4, lambda:
+		display.write(channels.list[config.playingChannel]["name"])
+	)
+	timer.start()
+
+powerSwitch.listen(powerSwitch.down, powerSwitchDownHandler)
+
 def run():
+	button.start()
+	powerSwitch.start()
+
 	# If not running on a raspberry pi, fake the power button
 	# to always be switched on.
 	if config.raspberry == False:
 		zope.event.notify(switches.power.down())
 		switches.power.pushing = True
-	
-	while config.raspberry:
-		time.sleep(0.01)
-		
-		button2State = GPIO.input(17)
-
-		# If pushing
-		if button2State == False:
-			if switches.power.pushing == False:
-				# Send wake event
-				zope.event.notify(switches.power.down())
-
-			switches.power.pushing = True
-
-		else:
-			if switches.power.pushing == True:
-				# Send sleep event
-				zope.event.notify(switches.power.up())
-
-			switches.power.pushing = False

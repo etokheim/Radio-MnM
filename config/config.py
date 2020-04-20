@@ -24,3 +24,5 @@ playingChannel = 0
 
 longClickThreshold = 1500
 on = False
+
+checkSwitchStateInterval = 0.01
