@@ -1,5 +1,13 @@
+import os
+
 debug = True
 
+# If running on a raspberry pi, set to true
+# This is a bit over simplified, but it works (just checks if the machine
+# is an arm machine or not).
+raspberry = False
+if os.uname()[4][:3] == "arm":
+	raspberry = True
 
 # Qualities
 # Put a number in the quality variable, and the stream closest to that bitrate will be used.

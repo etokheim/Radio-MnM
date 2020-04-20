@@ -1,4 +1,10 @@
-from RPi import GPIO
+from config import config
+
+if config.raspberry == True:
+	from RPi import GPIO
+else:
+	from EmulatorGUI.EmulatorGUI import GPIO
+
 import time
 from controls import channels
 from display import display

@@ -1,6 +1,11 @@
+from config import config
+
+if config.raspberry == True:
+	from RPi import GPIO
+else:
+	from EmulatorGUI.EmulatorGUI import GPIO
+
 import datetime
-from RPi import GPIO
-# from EmulatorGUI import GPIO
 
 import time
 from datetime import datetime
@@ -8,7 +13,6 @@ import zope.event
 
 import zope.event.classhandler
 
-from config import config
 import switches.button
 from switches import power
 from display import display
@@ -56,7 +60,13 @@ def buttonLongPressHandler(event):
 button.listen(button.longPress, buttonLongPressHandler)
 
 def run():
-	while True:
+	# If not running on a raspberry pi, fake the power button
+	# to always be switched on.
+	if config.raspberry == False:
+		zope.event.notify(switches.power.down())
+		switches.power.pushing = True
+	
+	while config.raspberry:
 		time.sleep(0.01)
 		
 		button2State = GPIO.input(17)

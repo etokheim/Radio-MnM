@@ -1,10 +1,14 @@
-# from RPi import GPIO
-from EmulatorGUI import GPIO
+from config import config
+
+if config.raspberry == True:
+	from RPi import GPIO
+else:
+	from EmulatorGUI.EmulatorGUI import GPIO
+	
 import time
 from controls import channels
 import zope.event.classhandler
 from threading import Thread
-from config import config
 
 pushing = False
 pushStart = 0
