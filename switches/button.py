@@ -1,5 +1,5 @@
-from RPi import GPIO
-# from EmulatorGUI import GPIO
+# from RPi import GPIO
+from EmulatorGUI import GPIO
 import time
 from controls import channels
 import zope.event.classhandler
@@ -32,7 +32,7 @@ class longPress(object):
 		return self.__class__.__name__
 
 
-class Switch(Thread):
+class Button(Thread):
 	def __init__(self):
 		Thread.__init__(self)
 		self.running = True
@@ -49,7 +49,7 @@ class Switch(Thread):
 
 		self.listen = zope.event.classhandler.handler
 
-	# Use Switch.start(), now Switch.run() to start thread
+	# Use Button.start(), now Button.run() to start thread
 	def run(self):
 		while self.running:
 			time.sleep(0.01)

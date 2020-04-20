@@ -9,51 +9,51 @@ import zope.event
 import zope.event.classhandler
 
 from config import config
-import switches.switch
+import switches.button
 from switches import power
 from display import display
 from controls import channels
 
 import threading
 
-switch1 = switches.switch.Switch()
-switch1.start()
+button = switches.button.Button()
+button.start()
 
 # Event is set to the the event which calls it. In this function's case it should be
 # set to "click".
-def clickHandler(event):
+def buttonClickHandler(event):
 	print("click %r" % event)
 
 	channels.bump()
 
-switch1.listen(switch1.click, clickHandler)
+button.listen(button.click, buttonClickHandler)
 
 
-def downHandler(event):
+def buttonDownHandler(event):
 	global downStart
 
 	downStart = int(round(time.time() * 1000))
 
 	print("downHandler %r" % event)
 
-switch1.listen(switch1.down, downHandler)
+button.listen(button.down, buttonDownHandler)
 
 
-def upHandler(event):
+def buttonUpHandler(event):
 	global downStart
 	
 	print("upHandler %r" % event)
 
 	downStart = 0
 
-switch1.listen(switch1.up, upHandler)
+button.listen(button.up, buttonUpHandler)
 
 
-def longPressHandler(event):
+def buttonLongPressHandler(event):
 	print("longPressHandler %r" % event)
 	channels.bump(-1)
 
-switch1.listen(switch1.longPress, longPressHandler)
+button.listen(button.longPress, buttonLongPressHandler)
 
 def run():
 	while True:
