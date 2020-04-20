@@ -11,14 +11,14 @@
 # Setup
 Install python dependencies:
 
- 1. `pip install rplcd`
- 2. `pip install python-vlc`
+ 1. `pip3 install rplcd`
+ 2. `pip3 install python-vlc`
  3. `sudo apt install vlc`
  4. `sudo apt install pulseaudio`
  5. `pulseaudio --start`
  6. Set the audio jack output as the primary output device:
     - `raspi-config` -> advanced -> audio -> output, force 3.5 mm audio jack
- 7. `pip install zope.event`
+ 7. `pip3 install zope.event`
     - Event system
- 7. `pip install requests`
+ 7. `pip3 install requests`
     - For HTTP requests
