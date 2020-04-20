@@ -1,0 +1,5 @@
+rplcd
+python-vlc
+zope.event
+requests
+RPi.GPIO
