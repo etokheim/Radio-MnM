@@ -73,6 +73,8 @@ class Button(Thread):
 		self.longPress = longPress
 		self.veryLongPress = veryLongPress
 
+		self.state = "up"
+
 		self.pushing = False
 		self.pushStart = 0
 		self.downStart = 0
@@ -108,9 +110,12 @@ class Button(Thread):
 				holdTime = now - self.pushStart
 
 				zope.event.notify(self.down())
+				self.state = "down"
 
 			elif self.pushStart != 0 and self.pushing == False:
 				zope.event.notify(self.up())
+				self.state = "up"
+
 				if holdTime >= config.longPressThreshold:
 					zope.event.notify(self.longClick())
 				else:
