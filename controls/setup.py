@@ -46,6 +46,12 @@ class Registration():
 				isRegistered = self.checkIfRegistered()
 				time.sleep(1)
 			
+			if isRegistered["status"] == False:
+				display.write("Code expired, \n\rfetching new one")
+				time.sleep(1)
+				self.start()
+				return
+			
 			display.write("Registered! :D")
 			print(isRegistered)
 
