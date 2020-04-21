@@ -22,7 +22,7 @@ player = None
 
 playingChannel = 0
 
-longClickThreshold = 1500
+longPressThreshold = 800
 on = False
 
 checkSwitchStateInterval = 0.01
