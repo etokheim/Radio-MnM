@@ -1,7 +1,14 @@
 import vlc
 import requests
+from tinydb import TinyDB, Query
+
 from display import display
 from config import config
+
+db = TinyDB('./db/db.json')
+Radio = Query()
+radioTable = db.table("Radio_mnm")
+radio = radioTable.search(Radio)[0]
 
 list = None
 
@@ -10,12 +17,15 @@ def fetch():
 
 	display.write("Fetching channels")
 
-	response = requests.get("https://radio.tokheimgrafisk.no/channels")
+	headers = { "apiKey": radio["apiKey"] }
+	response = requests.get("https://127.0.0.1:8000/radio/api/1/channels?homeId=" + radio["homeId"], headers=headers, verify=False)
 	response = response.json()
+	print("response:")
+	print(response)
 
-	list = response
+	list = response["channels"]
 
-	config.player = vlc.MediaPlayer(list[config.playingChannel]["streams"][0])
+	config.player = vlc.MediaPlayer(list[config.playingChannel]["streams"][0]["url"])
 
 # Bumps the channel n times. Loops around if bumping past the last channel.
 def bump(bumps = 1):
@@ -52,7 +62,7 @@ def set(channelNumber):
 	config.playingChannel = channelNumber
 
 	config.player.stop()
-	config.player = vlc.MediaPlayer(list[config.playingChannel]["streams"][0])
+	config.player = vlc.MediaPlayer(list[config.playingChannel]["streams"][0]["url"])
 	config.player.play()
 
 	print("Channel " + str(config.playingChannel) + " (" + list[config.playingChannel]["name"] + ")")

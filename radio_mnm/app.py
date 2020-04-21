@@ -17,8 +17,11 @@ import switches.button
 from switches import power
 from display import display
 from controls import channels
+from controls import setup
 
 import threading
+
+registration = setup.Registration()
 
 button = switches.button.Button(18)
 
@@ -89,6 +92,8 @@ def powerSwitchDownHandler(event):
 powerSwitch.listen(powerSwitch.down, powerSwitchDownHandler)
 
 def run():
+	# Starts the registration if the radio isn't registered
+	registration.start()
 	button.start()
 	powerSwitch.start()
 
