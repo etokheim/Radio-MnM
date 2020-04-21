@@ -55,7 +55,8 @@ class Registration():
 				"homeId": isRegistered["homeId"],
 				"locationId": isRegistered["locationId"],
 				"name": isRegistered["radio"]["name"],
-				"apiKey": isRegistered["radio"]["apiKey"]
+				"apiKey": isRegistered["radio"]["apiKey"],
+				"channels": []
 			})
 
 			print(radioTable)

@@ -1,6 +1,8 @@
 import vlc
 import requests
 from tinydb import TinyDB, Query
+import sys
+import time
 
 from display import display
 from config import config
@@ -17,14 +19,44 @@ def fetch():
 
 	display.write("Fetching streams")
 
-	headers = { "apiKey": radio["apiKey"] }
-	response = requests.get("https://127.0.0.1:8000/radio/api/1/channels?homeId=" + radio["homeId"], headers=headers, verify=False)
-	response = response.json()
-	print("response:")
-	print(response)
+	try:
+		headers = { "apiKey": radio["apiKey"] }
+		response = requests.get("https://127.0.0.1:8000/radio/api/1/channels?homeId=" + radio["homeId"], headers=headers, verify=False)
+		status_code = response.status_code
+		response = response.json()
+		
+		print("response (" + str(status_code) + "):")
+		print(response)
 
-	list = response["channels"]
+		if status_code == 200:
+			list = response["channels"]
 
+			# Add channels to the database for use in case the server goes down
+			radioTable.update({ "channels": list }, doc_ids=[1])
+		else:
+			print("Status code was " + str(status_code))
+			raise Exception(response)
+	except Exception:
+		display.write("Failed to get\n\rchannels!")
+		print(Exception)
+		time.sleep(1)
+
+		# Recover by using channels from local db instead if we have them
+		channels = radio["channels"]
+		print("channels ---------")
+		print(channels)
+		if channels:
+			display.write("Using local\n\rchannels instead")
+			time.sleep(1)
+			list = channels
+		else:
+			display.write("No channels are\n\rcached, exiting")
+			print("------------ EXITED ------------")
+			time.sleep(1)
+			# Exit with code "112, Host is down"
+			sys.exit(112)
+
+	# Start playing
 	config.player = vlc.MediaPlayer(list[config.playingChannel]["streams"][0]["url"])
 
 # Bumps the channel n times. Loops around if bumping past the last channel.
