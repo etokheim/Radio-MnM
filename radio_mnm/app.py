@@ -61,6 +61,33 @@ def buttonLongPressHandler(event):
 
 button.listen(button.longPress, buttonLongPressHandler)
 
+class ResetCountdown(threading.Thread):
+	def __init__(self):
+		threading.Thread.__init__(self)
+		self.loadingBar = ""
+
+	def run(self):
+		display.write("RESETTING RADIO\n****************")
+		time.sleep(1.5)
+		while button.state == "down":
+			self.loadingBar = self.loadingBar + "█"
+			display.write("ARE YOU SURE?\n\r" + self.loadingBar)
+			time.sleep(0.3)
+			
+			if len(self.loadingBar) >= 15:
+				setup.reset()
+				return
+
+def buttonVeryLongPressHandler(event):
+	print("VerylongPressHandler %r" % event)
+
+	resetCountdown = ResetCountdown()
+	resetCountdown.start()
+	
+
+
+button.listen(button.veryLongPress, buttonVeryLongPressHandler)
+
 powerSwitch = switches.power.Switch(17)
 
 def powerSwitchUpHandler(event):
@@ -82,7 +109,7 @@ def powerSwitchDownHandler(event):
 	# \n for new line \r for moving to the beginning of current line
 	display.write(">- RADIO M&M -<\n\rGot " + str(len(channels.list)) + " channels")
 
-	# Wait 2 seconds before displaying the channel name
+	# Wait 4 seconds before displaying the channel name
 	# (So the user gets time to read the previous message)
 	timer = threading.Timer(4, lambda:
 		display.write(channels.list[config.playingChannel]["name"])

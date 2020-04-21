@@ -22,7 +22,7 @@ player = None
 
 playingChannel = 0
 
-longPressThreshold = 800
+longPressThreshold = 600
 veryLongPressThreshold = 5000
 on = False
 

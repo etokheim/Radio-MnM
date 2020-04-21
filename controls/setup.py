@@ -24,7 +24,7 @@ class Registration():
 		Radio = Query()
 		radioTable = db.table("Radio_mnm")
 		radio = radioTable.search(Radio)
-		
+
 		print("radio")
 		print(radio)
 
@@ -71,7 +71,9 @@ class Registration():
 registration = Registration()
 
 def reset():
-	display.write("Resetting radio")
+	display.write("Resetting radio\n****************")
+	# TODO: Send request to delete itself
+	time.sleep(2)
 	os.remove("./db/db.json")
 	print("Removed database")
 	registration.start()
