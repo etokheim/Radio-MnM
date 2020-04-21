@@ -7,7 +7,43 @@ else:
 
 def write(message):
 	if config.debug:
-		print(message)
+		# Simulate display
+		# TODO: Clean this up
+		displayWidth = 16
+
+		# Remove new lines and carriage returns
+		printMessage = message.replace("\r", "")
+		printMessage = printMessage.split("\n")
+
+		firstLineLength = len(printMessage[0])
+		firstLine = "│      " + printMessage[0]
+
+		# Add n spaces to the end of the message, where n = the number of character spaces left on the
+		# simulated screen.
+		for i in range(displayWidth - firstLineLength):
+			firstLine = firstLine + " "
+		
+		# Then add some padding plus the display edge.
+		firstLine = firstLine + "      │"
+
+		# Do the same for the second line
+		secondLine = "│                            │"
+
+		if len(printMessage) > 1:
+			secondLineLength = len(printMessage[1])
+			secondLine = "│      " + printMessage[1]
+		
+			for i in range(displayWidth - secondLineLength):
+				secondLine = secondLine + " "
+			
+			secondLine = secondLine + "      │"
+
+		print("┌────────────────────────────┐")
+		print("│                            │")
+		print  (         firstLine          )
+		print  (         secondLine         )
+		print("│                            │")
+		print("└────────────────────────────┘")
 	
 	clear()
 	

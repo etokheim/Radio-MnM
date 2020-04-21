@@ -15,7 +15,7 @@ list = None
 def fetch():
 	global list
 
-	display.write("Fetching channels")
+	display.write("Fetching streams")
 
 	headers = { "apiKey": radio["apiKey"] }
 	response = requests.get("https://127.0.0.1:8000/radio/api/1/channels?homeId=" + radio["homeId"], headers=headers, verify=False)
