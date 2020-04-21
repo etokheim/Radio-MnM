@@ -53,6 +53,11 @@ class longPress(object):
 	def __repr__(self):
 		return self.__class__.__name__
 
+# Fires after 5 seconds of pressing
+class veryLongPress(object):
+	def __repr__(self):
+		return self.__class__.__name__
+
 
 class Button(Thread):
 	def __init__(self, gpioPin):
@@ -66,11 +71,13 @@ class Button(Thread):
 		self.up = up
 		self.longClick = longClick
 		self.longPress = longPress
+		self.veryLongPress = veryLongPress
 
 		self.pushing = False
 		self.pushStart = 0
 		self.downStart = 0
 		self.sentLongPressEvent = False
+		self.sentVeryLongPressEvent = False
 
 		self.listen = zope.event.classhandler.handler
 
@@ -112,6 +119,7 @@ class Button(Thread):
 
 					# When done pushing, set sentLongPressEvent to False again
 					self.sentLongPressEvent = False
+					self.sentVeryLongPressEvent = False
 
 				self.pushStart = 0
 			
@@ -124,6 +132,11 @@ class Button(Thread):
 				if self.sentLongPressEvent == False:
 					self.sentLongPressEvent = True
 					zope.event.notify(self.longPress())
+
+			if holdTime >= config.veryLongPressThreshold:
+				if self.sentVeryLongPressEvent == False:
+					self.sentVeryLongPressEvent = True
+					zope.event.notify(self.veryLongPress())
 
 	def stop(self):
 		self.running = False
