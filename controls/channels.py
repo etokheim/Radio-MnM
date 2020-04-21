@@ -7,14 +7,14 @@ import time
 from display import display
 from config import config
 
-db = TinyDB('./db/db.json')
-Radio = Query()
-radioTable = db.table("Radio_mnm")
-radio = radioTable.search(Radio)[0]
-
 list = None
 
 def fetch():
+	db = TinyDB('./db/db.json')
+	Radio = Query()
+	radioTable = db.table("Radio_mnm")
+	radio = radioTable.search(Radio)[0]
+
 	global list
 
 	display.write("Fetching streams")
@@ -57,7 +57,9 @@ def fetch():
 			sys.exit(112)
 
 	# Start playing
-	config.player = vlc.MediaPlayer(list[config.playingChannel]["streams"][0]["url"])
+	bestBitrateMatch = getBestBitRateMatch(list[config.playingChannel]["streams"])
+	print("Playing channel with a bitrate of " + str(list[config.playingChannel]["streams"][bestBitrateMatch]["bitrate"]) + "kbps")
+	config.player = vlc.MediaPlayer(list[config.playingChannel]["streams"][bestBitrateMatch]["url"])
 
 # Bumps the channel n times. Loops around if bumping past the last channel.
 def bump(bumps = 1):
@@ -94,9 +96,22 @@ def set(channelNumber):
 	config.playingChannel = channelNumber
 
 	config.player.stop()
-	config.player = vlc.MediaPlayer(list[config.playingChannel]["streams"][0]["url"])
+	bestBitrateMatch = getBestBitRateMatch(list[config.playingChannel]["streams"])
+	print("Playing channel with a bitrate of " + str(list[config.playingChannel]["streams"][bestBitrateMatch]["bitrate"]) + "kbps")
+	config.player = vlc.MediaPlayer(list[config.playingChannel]["streams"][bestBitrateMatch]["url"])
 	config.player.play()
 
 	print("Channel " + str(config.playingChannel) + " (" + list[config.playingChannel]["name"] + ")")
 	
 	display.write(list[config.playingChannel]["name"])
+
+def getBestBitRateMatch(streams):
+	bestMatchIndex = 0
+	bestMatchBitrate = streams[0]["bitrate"]
+	for i in range(len(streams)):
+		if min(streams[i]["bitrate"] - config.quality, streams[bestMatchIndex]["bitrate"]) - config.quality != bestMatchBitrate:
+			# print(str(i) + " (" + str(streams[i]["bitrate"]) + ") had a better matching bitrate than " + str(bestMatchIndex) + " (" + str(bestMatchBitrate) + ")")
+			bestMatchBitrate = streams[i]["bitrate"]
+			bestMatchIndex = i
+	
+	return bestMatchIndex
