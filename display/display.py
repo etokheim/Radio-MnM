@@ -52,7 +52,7 @@ def write(message):
 
 def clear():
 	if config.raspberry == False:
-		print("Clearing display")
+		print("│ - -   Display cleared  - - │")
 	
 	if config.raspberry:
 		lcd.clear()
