@@ -6,6 +6,7 @@ import time
 
 from display import display
 from config import config
+from controls import setup
 
 list = None
 
@@ -35,16 +36,22 @@ def fetch():
 			radioTable.update({ "channels": list }, doc_ids=[1])
 		else:
 			print("Status code was " + str(status_code))
-			raise Exception(response)
+			raise Exception(response, status_code)
 	except Exception:
 		display.write("Failed to get\n\rchannels!")
+		time.sleep(2)
+		print("Exception's status code was " + str(status_code))
 		print(Exception)
-		time.sleep(1)
+		
+		if status_code == 410:
+			display.write("This radio was\n\runregistered!")
+			time.sleep(3)
+			display.write("Resetting radio\n\rin three seconds")
+			setup.reset()
+			return
 
 		# Recover by using channels from local db instead if we have them
 		channels = radio["channels"]
-		print("channels ---------")
-		print(channels)
 		if channels:
 			display.write("Using local\n\rchannels instead")
 			time.sleep(1)

@@ -21,7 +21,7 @@ from controls import setup
 
 import threading
 
-registration = setup.Registration()
+registration = setup.registration
 
 button = switches.button.Button(18)
 

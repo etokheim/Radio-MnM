@@ -6,11 +6,7 @@ from tinydb import TinyDB, Query
 from display import display
 import time
 import requests
-
-db = TinyDB('./db/db.json')
-Radio = Query()
-radioTable = db.table("Radio_mnm")
-radio = radioTable.search(Radio)
+import os
 
 class Registration():
 	def __init__(self):
@@ -24,6 +20,11 @@ class Registration():
 		return isRegistered
 
 	def start(self):
+		db = TinyDB('./db/db.json')
+		Radio = Query()
+		radioTable = db.table("Radio_mnm")
+		radio = radioTable.search(Radio)
+		
 		print("radio")
 		print(radio)
 
@@ -66,3 +67,12 @@ class Registration():
 			})
 
 			print(radioTable)
+
+registration = Registration()
+
+def reset():
+	display.write("Resetting radio")
+	os.remove("./db/db.json")
+	print("Removed database")
+	registration.start()
+	# set channels to undefined
