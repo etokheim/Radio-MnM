@@ -33,12 +33,12 @@ class Registration():
 			print(radio[0]["apiKey"])
 		else:
 
-			display.write("Acquiring codes")
+			display.notification("Acquiring codes")
 
 			self.response = requests.get("https://127.0.0.1:8000/api/1/getRegisterCode", verify=False)
 			self.response = self.response.json()
 
-			display.write("Register radio:\n\r" + self.response["code"])
+			display.notification("Register radio:\n\r" + self.response["code"])
 
 			# Check if the radio has been registered
 			isRegistered = self.checkIfRegistered()
@@ -48,12 +48,12 @@ class Registration():
 				time.sleep(1)
 			
 			if isRegistered["status"] == False:
-				display.write("Code expired, \n\rfetching new one")
+				display.notification("Code expired, \n\rfetching new one")
 				time.sleep(1)
 				self.start()
 				return
 			
-			display.write("Registered! :D")
+			display.notification("Registered! :D")
 			print(isRegistered)
 
 			radioTable.insert({
@@ -71,7 +71,7 @@ class Registration():
 registration = Registration()
 
 def reset():
-	display.write("Resetting radio\n****************")
+	display.notification("Resetting radio\n****************")
 	# TODO: Send request to delete itself
 	time.sleep(2)
 	os.remove("./db/db.json")

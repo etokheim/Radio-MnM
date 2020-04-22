@@ -1,11 +1,33 @@
 from config import config
+import threading
+import time
 
 if config.raspberry == True:
 	from RPi import GPIO
 else:
 	from EmulatorGUI.EmulatorGUI import GPIO
 
+def clear():
+	if config.raspberry == False:
+		print("│ - -  Display cleared   - - │")
+	
+	if config.raspberry:
+		lcd.clear()
+
+
+currentMessage = ""
+currentMessageExpires = 0
+
+def notification(message, duration = 2):
+	global currentMessage, currentMessageExpires
+	currentMessage = message
+	currentMessageExpires = int(round(time.time() * 1000)) + duration * 1000
+
+	write(message)
+
 def write(message):
+	clear()
+
 	if config.debug:
 		# Simulate display
 		# TODO: Clean this up
@@ -45,17 +67,35 @@ def write(message):
 		print("│                            │")
 		print("└────────────────────────────┘")
 	
-	clear()
-	
 	if config.raspberry:
 		lcd.write_string(message)
 
-def clear():
-	if config.raspberry == False:
-		print("│ - -   Display cleared  - - │")
-	
-	if config.raspberry:
-		lcd.clear()
+
+def writeStandardContent():
+	if currentMessage == "":
+		lineOne = config.radio.selectedChannel["name"]
+		lineTwo = str(config.radio.media.get_meta(12))
+		
+		write(lineOne + "\n\r" + lineTwo)
+
+class oldMessagesCollector(threading.Thread):
+	def __init__(self):
+		threading.Thread.__init__(self)
+
+	def run(self):
+		global currentMessageExpires, currentMessage
+		time.sleep(4)
+		while True:
+			if currentMessageExpires != False and int(round(time.time() * 1000)) >= currentMessageExpires:
+				print(currentMessage + " expired")
+				currentMessage = ""
+				currentMessageExpires = False
+				writeStandardContent()
+
+			time.sleep(0.2)
+
+listenRadio = oldMessagesCollector()
+listenRadio.start()
 
 if config.raspberry:
 	# We are using the GPIO numbering scheme
