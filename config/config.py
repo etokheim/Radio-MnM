@@ -27,3 +27,8 @@ veryLongPressThreshold = 5000
 on = False
 
 checkSwitchStateInterval = 0.01
+
+apiServer = "https://127.0.0.1:8000"
+
+# Will be set to the radio 
+radio = None

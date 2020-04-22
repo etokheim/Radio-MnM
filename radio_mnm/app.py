@@ -15,8 +15,8 @@ import zope.event.classhandler
 
 import switches.button
 from switches import power
-from display import display
 from controls import channels
+from display import display
 from controls import setup
 
 import threading
@@ -28,9 +28,9 @@ button = switches.button.Button(18)
 # Event is set to the the event which calls it. In this function's case it should be
 # set to "click".
 def buttonClickHandler(event):
-	print("click %r" % event)
+	print("clickHandler %r" % event)
 
-	channels.bump()
+	config.radio.bump()
 
 button.listen(button.click, buttonClickHandler)
 
@@ -57,7 +57,7 @@ button.listen(button.up, buttonUpHandler)
 
 def buttonLongPressHandler(event):
 	print("longPressHandler %r" % event)
-	channels.bump(-1)
+	config.radio.bump(-1)
 
 button.listen(button.longPress, buttonLongPressHandler)
 
@@ -67,11 +67,11 @@ class ResetCountdown(threading.Thread):
 		self.loadingBar = ""
 
 	def run(self):
-		display.write("RESETTING RADIO\n****************")
+		display.notification("RESETTING RADIO\n****************")
 		time.sleep(1.5)
 		while button.state == "down":
 			self.loadingBar = self.loadingBar + "█"
-			display.write("ARE YOU SURE?\n\r" + self.loadingBar)
+			display.notification("ARE YOU SURE?\n\r" + self.loadingBar)
 			time.sleep(0.3)
 			
 			if len(self.loadingBar) >= 15:
@@ -83,10 +83,10 @@ def buttonVeryLongPressHandler(event):
 
 	resetCountdown = ResetCountdown()
 	resetCountdown.start()
-	
-
 
 button.listen(button.veryLongPress, buttonVeryLongPressHandler)
+
+
 
 powerSwitch = switches.power.Switch(17)
 
@@ -102,17 +102,17 @@ def powerSwitchDownHandler(event):
 	config.on = True
 	print("powerSwitchDownHandler %r" % event)
 
-	channels.fetch()
+	config.radio.fetchChannels()
 
-	config.player.play()
+	config.radio.play()
 
 	# \n for new line \r for moving to the beginning of current line
-	display.write(">- RADIO M&M -<\n\rGot " + str(len(channels.list)) + " channels")
+	display.notification(">- RADIO M&M -<\n\rGot " + str(len(config.radio.channels)) + " channels")
 
 	# Wait 4 seconds before displaying the channel name
 	# (So the user gets time to read the previous message)
 	timer = threading.Timer(4, lambda:
-		display.write(channels.list[config.playingChannel]["name"])
+		display.notification(config.radio.selectedChannel["name"])
 	)
 	timer.start()
 
