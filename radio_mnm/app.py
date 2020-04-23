@@ -107,14 +107,14 @@ def powerSwitchDownHandler(event):
 	config.radio.play()
 
 	# \n for new line \r for moving to the beginning of current line
-	display.notification(">- RADIO M&M -<\n\rGot " + str(len(config.radio.channels)) + " channels")
+	display.notification(">- RADIO M&M -<\n\rGot " + str(len(config.radio.channels)) + " channels", 4)
 
 	# Wait 4 seconds before displaying the channel name
 	# (So the user gets time to read the previous message)
-	timer = threading.Timer(4, lambda:
-		display.notification(config.radio.selectedChannel["name"])
-	)
-	timer.start()
+	# timer = threading.Timer(4, lambda:
+	# 	display.notification(config.radio.selectedChannel["name"])
+	# )
+	# timer.start()
 
 powerSwitch.listen(powerSwitch.down, powerSwitchDownHandler)
 

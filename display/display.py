@@ -53,7 +53,7 @@ class Display(threading.Thread):
 	def __init__(self):
 		threading.Thread.__init__(self)
 		self.notification = ""
-		self.standardContent = "Standard, but very, very loooong Content\nLine two is also very long!"
+		self.standardContent = ""
 		self.notificationExpireTime = False
 		self.running = True
 		self.currentlyDisplaying = ""
@@ -64,9 +64,14 @@ class Display(threading.Thread):
 		# For how many steps we should pause when displaying the start of the line
 		self.startPauseSteps = 4
 		self.lineOffset = 0 - self.startPauseSteps
+		self.lastDisplayed = ""
 
 	def run(self):
+		time.sleep(2)
 		while self.running:
+			# Set standard content
+			self.standardContent = config.radio.selectedChannel["name"] + "\n\r" + str(config.radio.media.get_meta(12))
+
 			# Clear expired notifications
 			# print("self.notificationExpireTime: " + str(self.notificationExpireTime))
 			if int(round(time.time() * 1000)) >= self.notificationExpireTime and self.notificationExpireTime != False:
@@ -83,6 +88,11 @@ class Display(threading.Thread):
 			time.sleep(0.5)
 
 	def displayMessage(self):
+		# If there is a new text to display, reset the text offset
+		if self.lastDisplayed != self.currentlyDisplaying:
+			self.lineOffset = 0 - self.startPauseSteps
+			
+		self.lastDisplayed = self.currentlyDisplaying
 		stripCarriages = self.currentlyDisplaying.replace("\r", "")
 		self.lines = stripCarriages.split("\n")
 		composedMessage = ""
@@ -130,7 +140,6 @@ class Display(threading.Thread):
 			self.lineOffset = 0 - self.startPauseSteps
 
 		self.write(composedMessage)
-
 
 
 	def write(self, message):
