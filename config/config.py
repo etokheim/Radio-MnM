@@ -32,3 +32,7 @@ apiServer = "https://127.0.0.1:8000"
 
 # Will be set to the radio 
 radio = None
+
+# In characters, not pixels
+displayWidth = 16
+displayHeight = 2
