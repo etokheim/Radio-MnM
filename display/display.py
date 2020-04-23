@@ -113,7 +113,7 @@ class Display(threading.Thread):
 					# If self.lineOffset is less than zero, then display the start of the message until
 					# it's zero or higher
 					self.croppedLines.append(line[0:config.displayWidth])
-					
+
 			else:
 				self.croppedLines.append(line)
 
@@ -134,14 +134,53 @@ class Display(threading.Thread):
 
 
 	def write(self, message):
-		print("-------------------")
-		print("| " + message + " |")
-		print("-------------------")
+		# Simulate a display in the terminal, if we are running in debug mode
+		if config.debug:
+			self.writeToSimulatedScreen(message)
+		
+		# Write to the actual display, if we are running on a Raspberry Pi
+		if config.raspberry:
+			lcd.write_string(message)
 
 	def scrollText(self, name, line):
 		print("Text to scroll")
 		print(line[0])
 		print(line[1])
+
+	def writeToSimulatedScreen(self, message):
+		# Split message up into an array of lines
+		printMessage = message.replace("\r", "")
+		lines = printMessage.split("\n")
+
+		# Simulate display
+		# TODO: Clean this up
+		firstLine = "│      " + lines[0]
+
+		# Add n spaces to the end of the message, where n = the number of character spaces left on the
+		# simulated screen.
+		for i in range(config.displayWidth - len(lines[0])):
+			firstLine = firstLine + " "
+		
+		# Then add some padding plus the display edge.
+		firstLine = firstLine + "      │"
+
+		# Do the same for the second line
+		secondLine = "│                            │"
+
+		if len(lines) > 1:
+			secondLine = "│      " + lines[1]
+		
+			for i in range(config.displayWidth - len(lines[1])):
+				secondLine = secondLine + " "
+			
+			secondLine = secondLine + "      │"
+
+		print("┌────────────────────────────┐")
+		print("│                            │")
+		print  (         firstLine          )
+		print  (         secondLine         )
+		print("│                            │")
+		print("└────────────────────────────┘")
 
 display = Display()
 display.start()
