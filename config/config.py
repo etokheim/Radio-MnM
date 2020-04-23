@@ -36,3 +36,12 @@ radio = None
 # In characters, not pixels
 displayWidth = 16
 displayHeight = 2
+
+# For how many steps we should pause when displaying the start of the line
+displayScrollingStartPauseSteps = 12
+
+# For how many steps we should pause when displaying the end of the line
+displayScrollingStopPauseSteps = 8
+
+# Time between scrolls
+displayScrollSpeed = 0.2 # seconds

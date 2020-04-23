@@ -90,12 +90,13 @@ class Radio():
 				# Exit with code "112, Host is down"
 				sys.exit(112)
 
-		# Only set selectedChannel if it's not set
+		# TODO: Only set selectedChannel if it's not set
 		self.selectedChannel = self.channels[0]
 
-		besetBitrateMatch = self.getBestBitRateMatch(self.channels[0]["streams"])
-		self.media = self.instance.media_new(self.channels[0]["streams"][besetBitrateMatch]["url"])
-		self.player.play()
+		# besetBitrateMatch = self.getBestBitRateMatch(self.channels[0]["streams"])
+		# self.media = self.instance.media_new(self.channels[0]["streams"][besetBitrateMatch]["url"])
+		# self.player.play()
+		self.playChannel(self.selectedChannel)
 
 		# Start playing
 		

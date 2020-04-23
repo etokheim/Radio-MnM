@@ -57,13 +57,8 @@ class Display(threading.Thread):
 		self.notificationExpireTime = False
 		self.running = True
 		self.currentlyDisplaying = ""
-		self.lines = []
-		self.croppedLines = []
-		# For how many steps we should pause when displaying the end of the line
-		self.endPauseSteps = 4
-		# For how many steps we should pause when displaying the start of the line
-		self.startPauseSteps = 4
-		self.lineOffset = 0 - self.startPauseSteps
+		
+		self.lineOffset = 0 - config.displayScrollingStartPauseSteps
 		self.lastDisplayed = ""
 
 	def run(self):
@@ -85,22 +80,22 @@ class Display(threading.Thread):
 				self.currentlyDisplaying = self.standardContent
 
 			self.displayMessage()
-			time.sleep(0.5)
+			time.sleep(config.displayScrollSpeed)
 
 	def displayMessage(self):
 		# If there is a new text to display, reset the text offset
 		if self.lastDisplayed != self.currentlyDisplaying:
-			self.lineOffset = 0 - self.startPauseSteps
+			self.lineOffset = 0 - config.displayScrollingStartPauseSteps
 			
 		self.lastDisplayed = self.currentlyDisplaying
 		stripCarriages = self.currentlyDisplaying.replace("\r", "")
-		self.lines = stripCarriages.split("\n")
+		lines = stripCarriages.split("\n")
 		composedMessage = ""
-		self.croppedLines = []
+		croppedLines = []
 		longestLineLength = 0
 
-		for i in range(len(self.lines)):
-			line = self.lines[i]
+		for i in range(len(lines)):
+			line = lines[i]
 
 			# Assign the length as the longest line if it's longer than the last measured one
 			if len(line) > longestLineLength:
@@ -113,31 +108,31 @@ class Display(threading.Thread):
 					# If we are not showing the end of the line, scroll
 					if len(line) - self.lineOffset > config.displayWidth:
 						print("Get characters between " + str(self.lineOffset) + " and " + str(self.lineOffset + config.displayWidth))
-						self.croppedLines.append(line[self.lineOffset:self.lineOffset + config.displayWidth])
+						croppedLines.append(line[self.lineOffset:self.lineOffset + config.displayWidth])
 					
 					else:
 						# If we are showing the end of the line, stop scrolling
-						self.croppedLines.append(line[len(line) - config.displayWidth:len(line)])
+						croppedLines.append(line[len(line) - config.displayWidth:len(line)])
 
 				else:
 					# If self.lineOffset is less than zero, then display the start of the message until
 					# it's zero or higher
-					self.croppedLines.append(line[0:config.displayWidth])
+					croppedLines.append(line[0:config.displayWidth])
 
 			else:
-				self.croppedLines.append(line)
+				croppedLines.append(line)
 
-			composedMessage = composedMessage + self.croppedLines[i]
+			composedMessage = composedMessage + croppedLines[i]
 			
 			# If it's not the last line, add a new line
-			if i + 1 != len(self.lines):
+			if i + 1 != len(lines):
 				composedMessage = composedMessage + "\n\r"
 		
 		print("self.lineOffset: " + str(self.lineOffset) + ", longestLineLength: " + str(longestLineLength))
-		if self.lineOffset + config.displayWidth - self.endPauseSteps < longestLineLength:
+		if self.lineOffset + config.displayWidth - config.displayScrollingStopPauseSteps <= longestLineLength:
 			self.lineOffset = self.lineOffset + 1
 		else:
-			self.lineOffset = 0 - self.startPauseSteps
+			self.lineOffset = 0 - config.displayScrollingStartPauseSteps
 
 		self.write(composedMessage)
 

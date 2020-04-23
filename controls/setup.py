@@ -7,13 +7,14 @@ from display import display
 import time
 import requests
 import os
+from config import config
 
 class Registration():
 	def __init__(self):
 		print("Starting radio registration")
 
 	def checkIfRegistered(self):
-		isRegistered = requests.post("https://127.0.0.1:8000/api/1/isRegistered", data = {
+		isRegistered = requests.post(config.apiServer + "/api/1/isRegistered", data = {
 			"code": self.response["code"]
 		}, verify=False)
 		isRegistered = isRegistered.json()
@@ -35,7 +36,7 @@ class Registration():
 
 			display.notification("Acquiring codes")
 
-			self.response = requests.get("https://127.0.0.1:8000/api/1/getRegisterCode", verify=False)
+			self.response = requests.get(config.apiServer + "/api/1/getRegisterCode", verify=False)
 			self.response = self.response.json()
 
 			display.notification("Register radio:\n\r" + self.response["code"])
