@@ -59,9 +59,11 @@ class Display(threading.Thread):
 		self.currentlyDisplaying = ""
 		self.lines = []
 		self.croppedLines = []
-		self.lineOffset = 0
 		# For how many steps we should pause when displaying the end of the line
 		self.endPauseSteps = 4
+		# For how many steps we should pause when displaying the start of the line
+		self.startPauseSteps = 4
+		self.lineOffset = 0 - self.startPauseSteps
 
 	def run(self):
 		while self.running:
@@ -96,13 +98,22 @@ class Display(threading.Thread):
 
 			# If the line doesn't fit
 			if len(line) > config.displayWidth:
-				# If we are not showing the end of the line
-				if len(line) - self.lineOffset > config.displayWidth:
-					print("Get characters between " + str(self.lineOffset) + " and " + str(self.lineOffset + config.displayWidth))
-					self.croppedLines.append(line[self.lineOffset:self.lineOffset + config.displayWidth])
-				# If we are showing the end of the line, stop scrolling
+				if self.lineOffset >= 0:
+
+					# If we are not showing the end of the line, scroll
+					if len(line) - self.lineOffset > config.displayWidth:
+						print("Get characters between " + str(self.lineOffset) + " and " + str(self.lineOffset + config.displayWidth))
+						self.croppedLines.append(line[self.lineOffset:self.lineOffset + config.displayWidth])
+					
+					else:
+						# If we are showing the end of the line, stop scrolling
+						self.croppedLines.append(line[len(line) - config.displayWidth:len(line)])
+
 				else:
-					self.croppedLines.append(line[len(line) - config.displayWidth:len(line)])
+					# If self.lineOffset is less than zero, then display the start of the message until
+					# it's zero or higher
+					self.croppedLines.append(line[0:config.displayWidth])
+					
 			else:
 				self.croppedLines.append(line)
 
@@ -116,7 +127,7 @@ class Display(threading.Thread):
 		if self.lineOffset + config.displayWidth - self.endPauseSteps < longestLineLength:
 			self.lineOffset = self.lineOffset + 1
 		else:
-			self.lineOffset = 0
+			self.lineOffset = 0 - self.startPauseSteps
 
 		self.write(composedMessage)
 
