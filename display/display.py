@@ -35,7 +35,12 @@ class Display(threading.Thread):
 
 			# Set standard content if radio is on
 			if config.on:
-				self.standardContent = config.radio.selectedChannel["name"] + "\n\r" + str(config.radio.media.get_meta(12))
+				# meta can be None for a second after the channel starts playing (or if it's actually empty)
+				meta = config.radio.media.get_meta(12)
+				if meta is None:
+					meta = ""
+				
+				self.standardContent = config.radio.selectedChannel["name"] + "\n\r" + str(meta)
 
 			# Clear expired notifications
 			# print("self.notificationExpireTime: " + str(self.notificationExpireTime))
