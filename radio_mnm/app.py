@@ -93,16 +93,21 @@ powerSwitch = switches.power.Switch(17)
 def powerSwitchUpHandler(event):
 	config.on = False
 	print("powerSwitchUpHandler %r" % event)
-	config.player.stop()
-	display.clear()
+	config.radio.stop()
+	display.stop()
+	button.stop()
 
 powerSwitch.listen(powerSwitch.up, powerSwitchUpHandler)
 
 def powerSwitchDownHandler(event):
-	config.on = True
 	print("powerSwitchDownHandler %r" % event)
+	config.on = True
 
+	registration.start()
 	config.radio.fetchChannels()
+
+	display.start()
+	button.start()
 
 	config.radio.play()
 
@@ -113,13 +118,10 @@ powerSwitch.listen(powerSwitch.down, powerSwitchDownHandler)
 
 def run():
 	# Starts the registration if the radio isn't registered
-	registration.start()
-	display.start()
-	button.start()
 	powerSwitch.start()
 
 	# If not running on a raspberry pi, fake the power button
 	# to always be switched on.
-	if config.raspberry == False:
-		zope.event.notify(switches.power.down())
-		switches.power.pushing = True
+	# if config.raspberry == False:
+	# 	zope.event.notify(switches.power.down())
+	# 	switches.power.pushing = True

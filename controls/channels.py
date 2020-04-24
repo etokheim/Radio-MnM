@@ -14,7 +14,7 @@ class Radio():
 		self.channels = []
 		self.instance = vlc.Instance()
 		self.player = self.instance.media_player_new()
-		self.media = None
+		self.media = self.instance.media_new("")
 		self.selectedChannel = None
 
 	def playChannel(self, channel):
@@ -23,9 +23,7 @@ class Radio():
 		print("Playing channel with a bitrate of " + str(channel["streams"][bestBitrateMatch]["bitrate"]) + "kbps")
 
 		self.player.stop()
-		print(bestBitrateMatch)
 		url = channel["streams"][bestBitrateMatch]["url"]
-		print(url)
 		self.media = self.instance.media_new(url)
 		self.player.set_media(self.media)
 		self.player.play()
@@ -37,8 +35,12 @@ class Radio():
 	def play(self):
 		# print("Playing channel with a bitrate of " + str(self.channels[self.selectedChannel]["streams"][bestBitrateMatch]["bitrate"]) + "kbps")
 		print("Playing channel")
-		self.player.play()
-	
+		# self.player.play()
+		self.playChannel(self.selectedChannel)
+
+	def stop(self):
+		self.player.stop()
+
 	def fetchChannels(self):
 		db = TinyDB('./db/db.json')
 		Radio = Query()
@@ -94,7 +96,7 @@ class Radio():
 		if not self.selectedChannel:
 			self.selectedChannel = self.channels[0]
 
-		self.playChannel(self.selectedChannel)
+		# self.playChannel(self.selectedChannel)
 
 	# Bumps the channel n times. Loops around if bumping past the last channel.
 	def bump(self, bumps = 1):

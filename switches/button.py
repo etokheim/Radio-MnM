@@ -145,4 +145,4 @@ class Button(Thread):
 
 	def stop(self):
 		self.running = False
-		print("Stopped switch1 monitoring thread")
+		print("Stopped listening to the button")

@@ -51,7 +51,7 @@ class Switch(Thread):
 		print("Listening on power button (GPIO " + str(self.gpioPin) + ")")
 
 		while self.running:
-			time.sleep(config.checkSwitchStateInterval)
+			time.sleep(config.checkPowerSwitchStateInterval)
 		
 			button2State = GPIO.input(self.gpioPin)
 
@@ -73,4 +73,4 @@ class Switch(Thread):
 
 	def stop(self):
 		self.running = False
-		print("Stopped power monitoring thread")
+		print("Stopped listening to the power switch")
