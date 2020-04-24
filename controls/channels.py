@@ -4,7 +4,7 @@ from tinydb import TinyDB, Query
 import sys
 import time
 
-from display import display
+from display.display import display
 from config import config
 from controls import setup
 
@@ -65,42 +65,36 @@ class Radio():
 				print("Status code was " + str(status_code))
 				raise Exception(response, status_code)
 		except Exception:
-			display.notification("Failed to get\n\rchannels!")
+			display.notificationessage("Failed to get\n\rchannels!")
 			time.sleep(2)
 			print("Exception's status code was " + str(status_code))
 			print(Exception)
 			
 			if status_code == 410:
-				display.notification("This radio was\n\runregistered!")
+				display.notificationessage("This radio was\n\runregistered!")
 				time.sleep(3)
-				display.notification("Resetting radio\n\rin three seconds")
+				display.notificationessage("Resetting radio\n\rin three seconds")
 				setup.reset()
 				return
 
 			# Recover by using channels from local db instead if we have them
 			channels = radio["channels"]
 			if channels:
-				display.notification("Using local\n\rchannels instead")
+				display.notificationessage("Using local\n\rchannels instead")
 				time.sleep(1)
 				self.channels = channels
 			else:
-				display.notification("No channels are\n\rcached, exiting")
+				display.notificationessage("No channels are\n\rcached, exiting")
 				print("------------ EXITED ------------")
 				time.sleep(1)
 				# Exit with code "112, Host is down"
 				sys.exit(112)
 
 		# TODO: Only set selectedChannel if it's not set
-		self.selectedChannel = self.channels[0]
+		if not self.selectedChannel:
+			self.selectedChannel = self.channels[0]
 
-		# besetBitrateMatch = self.getBestBitRateMatch(self.channels[0]["streams"])
-		# self.media = self.instance.media_new(self.channels[0]["streams"][besetBitrateMatch]["url"])
-		# self.player.play()
 		self.playChannel(self.selectedChannel)
-
-		# Start playing
-		
-		# config.player = vlc.MediaPlayer(self.channels[self.selectedChannel]["streams"][bestBitrateMatch]["url"])
 
 	# Bumps the channel n times. Loops around if bumping past the last channel.
 	def bump(self, bumps = 1):
@@ -140,7 +134,7 @@ class Radio():
 
 		print("Channel " + str(self.selectedChannel) + " (" + self.selectedChannel["name"] + ")")
 		
-		display.notification(self.selectedChannel["name"])
+		display.notificationessage(self.selectedChannel["name"])
 
 	def getBestBitRateMatch(self, streams):
 		bestMatchIndex = 0

@@ -7,30 +7,10 @@ if config.raspberry == True:
 else:
 	from EmulatorGUI.EmulatorGUI import GPIO
 
-def clear():
-	if config.raspberry == False:
-		print("│ - -  Display cleared   - - │")
-	
-	if config.raspberry:
-		lcd.clear()
-
-
-currentMessage = ""
-currentMessageExpires = 0
-
-def notification(message, duration = 2):
-	# global currentMessage, currentMessageExpires
-	# currentMessage = message
-	# currentMessageExpires = int(round(time.time() * 1000)) + duration * 1000
-	display.notification = message
-	display.notificationExpireTime = int(round(time.time() * 1000)) + duration * 1000
-
-	display.write(message)
-
 class Display(threading.Thread):
 	def __init__(self):
 		threading.Thread.__init__(self)
-		self.notification = ""
+		self.notificationMessage = ""
 		self.standardContent = ""
 		self.notificationExpireTime = False
 		self.running = True
@@ -41,25 +21,41 @@ class Display(threading.Thread):
 		self.lastDisplayedCroppedMessage = ""
 
 	def run(self):
-		time.sleep(2)
 		while self.running:
 			# Set standard content
-			self.standardContent = config.radio.selectedChannel["name"] + "\n\r" + str(config.radio.media.get_meta(12))
+			if config.on:
+				self.standardContent = config.radio.selectedChannel["name"] + "\n\r" + str(config.radio.media.get_meta(12))
 
 			# Clear expired notifications
 			# print("self.notificationExpireTime: " + str(self.notificationExpireTime))
 			if int(round(time.time() * 1000)) >= self.notificationExpireTime and self.notificationExpireTime != False:
 				print("Notification expired")
-				self.notification = ""
+				self.notificationMessage = ""
 				self.notificationExpireTime = False
 
-			if self.notification != "":
-				self.currentlyDisplayingMessage = self.notification
+			if self.notificationMessage != "":
+				self.currentlyDisplayingMessage = self.notificationMessage
 			else:
 				self.currentlyDisplayingMessage = self.standardContent
 
 			self.displayMessage()
 			time.sleep(config.displayScrollSpeed)
+
+	# A notification has a limited lifespan. It is displayed for a set duration in seconds (defaults to 2).
+	# When a notification expires, the standard content is displayed. Standard content is what's playing etc.
+	def notification(self, message, duration = 2):
+		display.notificationessage = message
+		display.notificationExpireTime = int(round(time.time() * 1000)) + duration * 1000
+
+		display.write(message)
+
+	# Clears the display
+	def clear(self):
+		if config.debug:
+			print("│ - -  Display cleared   - - │")
+		
+		if config.raspberry:
+			lcd.clear()
 
 	def displayMessage(self):
 		# If there is a new text to display, reset the text offset
@@ -147,18 +143,16 @@ class Display(threading.Thread):
 			
 
 	def write(self, message):
+		self.clear()
+
 		# Simulate a display in the terminal, if we are running in debug mode
+		# Do not directly use this function to write to the display. Use notification()
 		if config.debug:
 			self.writeToSimulatedScreen(message)
 		
 		# Write to the actual display, if we are running on a Raspberry Pi
 		if config.raspberry:
 			lcd.write_string(message)
-
-	def scrollText(self, name, line):
-		print("Text to scroll")
-		print(line[0])
-		print(line[1])
 
 	def writeToSimulatedScreen(self, message):
 		# Split message up into an array of lines
@@ -221,7 +215,6 @@ class Display(threading.Thread):
 		return
 
 display = Display()
-display.start()
 
 if config.raspberry:
 	# We are using the GPIO numbering scheme

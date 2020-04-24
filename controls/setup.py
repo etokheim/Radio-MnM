@@ -3,7 +3,7 @@
 # This key, and other information, is then stored in a simple database
 
 from tinydb import TinyDB, Query
-from display import display
+from display.display import display
 import time
 import requests
 import os
@@ -34,12 +34,12 @@ class Registration():
 			print(radio[0]["apiKey"])
 		else:
 
-			display.notification("Acquiring codes")
+			display.notificationessage("Acquiring codes")
 
 			self.response = requests.get(config.apiServer + "/api/1/getRegisterCode", verify=False)
 			self.response = self.response.json()
 
-			display.notification("Register radio:\n\r" + self.response["code"])
+			display.notificationessage("Register radio:\n\r" + self.response["code"])
 
 			# Check if the radio has been registered
 			isRegistered = self.checkIfRegistered()
@@ -49,12 +49,12 @@ class Registration():
 				time.sleep(1)
 			
 			if isRegistered["status"] == False:
-				display.notification("Code expired, \n\rfetching new one")
+				display.notificationessage("Code expired, \n\rfetching new one")
 				time.sleep(1)
 				self.start()
 				return
 			
-			display.notification("Registered! :D")
+			display.notificationessage("Registered! :D")
 			print(isRegistered)
 
 			radioTable.insert({
@@ -72,7 +72,7 @@ class Registration():
 registration = Registration()
 
 def reset():
-	display.notification("Resetting radio\n****************")
+	display.notificationessage("Resetting radio\n****************")
 	# TODO: Send request to delete itself
 	time.sleep(2)
 	os.remove("./db/db.json")

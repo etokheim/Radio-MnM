@@ -16,7 +16,7 @@ import zope.event.classhandler
 import switches.button
 from switches import power
 from controls import channels
-from display import display
+from display.display import display
 from controls import setup
 
 import threading
@@ -109,18 +109,12 @@ def powerSwitchDownHandler(event):
 	# \n for new line \r for moving to the beginning of current line
 	display.notification(">- RADIO M&M -<\n\rGot " + str(len(config.radio.channels)) + " channels", 4)
 
-	# Wait 4 seconds before displaying the channel name
-	# (So the user gets time to read the previous message)
-	# timer = threading.Timer(4, lambda:
-	# 	display.notification(config.radio.selectedChannel["name"])
-	# )
-	# timer.start()
-
 powerSwitch.listen(powerSwitch.down, powerSwitchDownHandler)
 
 def run():
 	# Starts the registration if the radio isn't registered
 	registration.start()
+	display.start()
 	button.start()
 	powerSwitch.start()
 
