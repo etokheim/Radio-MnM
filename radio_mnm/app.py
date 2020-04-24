@@ -104,6 +104,8 @@ def powerSwitchDownHandler(event):
 	print("powerSwitchDownHandler %r" % event)
 	config.on = True
 
+	# TODO: Maybe rename .start() methods that aren't threads, as it can be confusing.
+	# Starts the registration if the radio isn't registered
 	registration.start()
 	config.radio.fetchChannels()
 
@@ -118,7 +120,6 @@ def powerSwitchDownHandler(event):
 powerSwitch.listen(powerSwitch.down, powerSwitchDownHandler)
 
 def run():
-	# Starts the registration if the radio isn't registered
 	display.start()
 	button.start()
 	powerSwitch.start()

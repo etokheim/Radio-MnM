@@ -40,10 +40,11 @@ class Display(threading.Thread):
 
 			if self.notificationMessage != "":
 				self.currentlyDisplayingMessage = self.notificationMessage
+				self.displayMessage()
 			else:
 				self.currentlyDisplayingMessage = self.standardContent
+				self.displayMessage("channelInfo")
 
-			self.displayMessage()
 			time.sleep(config.displayScrollSpeed)
 
 	def stop(self):
@@ -76,13 +77,24 @@ class Display(threading.Thread):
 		if config.raspberry:
 			lcd.clear()
 
-	def displayMessage(self):
-		# If there is a new text to display, reset the text offset
-		if self.lastDisplayedMessage != self.currentlyDisplayingMessage:
-			self.scrollOffset = 0 - config.displayScrollingStartPauseSteps
-			
+	def displayMessage(self, messageType="notification"):
 		stripCarriages = self.currentlyDisplayingMessage.replace("\r", "")
 		lines = stripCarriages.split("\n")
+
+		# If there is a new text to display
+		if self.lastDisplayedMessage != self.currentlyDisplayingMessage:
+			# Reset the text offset
+			self.scrollOffset = 0 - config.displayScrollingStartPauseSteps
+			
+			# Only do this if displaying channels
+			if messageType == "channelInfo":
+				# When the text changes, "clear the second line" for å brief moment, so the user
+				# more easily can understand that a new text was inserted.
+				# Crap, this only works for channels, but notifications are also parsed through here...
+				self.write(lines[0])
+
+			time.sleep(0.25)
+			
 		composedMessage = ""
 		croppedLines = []
 		longestLineLength = 0
