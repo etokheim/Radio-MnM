@@ -164,36 +164,61 @@ class Display(threading.Thread):
 		# Split message up into an array of lines
 		printMessage = message.replace("\r", "")
 		lines = printMessage.split("\n")
-
-		# Simulate display
-		# TODO: Clean this up
-		firstLine = "│      " + lines[0]
-
-		# Add n spaces to the end of the message, where n = the number of character spaces left on the
-		# simulated screen.
-		for i in range(config.displayWidth - len(lines[0])):
-			firstLine = firstLine + " "
 		
-		# Then add some padding plus the display edge.
-		firstLine = firstLine + "      │"
+		# Add new lines until i matches the display's height
+		while True:
+			if len(lines) < config.displayHeight:
+				lines.append("")
+			else:
+				break
 
-		# Do the same for the second line
-		secondLine = "│                            │"
+		paddingSize = 6
+		borderYStyle = "│"
+		borderXStyle = "─"
 
-		if len(lines) > 1:
-			secondLine = "│      " + lines[1]
-		
-			for i in range(config.displayWidth - len(lines[1])):
-				secondLine = secondLine + " "
+		# paddingLine is just a line like this:
+		# |                       |
+		paddingLine = borderYStyle
+		top = "┌"
+		bottom = "└"
+
+		# Left border + padding + displayWidth + padding + right border
+		for i in range(paddingSize + config.displayWidth + paddingSize):
+			top = top + borderXStyle
+			bottom = bottom + borderXStyle
+			paddingLine = paddingLine + " "
+
+		top = top + "┐"
+		bottom = bottom + "┘"
+		paddingLine = paddingLine + borderYStyle
+
+		# Make the left and right paddings
+		padding = ""
+		for i in range(paddingSize):
+			padding = padding + " "
+
+		content = ""
+		for i in range(len(lines)):
+			line = lines[i]
+			# Add n spaces to the end of the message, where n = the number of character spaces left on the
+			# simulated screen.
+			for j in range(config.displayWidth - len(line)):
+				line = line + " "
 			
-			secondLine = secondLine + "      │"
+			content = 	content + \
+						borderYStyle + padding + line + padding + borderYStyle
+			
+			if i != len(lines) - 1:
+				content = content + "\n"
 
-		print("┌────────────────────────────┐")
-		print("│                            │")
-		print  (         firstLine          )
-		print  (         secondLine         )
-		print("│                            │")
-		print("└────────────────────────────┘")
+		print(
+			top + "\n" +
+			paddingLine + "\n" +
+			content + "\n" +
+			paddingLine + "\n" +
+			bottom
+		)
+		return
 
 display = Display()
 display.start()
