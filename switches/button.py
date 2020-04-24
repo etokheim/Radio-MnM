@@ -20,7 +20,7 @@ else:
 import time
 from controls import channels
 import zope.event.classhandler
-from threading import Thread
+import threading
 
 pushing = False
 pushStart = 0
@@ -59,11 +59,14 @@ class veryLongPress(object):
 		return self.__class__.__name__
 
 
-class Button(Thread):
+class Button(threading.Thread):
 	def __init__(self, gpioPin):
-		Thread.__init__(self)
-		self.running = True
+		threading.Thread.__init__(self)
 		self.gpioPin = gpioPin
+
+		self.running = True
+		# When paused is set, the thread will run, when it's not set, the thread will wait
+		self.pauseEvent = threading.Event()
 
 		# Add class handlers
 		self.click = click
@@ -89,6 +92,9 @@ class Button(Thread):
 		print("Listening on button (GPIO " + str(self.gpioPin) + ")")
 
 		while self.running:
+			# Wait, if the thread is set on hold
+			self.pauseEvent.wait()
+			
 			time.sleep(0.01)
 
 			button1State = GPIO.input(self.gpioPin)
@@ -145,4 +151,12 @@ class Button(Thread):
 
 	def stop(self):
 		self.running = False
-		print("Stopped listening to the button")
+		print("Stopped listening to button with GPIO " + str(self.gpioPin))
+
+	def pause(self):
+		self.pauseEvent.clear()
+		print("Paused listening to button with GPIO " + str(self.gpioPin))
+
+	def resume(self):
+		self.pauseEvent.set()
+		print("Resumed listening to button with GPIO " + str(self.gpioPin))

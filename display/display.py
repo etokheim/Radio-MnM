@@ -14,6 +14,8 @@ class Display(threading.Thread):
 		self.standardContent = ""
 		self.notificationExpireTime = False
 		self.running = True
+		# When paused is set, the thread will run, when it's not set, the thread will wait
+		self.pauseEvent = threading.Event()
 		self.currentlyDisplayingMessage = ""
 		
 		self.scrollOffset = 0 - config.displayScrollingStartPauseSteps
@@ -22,7 +24,10 @@ class Display(threading.Thread):
 
 	def run(self):
 		while self.running:
-			# Set standard content
+			# Wait, if the thread is set on hold
+			self.pauseEvent.wait()
+
+			# Set standard content if radio is on
 			if config.on:
 				self.standardContent = config.radio.selectedChannel["name"] + "\n\r" + str(config.radio.media.get_meta(12))
 
@@ -40,6 +45,20 @@ class Display(threading.Thread):
 
 			self.displayMessage()
 			time.sleep(config.displayScrollSpeed)
+
+	def stop(self):
+		self.clear()
+		self.running = False
+		print("Stopped display")
+
+	def pause(self):
+		self.clear()
+		self.pauseEvent.clear()
+		print("Paused display handling loop")
+
+	def resume(self):
+		self.pauseEvent.set()
+		print("Resumed display handling loop")
 
 	# A notification has a limited lifespan. It is displayed for a set duration in seconds (defaults to 2).
 	# When a notification expires, the standard content is displayed. Standard content is what's playing etc.
