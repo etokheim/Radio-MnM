@@ -114,9 +114,6 @@ def powerSwitchDownHandler(event):
 
 	config.radio.play()
 
-	# \n for new line \r for moving to the beginning of current line
-	display.notification(">- RADIO M&M -<\n\rGot " + str(len(config.radio.channels)) + " channels", 4)
-
 powerSwitch.listen(powerSwitch.down, powerSwitchDownHandler)
 
 def run():

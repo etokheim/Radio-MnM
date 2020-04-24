@@ -23,6 +23,12 @@ class Display(threading.Thread):
 		self.lastDisplayedCroppedMessage = ""
 
 	def run(self):
+		# Wait, if the thread is set on hold
+		self.pauseEvent.wait()
+
+		# \n for new line \r for moving to the beginning of current line
+		display.notification(">- RADIO M&M -<\n\rGot " + str(len(config.radio.channels)) + " channels", 4)
+		
 		while self.running:
 			# Wait, if the thread is set on hold
 			self.pauseEvent.wait()
@@ -38,7 +44,9 @@ class Display(threading.Thread):
 				self.notificationMessage = ""
 				self.notificationExpireTime = False
 
-			if self.notificationMessage != "":
+			# TODO: Maybe it's now just better to send the message as a parameter instead of setting
+			# it to "currentlyDisplayingMessage"?
+			if self.notificationMessage:
 				self.currentlyDisplayingMessage = self.notificationMessage
 				self.displayMessage()
 			else:
@@ -64,10 +72,10 @@ class Display(threading.Thread):
 	# A notification has a limited lifespan. It is displayed for a set duration in seconds (defaults to 2).
 	# When a notification expires, the standard content is displayed. Standard content is what's playing etc.
 	def notification(self, message, duration = 2):
-		display.notificationessage = message
-		display.notificationExpireTime = int(round(time.time() * 1000)) + duration * 1000
+		self.notificationMessage = message
+		self.notificationExpireTime = int(round(time.time() * 1000)) + duration * 1000
 
-		display.write(message)
+		self.write(message)
 
 	# Clears the display
 	def clear(self):
