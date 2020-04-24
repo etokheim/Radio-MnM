@@ -27,28 +27,6 @@ def notification(message, duration = 2):
 
 	display.write(message)
 
-# def write(message):
-# 	# Split message up into an array of lines
-# 	printMessage = message.replace("\r", "")
-# 	lines = printMessage.split("\n")
-
-# 	# If the message fits on the screen, return without doing anything to the message
-# 	scrollingLines = []
-# 	for line in lines:
-# 		if len(line) > config.displayWidth:
-# 			scrollingLines.append(line)
-
-# 	if len(scrollingLines) == 0:
-# 		print("Message fits on the screen, no need for scrolling")
-# 		actualWrite(message)
-# 		return
-
-# 	# If we have lines that need scrolling
-# 	# scrollTextThread = threading.Thread(target=scrollText, args=("scrollingTextThread", lines))
-# 	# scrollTextThread.start()
-
-# 	actualWrite(formattedMessage)
-
 class Display(threading.Thread):
 	def __init__(self):
 		threading.Thread.__init__(self)
@@ -56,10 +34,11 @@ class Display(threading.Thread):
 		self.standardContent = ""
 		self.notificationExpireTime = False
 		self.running = True
-		self.currentlyDisplaying = ""
+		self.currentlyDisplayingMessage = ""
 		
-		self.lineOffset = 0 - config.displayScrollingStartPauseSteps
-		self.lastDisplayed = ""
+		self.scrollOffset = 0 - config.displayScrollingStartPauseSteps
+		self.lastDisplayedMessage = ""
+		self.lastDisplayedCroppedMessage = ""
 
 	def run(self):
 		time.sleep(2)
@@ -70,72 +49,102 @@ class Display(threading.Thread):
 			# Clear expired notifications
 			# print("self.notificationExpireTime: " + str(self.notificationExpireTime))
 			if int(round(time.time() * 1000)) >= self.notificationExpireTime and self.notificationExpireTime != False:
-				print("Notification expired!")
+				print("Notification expired")
 				self.notification = ""
 				self.notificationExpireTime = False
 
 			if self.notification != "":
-				self.currentlyDisplaying = self.notification
+				self.currentlyDisplayingMessage = self.notification
 			else:
-				self.currentlyDisplaying = self.standardContent
+				self.currentlyDisplayingMessage = self.standardContent
 
 			self.displayMessage()
 			time.sleep(config.displayScrollSpeed)
 
 	def displayMessage(self):
 		# If there is a new text to display, reset the text offset
-		if self.lastDisplayed != self.currentlyDisplaying:
-			self.lineOffset = 0 - config.displayScrollingStartPauseSteps
+		if self.lastDisplayedMessage != self.currentlyDisplayingMessage:
+			self.scrollOffset = 0 - config.displayScrollingStartPauseSteps
 			
-		self.lastDisplayed = self.currentlyDisplaying
-		stripCarriages = self.currentlyDisplaying.replace("\r", "")
+		stripCarriages = self.currentlyDisplayingMessage.replace("\r", "")
 		lines = stripCarriages.split("\n")
 		composedMessage = ""
 		croppedLines = []
 		longestLineLength = 0
+		displayWidth = config.displayWidth
 
 		for i in range(len(lines)):
 			line = lines[i]
+			lineLength = len(line)
 
 			# Assign the length as the longest line if it's longer than the last measured one
-			if len(line) > longestLineLength:
-				longestLineLength = len(line)
+			if lineLength > longestLineLength:
+				longestLineLength = lineLength
 
 			# If the line doesn't fit
-			if len(line) > config.displayWidth:
-				if self.lineOffset >= 0:
+			if lineLength > displayWidth:
+
+				# Pause scrolling if scrollOffset is less than zero. This is how self.displayScrollingStartPauseSteps is implemented
+				if self.scrollOffset >= 0:
 
 					# If we are not showing the end of the line, scroll
-					if len(line) - self.lineOffset > config.displayWidth:
-						print("Get characters between " + str(self.lineOffset) + " and " + str(self.lineOffset + config.displayWidth))
-						croppedLines.append(line[self.lineOffset:self.lineOffset + config.displayWidth])
+					if lineLength - self.scrollOffset > displayWidth:
+						croppedLines.append(
+							line[self.scrollOffset:self.scrollOffset + displayWidth]
+						)
 					
 					else:
 						# If we are showing the end of the line, stop scrolling
-						croppedLines.append(line[len(line) - config.displayWidth:len(line)])
+						croppedLines.append(
+							line[lineLength - displayWidth:lineLength]
+						)
 
 				else:
-					# If self.lineOffset is less than zero, then display the start of the message until
-					# it's zero or higher
-					croppedLines.append(line[0:config.displayWidth])
+					# If self.scrollOffset is less than zero (pausing), then display the start of the message
+					# until it's zero or higher
+					croppedLines.append(line[0:displayWidth])
 
 			else:
+				# If line fits
 				croppedLines.append(line)
 
 			composedMessage = composedMessage + croppedLines[i]
 			
-			# If it's not the last line, add a new line
+			# If it's not the last line, add a newline
 			if i + 1 != len(lines):
 				composedMessage = composedMessage + "\n\r"
 		
-		print("self.lineOffset: " + str(self.lineOffset) + ", longestLineLength: " + str(longestLineLength))
-		if self.lineOffset + config.displayWidth - config.displayScrollingStopPauseSteps <= longestLineLength:
-			self.lineOffset = self.lineOffset + 1
+		# Increase the scroll offset as long as we are not at the end of the line
+		# If we are at the end of the line, we keep scrolling however for N steps.
+		# Since scrolling further than the last line has no visual effect, this
+		# is used to make a pause to give the user time to finish reading.
+		# N (aka the pause) = config.displayScrollingStopPauseSteps
+		if self.scrollOffset + displayWidth - config.displayScrollingStopPauseSteps <= longestLineLength:
+			self.scrollOffset = self.scrollOffset + 1
 		else:
-			self.lineOffset = 0 - config.displayScrollingStartPauseSteps
+			# Reset the scrollOffset
+			self.scrollOffset = 0 - config.displayScrollingStartPauseSteps
 
-		self.write(composedMessage)
+		# TODO: Fix notifications displaying twice:
+		# If the displayed message was new, set the lastDisplayedMessages to
+		# currentlyDisplayingMessages. If we don't do this, all notifications
+		# will be displayed twice as lastDisplayedMessages never will be equal
+		# to currentlyDisplayedMessages
+		# if self.lastDisplayedMessage != self.currentlyDisplayingMessage:
+		# 	self.lastDisplayedMessage = self.currentlyDisplayingMessage
+		# 	self.lastDisplayedCroppedMessage = composedMessage
 
+		# Only write to the display if it's not the same as what's being displayed
+		if composedMessage != self.lastDisplayedCroppedMessage:
+			self.write(composedMessage)
+
+		self.lastDisplayedMessage = self.currentlyDisplayingMessage
+
+		# We need this variable in order not overwrite the display with the same
+		# message. We cannot use lastDisplayedMessage as that one is not cropped,
+		# and wouldn't work when the composedMessage is cropped.
+		self.lastDisplayedCroppedMessage = composedMessage
+			
 
 	def write(self, message):
 		# Simulate a display in the terminal, if we are running in debug mode
@@ -188,75 +197,6 @@ class Display(threading.Thread):
 
 display = Display()
 display.start()
-
-# def actualWrite(message):
-# 	clear()
-	
-# 	# Split message up into an array of lines
-# 	printMessage = message.replace("\r", "")
-# 	lines = printMessage.split("\n")
-
-# 	if config.debug:
-# 		# Simulate display
-# 		# TODO: Clean this up
-# 		firstLine = "│      " + lines[0]
-
-# 		# Add n spaces to the end of the message, where n = the number of character spaces left on the
-# 		# simulated screen.
-# 		for i in range(displayWidth - len(lines[0])):
-# 			firstLine = firstLine + " "
-		
-# 		# Then add some padding plus the display edge.
-# 		firstLine = firstLine + "      │"
-
-# 		# Do the same for the second line
-# 		secondLine = "│                            │"
-
-# 		if len(lines) > 1:
-# 			secondLineLength = len(lines[1])
-# 			secondLine = "│      " + lines[1]
-		
-# 			for i in range(displayWidth - len(lines[1]):
-# 				secondLine = secondLine + " "
-			
-# 			secondLine = secondLine + "      │"
-
-# 		print("┌────────────────────────────┐")
-# 		print("│                            │")
-# 		print  (         firstLine          )
-# 		print  (         secondLine         )
-# 		print("│                            │")
-# 		print("└────────────────────────────┘")
-	
-# 	if config.raspberry:
-# 		lcd.write_string(message)
-
-
-# def writeStandardContent():
-# 	if currentMessage == "":
-# 		lineOne = config.radio.selectedChannel["name"]
-# 		lineTwo = str(config.radio.media.get_meta(12))
-
-# 		write(lineOne + "\n\r" + lineTwo)
-
-# class oldMessagesCollector(threading.Thread):
-# 	def __init__(self):
-# 		threading.Thread.__init__(self)
-
-# 	def run(self):
-# 		global currentMessageExpires, currentMessage
-# 		time.sleep(4)
-# 		while True:
-# 			if currentMessageExpires != False and int(round(time.time() * 1000)) >= currentMessageExpires:
-# 				print(currentMessage + " expired")
-# 				currentMessage = ""
-# 				currentMessageExpires = False
-# 				writeStandardContent()
-
-# 			time.sleep(0.2)
-
-# listenRadio = oldMessagesCollector()
-# listenRadio.start()
 
 if config.raspberry:
 	# We are using the GPIO numbering scheme
