@@ -2,16 +2,18 @@
 # Registration is done by registering with a server and receiving an api key in return.
 # This key, and other information, is then stored in a simple database
 
-from tinydb import TinyDB, Query
-from display.display import display
 import time
 import requests
 import os
+import logging
+from tinydb import TinyDB, Query
+
+from display.display import display
 from config import config
 
 class Registration():
 	def __init__(self):
-		print("Starting radio registration")
+		logging.info("Starting radio registration")
 
 	def checkIfRegistered(self):
 		isRegistered = requests.post(config.apiServer + "/api/1/isRegistered", data = {
@@ -26,36 +28,32 @@ class Registration():
 		radioTable = db.table("Radio_mnm")
 		radio = radioTable.search(Radio)
 
-		print("radio")
-		print(radio)
-
 		if radio:
-			print("This radio is already configured!")
-			print(radio[0]["apiKey"])
+			logging.debug("This radio is already configured!")
 		else:
 
-			display.notificationessage("Acquiring codes")
+			display.notificationMessage("Acquiring codes")
 
 			self.response = requests.get(config.apiServer + "/api/1/getRegisterCode", verify=False)
 			self.response = self.response.json()
 
-			display.notificationessage("Register radio:\n\r" + self.response["code"])
+			display.notificationMessage("Register radio:\n\r" + self.response["code"])
 
 			# Check if the radio has been registered
 			isRegistered = self.checkIfRegistered()
 			while isRegistered["status"] == "pending":
-				print(isRegistered)
+				logging.debug(isRegistered)
 				isRegistered = self.checkIfRegistered()
 				time.sleep(1)
 			
 			if isRegistered["status"] == False:
-				display.notificationessage("Code expired, \n\rfetching new one")
+				display.notificationMessage("Code expired, \n\rfetching new one")
 				time.sleep(1)
 				self.start()
 				return
 			
-			display.notificationessage("Registered! :D")
-			print(isRegistered)
+			display.notificationMessage("Registered! :D")
+			logging.info("Device successfully registered!")
 
 			radioTable.insert({
 				"_id": isRegistered["radioId"],
@@ -67,15 +65,13 @@ class Registration():
 				"channels": []
 			})
 
-			print(radioTable)
-
 registration = Registration()
 
 def reset():
-	display.notificationessage("Resetting radio\n****************")
+	display.notificationMessage("Resetting radio\n****************")
 	# TODO: Send request to delete itself
 	time.sleep(2)
 	os.remove("./db/db.json")
-	print("Removed database")
+	logging.warning("Removed database")
 	registration.start()
 	# set channels to undefined

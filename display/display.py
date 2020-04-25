@@ -1,6 +1,7 @@
 from config import config
 import threading
 import time
+import logging
 
 if config.raspberry == True:
 	from RPi import GPIO
@@ -43,9 +44,7 @@ class Display(threading.Thread):
 				self.standardContent = config.radio.selectedChannel["name"] + "\n\r" + str(meta)
 
 			# Clear expired notifications
-			# print("self.notificationExpireTime: " + str(self.notificationExpireTime))
 			if int(round(time.time() * 1000)) >= self.notificationExpireTime and self.notificationExpireTime != False:
-				print("Notification expired")
 				self.notificationMessage = ""
 				self.notificationExpireTime = False
 
@@ -63,16 +62,16 @@ class Display(threading.Thread):
 	def stop(self):
 		self.clear()
 		self.running = False
-		print("Stopped display")
+		logging.warning("Stopped display")
 
 	def pause(self):
 		self.clear()
 		self.pauseEvent.clear()
-		print("Paused display handling loop")
+		logging.debug("Paused display handling loop")
 
 	def resume(self):
 		self.pauseEvent.set()
-		print("Resumed display handling loop")
+		logging.debug("Resumed display handling loop")
 
 	# A notification has a limited lifespan. It is displayed for a set duration in seconds (defaults to 2).
 	# When a notification expires, the standard content is displayed. Standard content is what's playing etc.

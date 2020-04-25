@@ -1,4 +1,19 @@
+# The log setup must be done before importing everything else, as some of the other modules also
+# use the logging module.
+import logging
 from config import config
+
+if config.debug:
+	logging.basicConfig(
+		level=logging.DEBUG,
+		format='%(levelname)s	│ %(message)s'
+	)
+else:
+	logging.basicConfig(
+		filename='test.log',
+		level=logging.INFO,
+		format='%(asctime)s - %(name)s - %(levelname)s	│ %(message)s'
+	)
 
 if config.raspberry == True:
 	from RPi import GPIO
@@ -6,7 +21,6 @@ else:
 	from EmulatorGUI.EmulatorGUI import GPIO
 
 import datetime
-
 import time
 from datetime import datetime
 import zope.event
@@ -28,7 +42,7 @@ button = switches.button.Button(18)
 # Event is set to the the event which calls it. In this function's case it should be
 # set to "click".
 def buttonClickHandler(event):
-	print("clickHandler %r" % event)
+	logging.debug("buttonClickHandler %r" % event)
 
 	config.radio.bump()
 
@@ -40,7 +54,7 @@ def buttonDownHandler(event):
 
 	downStart = int(round(time.time() * 1000))
 
-	print("downHandler %r" % event)
+	logging.debug("buttonDownHandler %r" % event)
 
 button.listen(button.down, buttonDownHandler)
 
@@ -48,7 +62,7 @@ button.listen(button.down, buttonDownHandler)
 def buttonUpHandler(event):
 	global downStart
 	
-	print("upHandler %r" % event)
+	logging.debug("buttonUpHandler %r" % event)
 
 	downStart = 0
 
@@ -56,7 +70,7 @@ button.listen(button.up, buttonUpHandler)
 
 
 def buttonLongPressHandler(event):
-	print("longPressHandler %r" % event)
+	logging.debug("buttonLongPressHandler %r" % event)
 	config.radio.bump(-1)
 
 button.listen(button.longPress, buttonLongPressHandler)
@@ -79,7 +93,7 @@ class ResetCountdown(threading.Thread):
 				return
 
 def buttonVeryLongPressHandler(event):
-	print("VerylongPressHandler %r" % event)
+	logging.debug("VerylongPressHandler %r" % event)
 
 	resetCountdown = ResetCountdown()
 	resetCountdown.start()
@@ -92,7 +106,7 @@ powerSwitch = switches.power.Switch(17)
 
 def powerSwitchUpHandler(event):
 	config.on = False
-	print("powerSwitchUpHandler %r" % event)
+	logging.debug("powerSwitchUpHandler %r" % event)
 	config.radio.stop()
 	display.pause()
 	button.pause()
@@ -101,7 +115,7 @@ def powerSwitchUpHandler(event):
 powerSwitch.listen(powerSwitch.up, powerSwitchUpHandler)
 
 def powerSwitchDownHandler(event):
-	print("powerSwitchDownHandler %r" % event)
+	logging.debug("powerSwitchDownHandler %r" % event)
 	config.on = True
 
 	# TODO: Maybe rename .start() methods that aren't threads, as it can be confusing.

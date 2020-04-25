@@ -3,6 +3,7 @@ import requests
 from tinydb import TinyDB, Query
 import sys
 import time
+import logging
 
 from display.display import display
 from config import config
@@ -10,7 +11,6 @@ from controls import setup
 
 class Radio():
 	def __init__(self):
-		print("New player")
 		self.channels = []
 		self.instance = vlc.Instance()
 		self.player = self.instance.media_player_new()
@@ -20,7 +20,7 @@ class Radio():
 	def playChannel(self, channel):
 		self.selectedChannel = channel
 		bestBitrateMatch = self.getBestBitRateMatch(channel["streams"])
-		print("Playing channel with a bitrate of " + str(channel["streams"][bestBitrateMatch]["bitrate"]) + "kbps")
+		logging.info("Playing channel with a bitrate of " + str(channel["streams"][bestBitrateMatch]["bitrate"]) + "kbps")
 
 		self.player.stop()
 		url = channel["streams"][bestBitrateMatch]["url"]
@@ -28,14 +28,7 @@ class Radio():
 		self.player.set_media(self.media)
 		self.player.play()
 
-		time.sleep(1)
-		print(self.media.get_meta(0))
-		print(self.media.get_meta(12))
-
 	def play(self):
-		# print("Playing channel with a bitrate of " + str(self.channels[self.selectedChannel]["streams"][bestBitrateMatch]["bitrate"]) + "kbps")
-		print("Playing channel")
-		# self.player.play()
 		self.playChannel(self.selectedChannel)
 
 	def stop(self):
@@ -55,39 +48,36 @@ class Radio():
 			status_code = response.status_code
 			response = response.json()
 			
-			print("response (" + str(status_code) + "):")
-			print(response)
-
 			if status_code == 200:
+				logging.debug("Successfully fetched channels (" + str(status_code) + ")")
 				self.channels = response["channels"]
 
 				# Add channels to the database for use in case the server goes down
 				radioTable.update({ "channels": self.channels }, doc_ids=[1])
 			else:
-				print("Status code was " + str(status_code))
+				logging.error("Failed to fetch channels with HTTP error code: " + str(status_code))
 				raise Exception(response, status_code)
 		except Exception:
-			display.notificationessage("Failed to get\n\rchannels!")
+			display.notificationMessage("Failed to get\n\rchannels!")
 			time.sleep(2)
-			print("Exception's status code was " + str(status_code))
-			print(Exception)
+			logging.exception(Exception)
 			
 			if status_code == 410:
-				display.notificationessage("This radio was\n\runregistered!")
+				display.notificationMessage("This radio was\n\runregistered!")
 				time.sleep(3)
-				display.notificationessage("Resetting radio\n\rin three seconds")
+				display.notificationMessage("Resetting radio\n\rin three seconds")
 				setup.reset()
 				return
 
 			# Recover by using channels from local db instead if we have them
 			channels = radio["channels"]
 			if channels:
-				display.notificationessage("Using local\n\rchannels instead")
+				display.notificationMessage("Using local\n\rchannels instead")
 				time.sleep(1)
 				self.channels = channels
 			else:
-				display.notificationessage("No channels are\n\rcached, exiting")
-				print("------------ EXITED ------------")
+				display.notificationMessage("Couldn't get\n\rchannels! (" + str(status_code) + ")")
+				logging.error("------------ EXITED ------------")
 				time.sleep(1)
 				# Exit with code "112, Host is down"
 				sys.exit(112)
@@ -117,33 +107,15 @@ class Radio():
 		else:
 			bumpTo = selectedChannelIndex + remaining
 
-		print("bumps " + str(bumps) + ", bumping to: " + str(bumpTo))
+		logging.debug("bumps " + str(bumps) + ", bumping to: " + str(bumpTo))
 		self.playChannel(self.channels[bumpTo])
-
-	# Takes the parameter (int) and switches to that channel
-	def set(self, channelNumber):
-		if config.on == False:
-			print("Can't switch channel when radio is off!")
-			return
-
-		self.selectedChannel = channelNumber
-
-		config.player.stop()
-		bestBitrateMatch = self.getBestBitRateMatch(self.selectedChannel["streams"])
-		print("Playing channel with a bitrate of " + str(self.selectedChannel["streams"][bestBitrateMatch]["bitrate"]) + "kbps")
-		config.player = vlc.MediaPlayer(self.selectedChannel["streams"][bestBitrateMatch]["url"])
-		config.player.play()
-
-		print("Channel " + str(self.selectedChannel) + " (" + self.selectedChannel["name"] + ")")
-		
-		display.notificationessage(self.selectedChannel["name"])
 
 	def getBestBitRateMatch(self, streams):
 		bestMatchIndex = 0
 		bestMatchBitrate = streams[0]["bitrate"]
+
 		for i in range(len(streams)):
 			if min(streams[i]["bitrate"] - config.quality, streams[bestMatchIndex]["bitrate"]) - config.quality != bestMatchBitrate:
-				# print(str(i) + " (" + str(streams[i]["bitrate"]) + ") had a better matching bitrate than " + str(bestMatchIndex) + " (" + str(bestMatchBitrate) + ")")
 				bestMatchBitrate = streams[i]["bitrate"]
 				bestMatchIndex = i
 		
