@@ -10,6 +10,8 @@
 # - VeryLongPress
 # - etc.
 
+import logging
+logger = logging.getLogger("Radio_mnm")
 from config import config
 
 if config.raspberry == True:
@@ -17,7 +19,6 @@ if config.raspberry == True:
 else:
 	from EmulatorGUI.EmulatorGUI import GPIO
 	
-import logging
 import time
 from controls import channels
 import zope.event.classhandler
@@ -90,7 +91,7 @@ class Button(threading.Thread):
 	# Use Button.start(), not Button.run() to start thread
 	# run() would just start a blocking loop
 	def run(self):
-		logging.debug("Listening on button (GPIO " + str(self.gpioPin) + ")")
+		logger.debug("Listening on button (GPIO " + str(self.gpioPin) + ")")
 
 		while self.running:
 			# Wait, if the thread is set on hold
@@ -152,12 +153,12 @@ class Button(threading.Thread):
 
 	def stop(self):
 		self.running = False
-		logging.warning("Stopped listening to button with GPIO " + str(self.gpioPin))
+		logger.warning("Stopped listening to button with GPIO " + str(self.gpioPin))
 
 	def pause(self):
 		self.pauseEvent.clear()
-		logging.debug("Paused listening to button with GPIO " + str(self.gpioPin))
+		logger.debug("Paused listening to button with GPIO " + str(self.gpioPin))
 
 	def resume(self):
 		self.pauseEvent.set()
-		logging.debug("Resumed listening to button with GPIO " + str(self.gpioPin))
+		logger.debug("Resumed listening to button with GPIO " + str(self.gpioPin))

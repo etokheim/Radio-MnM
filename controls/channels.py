@@ -1,9 +1,10 @@
+import logging
+logger = logging.getLogger("Radio_mnm")
 import vlc
 import requests
 from tinydb import TinyDB, Query
 import sys
 import time
-import logging
 
 from display.display import display
 from config import config
@@ -20,7 +21,7 @@ class Radio():
 	def playChannel(self, channel):
 		self.selectedChannel = channel
 		bestBitrateMatch = self.getBestBitRateMatch(channel["streams"])
-		logging.info("Playing channel with a bitrate of " + str(channel["streams"][bestBitrateMatch]["bitrate"]) + "kbps")
+		logger.info("Playing channel with a bitrate of " + str(channel["streams"][bestBitrateMatch]["bitrate"]) + "kbps")
 
 		self.player.stop()
 		url = channel["streams"][bestBitrateMatch]["url"]
@@ -49,18 +50,18 @@ class Radio():
 			response = response.json()
 			
 			if status_code == 200:
-				logging.debug("Successfully fetched channels (" + str(status_code) + ")")
+				logger.debug("Successfully fetched channels (" + str(status_code) + ")")
 				self.channels = response["channels"]
 
 				# Add channels to the database for use in case the server goes down
 				radioTable.update({ "channels": self.channels }, doc_ids=[1])
 			else:
-				logging.error("Failed to fetch channels with HTTP error code: " + str(status_code))
+				logger.error("Failed to fetch channels with HTTP error code: " + str(status_code))
 				raise Exception(response, status_code)
 		except Exception:
 			display.notificationMessage("Failed to get\n\rchannels!")
 			time.sleep(2)
-			logging.exception(Exception)
+			logger.exception(Exception)
 			
 			if status_code == 410:
 				display.notificationMessage("This radio was\n\runregistered!")
@@ -77,7 +78,7 @@ class Radio():
 				self.channels = channels
 			else:
 				display.notificationMessage("Couldn't get\n\rchannels! (" + str(status_code) + ")")
-				logging.error("------------ EXITED ------------")
+				logger.error("------------ EXITED ------------")
 				time.sleep(1)
 				# Exit with code "112, Host is down"
 				sys.exit(112)
@@ -107,7 +108,7 @@ class Radio():
 		else:
 			bumpTo = selectedChannelIndex + remaining
 
-		logging.debug("bumps " + str(bumps) + ", bumping to: " + str(bumpTo))
+		logger.debug("bumps " + str(bumps) + ", bumping to: " + str(bumpTo))
 		self.playChannel(self.channels[bumpTo])
 
 	def getBestBitRateMatch(self, streams):

@@ -2,10 +2,11 @@
 # Registration is done by registering with a server and receiving an api key in return.
 # This key, and other information, is then stored in a simple database
 
+import logging
+logger = logging.getLogger("Radio_mnm")
 import time
 import requests
 import os
-import logging
 from tinydb import TinyDB, Query
 
 from display.display import display
@@ -13,7 +14,7 @@ from config import config
 
 class Registration():
 	def __init__(self):
-		logging.info("Starting radio registration")
+		logger.info("Starting radio registration")
 
 	def checkIfRegistered(self):
 		isRegistered = requests.post(config.apiServer + "/api/1/isRegistered", data = {
@@ -29,7 +30,7 @@ class Registration():
 		radio = radioTable.search(Radio)
 
 		if radio:
-			logging.debug("This radio is already configured!")
+			logger.debug("This radio is already configured!")
 		else:
 
 			display.notificationMessage("Acquiring codes")
@@ -42,7 +43,7 @@ class Registration():
 			# Check if the radio has been registered
 			isRegistered = self.checkIfRegistered()
 			while isRegistered["status"] == "pending":
-				logging.debug(isRegistered)
+				logger.debug(isRegistered)
 				isRegistered = self.checkIfRegistered()
 				time.sleep(1)
 			
@@ -53,7 +54,7 @@ class Registration():
 				return
 			
 			display.notificationMessage("Registered! :D")
-			logging.info("Device successfully registered!")
+			logger.info("Device successfully registered!")
 
 			radioTable.insert({
 				"_id": isRegistered["radioId"],
@@ -72,6 +73,6 @@ def reset():
 	# TODO: Send request to delete itself
 	time.sleep(2)
 	os.remove("./db/db.json")
-	logging.warning("Removed database")
+	logger.warning("Removed database")
 	registration.start()
 	# set channels to undefined

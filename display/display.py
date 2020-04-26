@@ -1,7 +1,8 @@
+import logging
+logger = logging.getLogger("Radio_mnm")
 from config import config
 import threading
 import time
-import logging
 
 if config.raspberry == True:
 	from RPi import GPIO
@@ -62,16 +63,16 @@ class Display(threading.Thread):
 	def stop(self):
 		self.clear()
 		self.running = False
-		logging.warning("Stopped display")
+		logger.warning("Stopped display")
 
 	def pause(self):
 		self.clear()
 		self.pauseEvent.clear()
-		logging.debug("Paused display handling loop")
+		logger.debug("Paused display handling loop")
 
 	def resume(self):
 		self.pauseEvent.set()
-		logging.debug("Resumed display handling loop")
+		logger.debug("Resumed display handling loop")
 
 	# A notification has a limited lifespan. It is displayed for a set duration in seconds (defaults to 2).
 	# When a notification expires, the standard content is displayed. Standard content is what's playing etc.

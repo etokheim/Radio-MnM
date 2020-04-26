@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger("Radio_mnm")
 from config import config
 
 if config.raspberry == True:
@@ -11,7 +13,6 @@ from display import display
 from config import config
 import zope.event.classhandler
 from threading import Thread
-import logging
 
 # Button 2
 GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -49,7 +50,7 @@ class Switch(Thread):
 	# Use Switch.start(), not Switch.run() to start thread
 	# run() would just start a blocking loop
 	def run(self):
-		logging.debug("Listening on power button (GPIO " + str(self.gpioPin) + ")")
+		logger.debug("Listening on power button (GPIO " + str(self.gpioPin) + ")")
 
 		while self.running:
 			time.sleep(config.checkPowerSwitchStateInterval)
@@ -74,4 +75,4 @@ class Switch(Thread):
 
 	def stop(self):
 		self.running = False
-		logging.warning("Stopped listening to the power switch")
+		logger.warning("Stopped listening to the power switch")
