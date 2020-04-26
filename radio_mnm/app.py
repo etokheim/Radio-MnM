@@ -11,8 +11,9 @@ import datetime
 import time
 from datetime import datetime
 import zope.event
-
 import zope.event.classhandler
+import threading
+import gettext
 
 import switches.button
 from switches import power
@@ -20,7 +21,8 @@ from controls import channels
 from display.display import display
 from controls import setup
 
-import threading
+config.nno.install()
+_ = config.nno.gettext
 
 registration = setup.registration
 
@@ -68,11 +70,11 @@ class ResetCountdown(threading.Thread):
 		self.loadingBar = ""
 
 	def run(self):
-		display.notification("RESETTING RADIO\n****************")
+		display.notification(_("RESETTING RADIO") + "\n****************")
 		time.sleep(1.5)
 		while button.state == "down":
 			self.loadingBar = self.loadingBar + "█"
-			display.notification("ARE YOU SURE?\n\r" + self.loadingBar)
+			display.notification(_("ARE YOU SURE?") + "\n\r" + self.loadingBar)
 			time.sleep(0.3)
 			
 			if len(self.loadingBar) >= 15:

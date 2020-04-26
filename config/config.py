@@ -1,4 +1,7 @@
 import os
+import gettext
+
+nno = gettext.translation("base", localedir="locales", languages=["nno"])
 
 debug = True
 

@@ -3,6 +3,9 @@ logger = logging.getLogger("Radio_mnm")
 from config import config
 import threading
 import time
+import gettext
+
+_ = config.nno.gettext
 
 if config.raspberry == True:
 	from RPi import GPIO
@@ -29,7 +32,7 @@ class Display(threading.Thread):
 		self.pauseEvent.wait()
 
 		# \n for new line \r for moving to the beginning of current line
-		display.notification(">- RADIO M&M -<\n\rGot " + str(len(config.radio.channels)) + " channels", 4)
+		display.notification(">- RADIO M&M -<\n\r" + _("Got ") + str(len(config.radio.channels)) + _(" channels"), 4)
 		
 		while self.running:
 			# Wait, if the thread is set on hold

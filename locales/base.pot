@@ -1,0 +1,89 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Radio M&M - v1.0\n"
+"POT-Creation-Date: 2020-04-26 17:18+CEST\n"
+"PO-Revision-Date: 2020-04-26 16:41+CEST\n"
+"Last-Translator: Erling Tokheim <ertokheim@gmail.com>\n"
+"Language-Team: Norwegian\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: ENCODING\n"
+"Generated-By: pygettext.py 1.5\n"
+
+
+#: controls/channels.py:47
+msgid "Fetching streams"
+msgstr ""
+
+#: controls/channels.py:65
+msgid ""
+"Failed to get\n"
+"\rchannels!"
+msgstr ""
+
+#: controls/channels.py:70
+msgid ""
+"This radio was\n"
+"\runregistered!"
+msgstr ""
+
+#: controls/channels.py:72
+msgid ""
+"Resetting radio\n"
+"\rin three seconds"
+msgstr ""
+
+#: controls/channels.py:79
+msgid ""
+"Using local\n"
+"\rchannels instead"
+msgstr ""
+
+#: controls/channels.py:83
+msgid ""
+"Couldn't get\n"
+"\rchannels!"
+msgstr ""
+
+#: controls/setup.py:40
+msgid "Acquiring codes"
+msgstr ""
+
+#: controls/setup.py:45
+msgid "Register radio:"
+msgstr ""
+
+#: controls/setup.py:55
+msgid ""
+"Code expired, \n"
+"\rfetching new one"
+msgstr ""
+
+#: controls/setup.py:60
+msgid "Registered! :D"
+msgstr ""
+
+#: controls/setup.py:76
+msgid "Resetting radio"
+msgstr ""
+
+#: display/display.py:35
+msgid " channels"
+msgstr ""
+
+#: display/display.py:35
+msgid "Got "
+msgstr ""
+
+#: radio_mnm/app.py:73
+msgid "RESETTING RADIO"
+msgstr ""
+
+#: radio_mnm/app.py:77
+msgid "ARE YOU SURE?"
+msgstr ""
+

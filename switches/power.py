@@ -1,18 +1,21 @@
 import logging
 logger = logging.getLogger("Radio_mnm")
 from config import config
+import time
+import zope.event.classhandler
+from threading import Thread
+import gettext
+
+_ = config.nno.gettext
 
 if config.raspberry == True:
 	from RPi import GPIO
 else:
 	from EmulatorGUI.EmulatorGUI import GPIO
 
-import time
 from controls import channels
 from display import display
 from config import config
-import zope.event.classhandler
-from threading import Thread
 
 # Button 2
 GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_UP)

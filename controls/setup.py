@@ -8,6 +8,10 @@ import time
 import requests
 import os
 from tinydb import TinyDB, Query
+from config import config
+import gettext
+
+_ = config.nno.gettext
 
 from display.display import display
 from config import config
@@ -33,12 +37,12 @@ class Registration():
 			logger.debug("This radio is already configured!")
 		else:
 
-			display.notificationMessage("Acquiring codes")
+			display.notification(_("Acquiring codes"))
 
 			self.response = requests.get(config.apiServer + "/api/1/getRegisterCode", verify=False)
 			self.response = self.response.json()
 
-			display.notificationMessage("Register radio:\n\r" + self.response["code"])
+			display.notification(_("Register radio:") + "\n\r" + self.response["code"])
 
 			# Check if the radio has been registered
 			isRegistered = self.checkIfRegistered()
@@ -48,12 +52,12 @@ class Registration():
 				time.sleep(1)
 			
 			if isRegistered["status"] == False:
-				display.notificationMessage("Code expired, \n\rfetching new one")
+				display.notification(_("Code expired, \n\rfetching new one"))
 				time.sleep(1)
 				self.start()
 				return
 			
-			display.notificationMessage("Registered! :D")
+			display.notification(_("Registered! :D"))
 			logger.info("Device successfully registered!")
 
 			radioTable.insert({
@@ -69,7 +73,7 @@ class Registration():
 registration = Registration()
 
 def reset():
-	display.notificationMessage("Resetting radio\n****************")
+	display.notification(_("Resetting radio") + "\n****************")
 	# TODO: Send request to delete itself
 	time.sleep(2)
 	os.remove("./db/db.json")

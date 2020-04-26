@@ -1,13 +1,16 @@
 import logging
 logger = logging.getLogger("Radio_mnm")
+from config import config
 import vlc
 import requests
 from tinydb import TinyDB, Query
 import sys
 import time
+import gettext
+
+_ = config.nno.gettext
 
 from display.display import display
-from config import config
 from controls import setup
 
 class Radio():
@@ -41,7 +44,7 @@ class Radio():
 		radioTable = db.table("Radio_mnm")
 		radio = radioTable.search(Radio)[0]
 
-		display.notification("Fetching streams")
+		display.notification(_("Fetching streams"))
 
 		try:
 			headers = { "apiKey": radio["apiKey"] }
@@ -59,25 +62,25 @@ class Radio():
 				logger.error("Failed to fetch channels with HTTP error code: " + str(status_code))
 				raise Exception(response, status_code)
 		except Exception:
-			display.notificationMessage("Failed to get\n\rchannels!")
+			display.notification(_("Failed to get\n\rchannels!"))
 			time.sleep(2)
 			logger.exception(Exception)
 			
 			if status_code == 410:
-				display.notificationMessage("This radio was\n\runregistered!")
+				display.notification(_("This radio was\n\runregistered!"))
 				time.sleep(3)
-				display.notificationMessage("Resetting radio\n\rin three seconds")
+				display.notification(_("Resetting radio\n\rin three seconds"))
 				setup.reset()
 				return
 
 			# Recover by using channels from local db instead if we have them
 			channels = radio["channels"]
 			if channels:
-				display.notificationMessage("Using local\n\rchannels instead")
+				display.notification(_("Using local\n\rchannels instead"))
 				time.sleep(1)
 				self.channels = channels
 			else:
-				display.notificationMessage("Couldn't get\n\rchannels! (" + str(status_code) + ")")
+				display.notification(_("Couldn't get\n\rchannels!") + " (" + str(status_code) + ")")
 				logger.error("------------ EXITED ------------")
 				time.sleep(1)
 				# Exit with code "112, Host is down"
