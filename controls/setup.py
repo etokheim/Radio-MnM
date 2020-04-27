@@ -39,7 +39,7 @@ class Registration():
 		else:
 			display.notification(_("Acquiring codes"))
 
-			self.response = requests.get(config.apiServer + "/api/1/getRegisterCode", verify=False)
+			self.response = requests.get(config.apiServer + "/api/1/getRegisterCode", verify=config.verifyCertificate)
 			self.response = self.response.json()
 
 			# Display the code on the display, and set the display duration to a very long time

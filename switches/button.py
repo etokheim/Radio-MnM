@@ -95,8 +95,6 @@ class Button(threading.Thread):
 	# Use Button.start(), not Button.run() to start thread
 	# run() would just start a blocking loop
 	def run(self):
-		logger.debug("Listening on button (GPIO " + str(self.gpioPin) + ")")
-
 		while self.running:
 			# Wait, if the thread is set on hold
 			self.pauseEvent.wait()

@@ -26,7 +26,7 @@ class Radio():
 	def playChannel(self, channel):
 		self.selectedChannel = channel
 		bestBitrateMatch = self.getBestBitRateMatch(channel["streams"])
-		logger.info("Playing channel with a bitrate of " + str(channel["streams"][bestBitrateMatch]["bitrate"]) + "kbps")
+		logger.debug("Playing " + channel["name"] + " with a bitrate of " + str(channel["streams"][bestBitrateMatch]["bitrate"]) + "kbps")
 
 		self.player.stop()
 		url = channel["streams"][bestBitrateMatch]["url"]
@@ -55,7 +55,7 @@ class Radio():
 
 		try:
 			headers = { "apiKey": radio["apiKey"] }
-			response = requests.get(config.apiServer + "/radio/api/1/channels?homeId=" + radio["homeId"], headers=headers, verify=False)
+			response = requests.get(config.apiServer + "/radio/api/1/channels?homeId=" + radio["homeId"], headers=headers, verify=config.verifyCertificate)
 			status_code = response.status_code
 			response = response.json()
 			
@@ -148,7 +148,7 @@ class Radio():
 			"startedListening": startedListening
 		}
 
-		response = requests.post(config.apiServer + "/radio/api/1/listeningHistory", data=data, verify=False)
+		response = requests.post(config.apiServer + "/radio/api/1/listeningHistory", data=data, verify=config.verifyCertificate)
 
 		status_code = response.status_code
 		response = response.json()
