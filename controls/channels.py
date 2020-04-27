@@ -20,6 +20,7 @@ class Radio():
 		self.player = self.instance.media_player_new()
 		self.media = self.instance.media_new("")
 		self.selectedChannel = None
+		self.lastPowerState = None
 
 		self.startedListening = None
 
@@ -157,5 +158,27 @@ class Radio():
 			logger.debug("Successfully posted listening history (" + str(status_code) + ")")
 		else:
 			logger.error("Couldn't post listening history: " + str(status_code))
+
+	def sendState(self, state):
+		db = TinyDB('./db/db.json')
+		Radio = Query()
+		radioTable = db.table("Radio_mnm")
+		radio = radioTable.search(Radio)[0]
+
+		data = {
+			"homeId": radio["homeId"],
+			"apiKey": radio["apiKey"],
+			"state": state
+		}
+
+		response = requests.post(config.apiServer + "/radio/api/1/state", data=data, verify=config.verifyCertificate)
+
+		status_code = response.status_code
+		response = response.json()
+		
+		if status_code == 200:
+			logger.debug("Successfully posted state " + state + " (" + str(status_code) + ")")
+		else:
+			logger.error("Couldn't post state: " + str(status_code))
 
 config.radio = Radio()

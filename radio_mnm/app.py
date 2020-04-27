@@ -94,19 +94,22 @@ button.listen(button.veryLongPress, buttonVeryLongPressHandler)
 powerSwitch = switches.power.Switch(17)
 
 def powerSwitchUpHandler(event):
-	config.on = False
 	logger.debug("powerSwitchUpHandler %r" % event)
+	
+	# TODO: Most of this should go into a radio.off() method.
+	config.on = False
 	config.radio.stop()
 	display.pause()
 	button.pause()
-	# button.resume()
+	config.radio.sendState("suspended")
 
 powerSwitch.listen(powerSwitch.up, powerSwitchUpHandler)
 
 def powerSwitchDownHandler(event):
 	logger.debug("powerSwitchDownHandler %r" % event)
-	config.on = True
 
+	# TODO: Most of this should go into a radio.on() method.
+	config.on = True
 	# TODO: Maybe rename .start() methods that aren't threads, as it can be confusing.
 	# Starts the registration if the radio isn't registered
 	registration.start()
@@ -114,6 +117,11 @@ def powerSwitchDownHandler(event):
 
 	display.resume()
 	button.resume()
+	
+	if config.radio.lastPowerState != "off":
+		config.radio.sendState("noPower")
+
+	config.radio.sendState("on")
 
 	config.radio.play()
 
