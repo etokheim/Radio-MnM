@@ -21,6 +21,8 @@ class Radio():
 		self.media = self.instance.media_new("")
 		self.selectedChannel = None
 
+		self.startedListening = None
+
 	def playChannel(self, channel):
 		self.selectedChannel = channel
 		bestBitrateMatch = self.getBestBitRateMatch(channel["streams"])
@@ -31,6 +33,9 @@ class Radio():
 		self.media = self.instance.media_new(url)
 		self.player.set_media(self.media)
 		self.player.play()
+		
+		# Note when we started listening
+		self.startedListening = int(round(time.time() * 1000))
 
 	def play(self):
 		self.playChannel(self.selectedChannel)
@@ -38,6 +43,7 @@ class Radio():
 	def stop(self):
 		self.media = self.instance.media_new("")
 		self.player.stop()
+		self.addToListeningHistory(self.startedListening, self.selectedChannel)
 
 	def fetchChannels(self):
 		db = TinyDB('./db/db.json')
@@ -95,6 +101,8 @@ class Radio():
 
 	# Bumps the channel n times. Loops around if bumping past the last channel.
 	def bump(self, bumps = 1):
+		self.addToListeningHistory(self.startedListening, self.selectedChannel)
+
 		bumpTo = 0
 
 		# Number of channels to skip which remains after removing overflow.
@@ -125,5 +133,29 @@ class Radio():
 				bestMatchIndex = i
 		
 		return bestMatchIndex
+
+	def addToListeningHistory(self, startedListening, channel):
+		db = TinyDB('./db/db.json')
+		Radio = Query()
+		radioTable = db.table("Radio_mnm")
+		radio = radioTable.search(Radio)[0]
+		
+		data = {
+			"homeId": radio["homeId"],
+			"apiKey": radio["apiKey"],
+			"playedChannel": channel["_id"],
+			"endedListening": int(round(time.time() * 1000)), # Now in UNIX time
+			"startedListening": startedListening
+		}
+
+		response = requests.post(config.apiServer + "/radio/api/1/listeningHistory", data=data, verify=False)
+
+		status_code = response.status_code
+		response = response.json()
+		
+		if status_code == 200:
+			logger.debug("Successfully posted listening history (" + str(status_code) + ")")
+		else:
+			logger.error("Couldn't post listening history: " + str(status_code))
 
 config.radio = Radio()
