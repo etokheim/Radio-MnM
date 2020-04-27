@@ -79,13 +79,15 @@ registration = Registration()
 
 def reset():
 	display.notification(_("Resetting radio") + "\n****************")
-	# TODO: Send request to delete itself
-	time.sleep(2)
-	os.remove("./db/db.json")
-	logger.warning("Removed database")
 
 	# Stop playing
 	config.radio.stop()
+
+	# TODO: Send request to delete itself
+	
+	time.sleep(2)
+	os.remove("./db/db.json")
+	logger.warning("Removed database")
 
 	# Remove the old channels from memory
 	config.radio.channels = []
