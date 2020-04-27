@@ -36,6 +36,7 @@ class Radio():
 		self.playChannel(self.selectedChannel)
 
 	def stop(self):
+		self.media = self.instance.media_new("")
 		self.player.stop()
 
 	def fetchChannels(self):

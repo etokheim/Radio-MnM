@@ -15,6 +15,7 @@ _ = config.nno.gettext
 
 from display.display import display
 from config import config
+from controls import channels
 
 class Registration():
 	def __init__(self):
@@ -36,13 +37,13 @@ class Registration():
 		if radio:
 			logger.debug("This radio is already configured!")
 		else:
-
 			display.notification(_("Acquiring codes"))
 
 			self.response = requests.get(config.apiServer + "/api/1/getRegisterCode", verify=False)
 			self.response = self.response.json()
 
-			display.notification(_("Register radio:") + "\n\r" + self.response["code"])
+			# Display the code on the display, and set the display duration to a very long time
+			display.notification(_("Register radio:") + "\n\r" + self.response["code"], 100000)
 
 			# Check if the radio has been registered
 			isRegistered = self.checkIfRegistered()
@@ -69,6 +70,10 @@ class Registration():
 				"apiKey": isRegistered["radio"]["apiKey"],
 				"channels": []
 			})
+			
+			# Then fetch channels again, so we don't use the old ones until the user restarts
+			# the radio.
+			config.radio.fetchChannels()
 
 registration = Registration()
 
@@ -78,5 +83,11 @@ def reset():
 	time.sleep(2)
 	os.remove("./db/db.json")
 	logger.warning("Removed database")
+
+	# Stop playing
+	config.radio.stop()
+
+	# Remove the old channels from memory
+	config.radio.channels = []
+	
 	registration.start()
-	# set channels to undefined
