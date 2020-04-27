@@ -24,7 +24,7 @@ class Registration():
 	def checkIfRegistered(self):
 		isRegistered = requests.post(config.apiServer + "/api/1/isRegistered", data = {
 			"code": self.response["code"]
-		}, verify=False)
+		}, verify=config.verifyCertificate)
 		isRegistered = isRegistered.json()
 		return isRegistered
 
