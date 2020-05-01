@@ -7,6 +7,7 @@ from tinydb import TinyDB, Query
 import sys
 import time
 import gettext
+import socket
 
 _ = config.nno.gettext
 
@@ -102,7 +103,7 @@ class Radio():
 
 	# Bumps the channel n times. Loops around if bumping past the last channel.
 	def bump(self, bumps = 1):
-		self.addToListeningHistory(self.startedListening, self.selectedChannel)
+		playedChannel = self.selectedChannel
 
 		bumpTo = 0
 
@@ -124,6 +125,8 @@ class Radio():
 		logger.debug("bumps " + str(bumps) + ", bumping to: " + str(bumpTo))
 		self.playChannel(self.channels[bumpTo])
 
+		self.addToListeningHistory(self.startedListening, playedChannel, self.channels[bumpTo])
+
 	def getBestBitRateMatch(self, streams):
 		bestMatchIndex = 0
 		bestMatchBitrate = streams[0]["bitrate"]
@@ -135,18 +138,25 @@ class Radio():
 		
 		return bestMatchIndex
 
-	def addToListeningHistory(self, startedListening, channel):
+	def addToListeningHistory(self, startedListening, playedChannel, playingChannel = None):
 		db = TinyDB('./db/db.json')
 		Radio = Query()
 		radioTable = db.table("Radio_mnm")
 		radio = radioTable.search(Radio)[0]
 		
+		# PlayingChannel can be None. Ie. if we are stopping the player.
+		if playingChannel == None:
+			playingChannel = {
+				"_id": None
+			}
+
 		data = {
 			"homeId": radio["homeId"],
 			"apiKey": radio["apiKey"],
-			"playedChannel": channel["_id"],
-			"endedListening": int(round(time.time() * 1000)), # Now in UNIX time
-			"startedListening": startedListening
+			"playedChannelId": playedChannel["_id"],
+			"playedChannelStartTime": startedListening,
+			"playedChannelEndTime": int(round(time.time() * 1000)), # Now in UNIX time
+			"playingChannelId": playingChannel["_id"]
 		}
 
 		response = requests.post(config.apiServer + "/radio/api/1/listeningHistory", data=data, verify=config.verifyCertificate)
@@ -168,7 +178,8 @@ class Radio():
 		data = {
 			"homeId": radio["homeId"],
 			"apiKey": radio["apiKey"],
-			"state": state
+			"state": state,
+			"ip": socket.gethostbyname(socket.gethostname())
 		}
 
 		response = requests.post(config.apiServer + "/radio/api/1/state", data=data, verify=config.verifyCertificate)
