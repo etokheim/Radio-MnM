@@ -49,9 +49,8 @@ class Radio():
 
 	def fetchChannels(self):
 		db = TinyDB('./db/db.json')
-		Radio = Query()
 		radioTable = db.table("Radio_mnm")
-		radio = radioTable.search(Radio)[0]
+		radio = radioTable.get(doc_id=1)
 
 		display.notification(_("Fetching streams"))
 
@@ -140,9 +139,8 @@ class Radio():
 
 	def addToListeningHistory(self, startedListening, playedChannel, playingChannel = None):
 		db = TinyDB('./db/db.json')
-		Radio = Query()
 		radioTable = db.table("Radio_mnm")
-		radio = radioTable.search(Radio)[0]
+		radio = radioTable.get(doc_id=1)
 		
 		# PlayingChannel can be None. Ie. if we are stopping the player.
 		if playingChannel == None:
@@ -171,9 +169,8 @@ class Radio():
 
 	def sendState(self, state):
 		db = TinyDB('./db/db.json')
-		Radio = Query()
 		radioTable = db.table("Radio_mnm")
-		radio = radioTable.search(Radio)[0]
+		radio = radioTable.get(doc_id=1)
 
 		data = {
 			"homeId": radio["homeId"],

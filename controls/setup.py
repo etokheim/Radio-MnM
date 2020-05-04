@@ -30,9 +30,8 @@ class Registration():
 
 	def start(self):
 		db = TinyDB('./db/db.json')
-		Radio = Query()
 		radioTable = db.table("Radio_mnm")
-		radio = radioTable.search(Radio)
+		radio = radioTable.get(doc_id=1)
 
 		if radio:
 			logger.debug("This radio is already configured!")
