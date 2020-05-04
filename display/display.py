@@ -9,6 +9,7 @@ _ = config.nno.gettext
 
 if config.raspberry == True:
 	from RPi import GPIO
+	from RPLCD.gpio import CharLCD
 else:
 	from EmulatorGUI.EmulatorGUI import GPIO
 
