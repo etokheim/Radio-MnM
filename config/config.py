@@ -32,7 +32,7 @@ on = False
 checkPowerSwitchStateInterval = 0.25
 checkButtonStateInterval = 0.01
 
-apiServer = "https://127.0.0.1:8000"
+apiServer = "https://radio.tokheimgrafisk.no"
 verifyCertificate = not debug
 
 # Will be set to the radio 
