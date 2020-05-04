@@ -33,7 +33,7 @@ checkPowerSwitchStateInterval = 0.25
 checkButtonStateInterval = 0.01
 
 apiServer = "https://radio.tokheimgrafisk.no"
-verifyCertificate = not debug
+verifyCertificate = "https://radio.tokheimgrafisk.no" == apiServer
 
 # Will be set to the radio 
 radio = None
