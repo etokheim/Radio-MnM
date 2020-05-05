@@ -23,7 +23,8 @@ class Radio():
 		self.selectedChannel = None
 		self.lastPowerState = None
 
-		self.startedListening = None
+		# When the user started listening. For analytics purposes.
+		self.startedListeningTime = None
 
 	def playChannel(self, channel):
 		self.selectedChannel = channel
@@ -37,7 +38,7 @@ class Radio():
 		self.player.play()
 		
 		# Note when we started listening
-		self.startedListening = int(round(time.time() * 1000))
+		self.startedListeningTime = int(round(time.time() * 1000))
 
 	def play(self):
 		self.playChannel(self.selectedChannel)
@@ -127,7 +128,7 @@ class Radio():
 		logger.debug("bumps " + str(bumps) + ", bumping to: " + str(bumpTo))
 		self.playChannel(self.channels[bumpTo])
 
-		self.addToListeningHistory(self.startedListening, playedChannel, self.channels[bumpTo])
+		self.addToListeningHistory(self.startedListeningTime, playedChannel, self.channels[bumpTo])
 
 	def getBestBitRateMatch(self, streams):
 		bestMatchIndex = 0
