@@ -32,9 +32,6 @@ class Display(threading.Thread):
 		# Wait, if the thread is set on hold
 		self.pauseEvent.wait()
 
-		# \n for new line \r for moving to the beginning of current line
-		display.notification(">- RADIO M&M -<\n\r" + _("Got ") + str(len(config.radio.channels)) + _(" channels"), 4)
-		
 		while self.running:
 			# Wait, if the thread is set on hold
 			self.pauseEvent.wait()
@@ -85,6 +82,8 @@ class Display(threading.Thread):
 
 	def resume(self):
 		self.pauseEvent.set()
+		# \n for new line \r for moving to the beginning of current line
+		display.notification(">- RADIO M&M -<\n\r" + _("Got ") + str(len(config.radio.channels)) + _(" channels"), 4)
 		logger.debug("Resumed display handling loop")
 
 	# A notification has a limited lifespan. It is displayed for a set duration in seconds (defaults to 2).
