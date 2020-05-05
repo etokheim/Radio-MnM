@@ -13,6 +13,53 @@ if config.raspberry == True:
 else:
 	from EmulatorGUI.EmulatorGUI import GPIO
 
+
+if config.raspberry:
+	# We are using the GPIO numbering scheme
+	lcd = CharLCD(
+		# (int) Number of columns per row (usually 16 or 20). Default: 20.
+		cols=config.displayWidth,
+		
+		# (int) Number of display rows (usually 1, 2 or 4). Default: 4.
+		rows=config.displayHeight,
+		
+		pin_rs=26,
+		
+		pin_e=19,
+		
+		pins_data=[13, 6, 5, 11],
+		
+		numbering_mode=GPIO.BCM,
+		
+		compat_mode = True,
+		
+		# (int) Some 1 line displays allow a font height of 10px. Allowed: 8 or 10.
+		dotsize = 8,
+		
+		# The character map used. Depends on your LCD. This must be either A00 or A02 or ST0B.
+		charmap = 'A00',
+		
+		# (bool) – Whether or not to automatically insert line breaks. Default: True.
+		# Note: If we turn it on, it seems like we can't fill the last character of the lines.
+		# throws the following error:
+		# ValueError: Cursor position (1, 16) invalid on a 2x16 LCD.
+		#
+		# 16 is the 17th character, as 0, 0 is the first character of the first line. However
+		# what we tried to display was "f The World Was ", which is 16 characters long and should
+		# therefor fit on the display...I don't know why we get this error, but if i never populate
+		# the last character (of either lines), the program runs fine. (When I do this, the display
+		# of course doesn't use the last character space, which is a waste). Turning auto_linebreaks
+		# on seems to fix the issue, so we shouldn't use more time on this.
+		# 
+		# We used extra time on this because we thought it might have contributed to the character 
+		# corruption, but since it still happened when turning the auto_linebreaks off and limiting
+		# the display to 15 characters it seems unlikely.
+		auto_linebreaks = True,
+		
+		# (bool) – Whether the backlight is enabled initially. Default: True.
+		backlight_enabled = True,
+	)
+
 class Display(threading.Thread):
 	def __init__(self):
 		threading.Thread.__init__(self)
@@ -31,7 +78,7 @@ class Display(threading.Thread):
 	def run(self):
 		# Wait, if the thread is set on hold
 		self.pauseEvent.wait()
-
+		
 		while self.running:
 			# Wait, if the thread is set on hold
 			self.pauseEvent.wait()
@@ -275,19 +322,3 @@ class Display(threading.Thread):
 		return
 
 display = Display()
-
-if config.raspberry:
-	# We are using the GPIO numbering scheme
-	lcd = CharLCD(cols=config.displayWidth,
-				rows=config.displayHeight,
-				pin_rs=26,
-				pin_e=19,
-				pins_data=[13, 6, 5, 11],
-				numbering_mode=GPIO.BCM,
-				compat_mode = True,
-				dotsize = 8,
-				charmap = 'A02'
-	)
-
-	lcd.clear()
-	# lcd.cursor_pos = (0, 0)
