@@ -34,3 +34,9 @@ In the terminal you can start it in one of two ways:
         ```sh
         python3 -m radio_mnm &>> logAll.log &
         ```
+
+## TODOs:
+
+ 1. Fix error messages:
+    1. `ES_OUT_SET_(GROUP_)PCR is called too late (pts_delay increased to 1000 ms)`
+        - Appears to have no negative side effects..? Though others says their video freezes if they are streaming video when the error comes.
