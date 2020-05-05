@@ -90,5 +90,7 @@ def reset():
 
 	# Remove the old channels from memory
 	config.radio.channels = []
+	config.radio.media = config.radio.instance.media_new("")
+	config.radio.selectedChannel = None
 	
 	registration.start()
