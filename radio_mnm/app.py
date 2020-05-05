@@ -123,7 +123,8 @@ def powerSwitchDownHandler(event):
 
 	config.radio.sendState("on")
 
-	config.radio.play()
+	if len(config.radio.channels) > 0:
+		config.radio.play()
 
 powerSwitch.listen(powerSwitch.down, powerSwitchDownHandler)
 

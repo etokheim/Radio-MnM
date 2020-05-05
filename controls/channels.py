@@ -27,6 +27,11 @@ class Radio():
 		self.startedListeningTime = None
 
 	def playChannel(self, channel):
+		# Channel should always be valid, so this clause shouldn't trigger, unless there is a bug.
+		if not channel:
+			logger.error("Channel parameter is not a valid channel. Can't start player.")
+			return
+
 		self.selectedChannel = channel
 		bestBitrateMatch = self.getBestBitRateMatch(channel["streams"])
 		logger.debug("Playing " + channel["name"] + " with a bitrate of " + str(channel["streams"][bestBitrateMatch]["bitrate"]) + "kbps")
@@ -98,8 +103,9 @@ class Radio():
 				# Exit with code "112, Host is down"
 				sys.exit(112)
 
-		# TODO: Only set selectedChannel if it's not set
-		if not self.selectedChannel:
+		# Only sets selectedChannel if it's not set and the radio has channels.
+		# If not, keep the None value
+		if not self.selectedChannel and len(self.channels) > 0:
 			self.selectedChannel = self.channels[0]
 
 		# self.playChannel(self.selectedChannel)
