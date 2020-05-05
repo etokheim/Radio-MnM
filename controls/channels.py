@@ -43,9 +43,12 @@ class Radio():
 		self.playChannel(self.selectedChannel)
 
 	def stop(self):
-		self.media = self.instance.media_new("")
-		self.player.stop()
-		self.addToListeningHistory(self.startedListening, self.selectedChannel)
+		# Only stop the radio if something is playing. Otherwise we will get an error
+		# if the user turns of the radio when the radio isn't registered
+		if self.selectedChannel:
+			self.media = self.instance.media_new("")
+			self.player.stop()
+			self.addToListeningHistory(self.startedListeningTime, self.selectedChannel)
 
 	def fetchChannels(self):
 		db = TinyDB('./db/db.json')
