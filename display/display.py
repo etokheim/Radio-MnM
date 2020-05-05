@@ -46,21 +46,30 @@ class Display(threading.Thread):
 				if meta is None:
 					meta = ""
 				
-				self.standardContent = config.radio.selectedChannel["name"] + "\n\r" + str(meta)
+				# Set standard content
+				# Selected channel can be None when the radio is on, only right after a reset.
+				if config.radio.selectedChannel is not None:
+					# Format standard content based on screen size
+					if config.displayHeight >= 2:
+						self.standardContent = config.radio.selectedChannel["name"] + "\n\r" + str(meta)
+					else:
+						self.standardContent = config.radio.selectedChannel["name"]
+				else:
+					self.standardContent = "No channels"
 
-			# Clear expired notifications
-			if int(round(time.time() * 1000)) >= self.notificationExpireTime and self.notificationExpireTime != False:
-				self.notificationMessage = ""
-				self.notificationExpireTime = False
+				# Clear expired notifications
+				if int(round(time.time() * 1000)) >= self.notificationExpireTime and self.notificationExpireTime != False:
+					self.notificationMessage = ""
+					self.notificationExpireTime = False
 
-			# TODO: Maybe it's now just better to send the message as a parameter instead of setting
-			# it to "currentlyDisplayingMessage"?
-			if self.notificationMessage:
-				self.currentlyDisplayingMessage = self.notificationMessage
-				self.displayMessage()
-			else:
-				self.currentlyDisplayingMessage = self.standardContent
-				self.displayMessage("channelInfo")
+				# TODO: Maybe it's better now to send the message as a parameter instead of setting
+				# it to "currentlyDisplayingMessage"?
+				if self.notificationMessage:
+					self.currentlyDisplayingMessage = self.notificationMessage
+					self.displayMessage()
+				else:
+					self.currentlyDisplayingMessage = self.standardContent
+					self.displayMessage("channelInfo")
 
 			time.sleep(config.displayScrollSpeed)
 
@@ -100,11 +109,11 @@ class Display(threading.Thread):
 
 		# If there is a new text to display
 		if self.lastDisplayedMessage != self.currentlyDisplayingMessage:
-			# Reset the text offset
+			# Reset the text offset (scroll position)
 			self.scrollOffset = 0 - config.displayScrollingStartPauseSteps
 			
-			# Only do this if displaying channels
-			if messageType == "channelInfo":
+			# Only do this if displaying channel info
+			if messageType == "channelInfo" and config.displayHeight >= 2:
 				# When the text changes, "clear the second line" for å brief moment, so the user
 				# more easily can understand that a new text was inserted.
 				# Crap, this only works for channels, but notifications are also parsed through here...
@@ -117,7 +126,11 @@ class Display(threading.Thread):
 		longestLineLength = 0
 		displayWidth = config.displayWidth
 
-		for i in range(len(lines)):
+		loopTimes = len(lines)
+		if loopTimes > config.displayHeight:
+			loopTimes = config.displayHeight
+
+		for i in range(loopTimes):
 			line = lines[i]
 			lineLength = len(line)
 
@@ -155,7 +168,7 @@ class Display(threading.Thread):
 			composedMessage = composedMessage + croppedLines[i]
 			
 			# If it's not the last line, add a newline
-			if i + 1 != len(lines):
+			if i + 1 != loopTimes:
 				composedMessage = composedMessage + "\n\r"
 		
 		# Increase the scroll offset as long as we are not at the end of the line
@@ -278,4 +291,4 @@ if config.raspberry:
 	)
 
 	lcd.clear()
-	lcd.cursor_pos = (0, 0)
+	# lcd.cursor_pos = (0, 0)
