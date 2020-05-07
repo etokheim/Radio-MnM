@@ -11,7 +11,7 @@
 
 
 ## Setup
-Install python dependencies:
+### Production
 
  1. `sudo apt install vlc`
  2. `sudo apt install pulseaudio`
@@ -20,6 +20,11 @@ Install python dependencies:
     - `raspi-config` -> advanced -> audio -> output, force 3.5 mm audio jack
  5. `pip3 install -r requirements.txt`
 
+### Development
+
+_Install everything from production including the following:_
+
+ 1. `sudo apt install gettext`
 
 ## Start
 
