@@ -267,7 +267,7 @@ class Display(threading.Thread):
 			self.writeToSimulatedScreen(message)
 		
 		# Write message to the actual display, if we are running on a Raspberry Pi
-		if config.raspberry:			
+		if config.raspberry:
 			# Handle weir display quirk, where one line in the code only refers to half a line on the actual
 			# display. Ie.: to fill a 16x1 display, you have to do 12345678\n90123456
 			if config.oneDisplayLineIsTwoLines:

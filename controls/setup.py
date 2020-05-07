@@ -19,7 +19,7 @@ from controls import channels
 
 class Registration():
 	def __init__(self):
-		logger.info("Starting radio registration")
+		logger.debug("Checking if radio is registered")
 
 	def checkIfRegistered(self):
 		isRegistered = requests.post(config.apiServer + "/api/1/isRegistered", data = {
@@ -34,8 +34,9 @@ class Registration():
 		radio = radioTable.get(doc_id=1)
 
 		if radio:
-			logger.debug("This radio is already configured!")
+			logger.debug("Radio is registered.")
 		else:
+			logger.debug("Radio isn't registered! Starting registration.")
 			display.notification(_("Acquiring codes"))
 
 			self.response = requests.get(config.apiServer + "/api/1/getRegisterCode", verify=config.verifyCertificate)
