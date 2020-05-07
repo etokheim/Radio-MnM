@@ -148,7 +148,7 @@ class Display(threading.Thread):
 		self.notificationMessage = message
 		self.notificationExpireTime = int(round(time.time() * 1000)) + duration * 1000
 
-		self.write(message)
+		self.displayMessage()
 
 	# Clears the display
 	def clear(self):
