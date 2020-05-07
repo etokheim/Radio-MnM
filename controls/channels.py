@@ -32,6 +32,9 @@ class Radio():
 			logger.error("Channel parameter is not a valid channel. Can't start player.")
 			return
 
+		# Before we update the selected channel, store the last played one
+		playedChannel = self.selectedChannel
+
 		self.selectedChannel = channel
 		bestBitrateMatch = self.getBestBitRateMatch(channel["streams"])
 		logger.debug("Playing " + channel["name"] + " with a bitrate of " + str(channel["streams"][bestBitrateMatch]["bitrate"]) + "kbps")
@@ -42,6 +45,9 @@ class Radio():
 		self.player.set_media(self.media)
 		self.player.play()
 		
+		# Add the previous listen to the history
+		self.addToListeningHistory(self.startedListeningTime, playedChannel, self.selectedChannel)
+
 		# Note when we started listening
 		self.startedListeningTime = int(round(time.time() * 1000))
 
@@ -116,8 +122,6 @@ class Radio():
 			logger.debug("Can't bump channel when there are none available.")
 			return
 
-		playedChannel = self.selectedChannel
-
 		bumpTo = 0
 
 		# Number of channels to skip which remains after removing overflow.
@@ -137,8 +141,6 @@ class Radio():
 
 		logger.debug("bumps " + str(bumps) + ", bumping to: " + str(bumpTo))
 		self.playChannel(self.channels[bumpTo])
-
-		self.addToListeningHistory(self.startedListeningTime, playedChannel, self.channels[bumpTo])
 
 	def getBestBitRateMatch(self, streams):
 		bestMatchIndex = 0
