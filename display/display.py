@@ -4,6 +4,7 @@ from config import config
 import threading
 import time
 import gettext
+import sys
 
 _ = config.nno.gettext
 
