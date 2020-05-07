@@ -116,13 +116,13 @@ def powerSwitchDownHandler(event):
 
 	# TODO: Most of this should go into a radio.on() method.
 	config.on = True
+	display.resume()
+	button.resume()
+
 	# TODO: Maybe rename .start() methods that aren't threads, as it can be confusing.
 	# Starts the registration if the radio isn't registered
 	registration.start()
 	config.radio.fetchChannels()
-
-	display.resume()
-	button.resume()
 	
 	if config.radio.lastPowerState != "off":
 		config.radio.sendState("noPower")
