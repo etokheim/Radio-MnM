@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Radio M&M 1.0\n"
 "Report-Msgid-Bugs-To: ertokheim@gmail.com\n"
-"POT-Creation-Date: 2020-04-27 12:47+0200\n"
+"POT-Creation-Date: 2020-05-07 14:35+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,67 +17,71 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: controls/channels.py:47
+#: controls/channels.py:64
 msgid "Fetching streams"
 msgstr ""
 
-#: controls/channels.py:65
+#: controls/channels.py:82
 msgid ""
 "Failed to get\n"
 "\rchannels!"
 msgstr ""
 
-#: controls/channels.py:70
+#: controls/channels.py:87
 msgid ""
 "This radio was\n"
 "\runregistered!"
 msgstr ""
 
-#: controls/channels.py:72
+#: controls/channels.py:89
 msgid ""
 "Resetting radio\n"
 "\rin three seconds"
 msgstr ""
 
-#: controls/channels.py:79
+#: controls/channels.py:96
 msgid ""
 "Using local\n"
 "\rchannels instead"
 msgstr ""
 
-#: controls/channels.py:83
+#: controls/channels.py:100
 msgid ""
 "Couldn't get\n"
 "\rchannels!"
 msgstr ""
 
-#: controls/setup.py:40
+#: controls/setup.py:39
 msgid "Acquiring codes"
 msgstr ""
 
-#: controls/setup.py:45
+#: controls/setup.py:48
 msgid "Register radio:"
 msgstr ""
 
-#: controls/setup.py:55
+#: controls/setup.py:59
+msgid "Getting new code"
+msgstr ""
+
+#: controls/setup.py:61
 msgid ""
 "Code expired, \n"
 "\rfetching new one"
 msgstr ""
 
-#: controls/setup.py:60
+#: controls/setup.py:67
 msgid "Registered! :D"
 msgstr ""
 
-#: controls/setup.py:76
+#: controls/setup.py:87
 msgid "Resetting radio"
 msgstr ""
 
-#: display/display.py:35
+#: display/display.py:142
 msgid "Got "
 msgstr ""
 
-#: display/display.py:35
+#: display/display.py:142
 msgid " channels"
 msgstr ""
 
@@ -85,6 +89,6 @@ msgstr ""
 msgid "RESETTING RADIO"
 msgstr ""
 
-#: radio_mnm/app.py:77
+#: radio_mnm/app.py:76
 msgid "ARE YOU SURE?"
 msgstr ""

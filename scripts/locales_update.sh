@@ -6,9 +6,7 @@
 # - Dynamically update all translation .po files, don't hard code it
 
 scriptLocation="$( cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null 2>&1 && pwd )"
-echo $scriptLocation
 localesLocation="$scriptLocation/../locales"
-echo $localesLocation
 
 xgettext \
 	--from-code=utf-8 \
@@ -23,4 +21,3 @@ xgettext \
 	*/*.py
 
 msgmerge --update "$localesLocation/nno/LC_MESSAGES/base.po" "$localesLocation/base.pot"
-msgfmt -o "$localesLocation/nno/LC_MESSAGES/base.mo" "$localesLocation/nno/LC_MESSAGES/base"
