@@ -188,6 +188,11 @@ class Radio():
 		radioTable = db.table("Radio_mnm")
 		radio = radioTable.get(doc_id=1)
 
+		# Stop if radio doesn't exist (if device is registered)
+		if not radio:
+			logger.debug("Can't post radio state to the API when the radio isn't registered.")
+			return False
+
 		data = {
 			"homeId": radio["homeId"],
 			"apiKey": radio["apiKey"],
