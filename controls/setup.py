@@ -44,7 +44,6 @@ class Registration():
 			config.radio.fetchChannels()
 		else:
 			logger.debug("Radio isn't registered! Starting registration.")
-			display.notification(_("Acquiring codes"))
 
 			self.response = requests.get(config.apiServer + "/api/1/getRegisterCode", verify=config.verifyCertificate)
 			self.response = self.response.json()
