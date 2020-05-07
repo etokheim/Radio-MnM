@@ -61,9 +61,9 @@ class Registration():
 
 			# Display the code on the display, and set the display duration to a very long time
 			if config.displayHeight == 1:
-				display.notification(self.response["code"], 100000)
+				display.standardContent = self.response["code"]
 			else:
-				display.notification(_("Register radio:") + "\n\r" + self.response["code"], 100000)
+				display.standardContent = _("Register radio:") + "\n\r" + self.response["code"]
 			
 			# Start isRegisteredThread
 			self.checkIfRegisteredLoop = self.CheckIfRegisteredLoop(self)

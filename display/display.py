@@ -108,7 +108,7 @@ class Display(threading.Thread):
 						self.standardContent = config.radio.selectedChannel["name"] + "\n\r" + str(meta)
 					else:
 						self.standardContent = config.radio.selectedChannel["name"]
-				else:
+				elif self.standardContent == "":
 					self.standardContent = "No channels"
 
 				# Clear expired notifications
