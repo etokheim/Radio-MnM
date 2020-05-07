@@ -42,7 +42,10 @@ class Registration():
 			self.response = self.response.json()
 
 			# Display the code on the display, and set the display duration to a very long time
-			display.notification(_("Register radio:") + "\n\r" + str(self.response["code"]), 100000)
+			if config.displayHeight == 1:
+				display.notification(self.response["code"], 100000)
+			else:
+				display.notification(_("Register radio:") + "\n\r" + self.response["code"], 100000)
 
 			# Check if the radio has been registered
 			isRegistered = self.checkIfRegistered()
@@ -52,7 +55,11 @@ class Registration():
 				time.sleep(1)
 			
 			if isRegistered["status"] == False:
-				display.notification(_("Code expired, \n\rfetching new one"))
+				if config.displayHeight == 1:
+					display.notification(_("Getting new code"))
+				else:
+					display.notification(_("Code expired, \n\rfetching new one"))
+					
 				time.sleep(1)
 				self.start()
 				return

@@ -72,12 +72,18 @@ class ResetCountdown(threading.Thread):
 	def run(self):
 		display.notification(_("RESETTING RADIO") + "\n****************")
 		time.sleep(1.5)
+		# Add the text to a variable so we only have to translate it once.
+		confirmText = _("ARE YOU SURE?")
+
 		while button.state == "down":
 			self.loadingBar = self.loadingBar + "█"
-			display.notification(_("ARE YOU SURE?") + "\n\r" + self.loadingBar)
-			time.sleep(0.3)
+			if config.displayHeight == 1:
+				display.notification(confirmText + "\r" + self.loadingBar)
+			else: 
+				display.notification(confirmText + "\n\r" + self.loadingBar)
+			time.sleep(3 / config.displayWidth)
 			
-			if len(self.loadingBar) >= 15:
+			if len(self.loadingBar) >= config.displayWidth:
 				setup.reset()
 				return
 
