@@ -110,6 +110,12 @@ def powerSwitchUpHandler(event):
 	button.pause()
 	config.radio.sendState("suspended")
 
+	# I'm not quite sure I have to reset all of these values
+	display.currentlyDisplayingMessage = ""
+	display.notificationMessage = ""
+	display.lastDisplayedMessage = ""
+	display.lastDisplayedCroppedMessage = ""
+
 powerSwitch.listen(powerSwitch.up, powerSwitchUpHandler)
 
 def powerSwitchDownHandler(event):
