@@ -15,13 +15,22 @@ else:
 
 
 if config.raspberry:
+	# Compensate for a weird display quirk. Read more in the comments above
+	# config.oneDisplayLineIsTwoLines
+	if config.oneDisplayLineIsTwoLines:
+		actualDisplayWidth = config.displayWidth // 2
+		actualDisplayHeight = config.displayHeight * 2
+	else:
+		actualDisplayWidth = config.displayWidth
+		actualDisplayHeight = config.displayHeight
+
 	# We are using the GPIO numbering scheme
 	lcd = CharLCD(
 		# (int) Number of columns per row (usually 16 or 20). Default: 20.
-		cols=config.displayWidth,
+		cols=actualDisplayWidth,
 		
 		# (int) Number of display rows (usually 1, 2 or 4). Default: 4.
-		rows=config.displayHeight,
+		rows=actualDisplayHeight,
 		
 		pin_rs=26,
 		
@@ -257,8 +266,19 @@ class Display(threading.Thread):
 		if config.debug:
 			self.writeToSimulatedScreen(message)
 		
-		# Write to the actual display, if we are running on a Raspberry Pi
-		if config.raspberry:
+		# Write message to the actual display, if we are running on a Raspberry Pi
+		if config.raspberry:			
+			# Handle weir display quirk, where one line in the code only refers to half a line on the actual
+			# display. Ie.: to fill a 16x1 display, you have to do 12345678\n90123456
+			if config.oneDisplayLineIsTwoLines:
+				stripCarriages = message.replace("\r", "")
+				lines = stripCarriages.split("\n")
+				message = ""
+
+				for line in lines:
+					# Double / always returns a floored result (int, not float). 8 / 2 = 4.0, 8 // 2 = 4...
+					message = message + line[0:config.displayWidth // 2] + "\n\r" + line[config.displayWidth // 2:config.displayWidth]
+
 			lcd.write_string(message)
 
 	def writeToSimulatedScreen(self, message):

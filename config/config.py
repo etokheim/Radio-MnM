@@ -40,7 +40,11 @@ radio = None
 
 # In characters, not pixels
 displayWidth = 16
-displayHeight = 2
+displayHeight = 1
+
+# Weird display quirk, where one line is two lines for the computer. I guess this is due to
+# some cost saving initiative in display production.
+oneDisplayLineIsTwoLines = True
 
 # For how many steps we should pause when displaying the start of the line
 displayScrollingStartPauseSteps = 12
