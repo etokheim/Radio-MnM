@@ -112,6 +112,10 @@ class Radio():
 
 	# Bumps the channel n times. Loops around if bumping past the last channel.
 	def bump(self, bumps = 1):
+		if not self.channels:
+			logger.debug("Can't bump channel when there are none available.")
+			return
+
 		playedChannel = self.selectedChannel
 
 		bumpTo = 0
