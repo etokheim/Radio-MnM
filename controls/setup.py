@@ -23,6 +23,7 @@ class Registration():
 	def __init__(self):
 		logger.debug("Checking if radio is registered")
 		self.tooWideCodeErrorCount = 0
+		self.checkIfRegisteredLoop = None
 
 	def checkIfRegistered(self):
 		isRegistered = requests.post(config.apiServer + "/api/1/isRegistered", data = {
@@ -64,10 +65,10 @@ class Registration():
 				display.notification(self.response["code"], 100000)
 			else:
 				display.notification(_("Register radio:") + "\n\r" + self.response["code"], 100000)
-
+			
 			# Start isRegisteredThread
-			checkIfRegisteredLoop = self.CheckIfRegisteredLoop(self)
-			checkIfRegisteredLoop.start()
+			self.checkIfRegisteredLoop = self.CheckIfRegisteredLoop(self)
+			self.checkIfRegisteredLoop.start()
 
 	class CheckIfRegisteredLoop(threading.Thread):
 		def __init__(self, parent):
@@ -91,6 +92,9 @@ class Registration():
 				if not config.on:
 					self.stop()
 					return
+
+			if not self.running:
+				return
 
 			# When the radio is registered, stop the loop
 			self.stop()
@@ -129,24 +133,29 @@ class Registration():
 		def stop(self):
 			self.running = False
 			logger.debug("Stopped the loop for checking if the radio is registered.")
+	
+	def reset(self):
+		# Stop the checkIfRegisteredLoop if it's running. It's only running if the radio is in the
+		# middle of registering.
+		if self.checkIfRegisteredLoop:
+			self.checkIfRegisteredLoop.stop()
+
+		display.notification(_("Resetting radio") + "\n****************")
+
+		# Stop playing
+		config.radio.stop()
+
+		# TODO: Send request to delete itself
+		
+		time.sleep(2)
+		os.remove("./db/db.json")
+		logger.warning("Removed database")
+
+		# Remove the old channels from memory
+		config.radio.channels = []
+		config.radio.media = config.radio.instance.media_new("")
+		config.radio.selectedChannel = None
+		
+		registration.start()
 
 registration = Registration()
-
-def reset():
-	display.notification(_("Resetting radio") + "\n****************")
-
-	# Stop playing
-	config.radio.stop()
-
-	# TODO: Send request to delete itself
-	
-	time.sleep(2)
-	os.remove("./db/db.json")
-	logger.warning("Removed database")
-
-	# Remove the old channels from memory
-	config.radio.channels = []
-	config.radio.media = config.radio.instance.media_new("")
-	config.radio.selectedChannel = None
-	
-	registration.start()

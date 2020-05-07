@@ -93,7 +93,7 @@ class Radio():
 				display.notification(_("This radio was\n\runregistered!"))
 				time.sleep(3)
 				display.notification(_("Resetting radio\n\rin three seconds"))
-				setup.reset()
+				setup.registration.reset()
 				return
 
 			# Recover by using channels from local db instead if we have them

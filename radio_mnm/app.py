@@ -84,7 +84,7 @@ class ResetCountdown(threading.Thread):
 			time.sleep(3 / config.displayWidth)
 			
 			if len(self.loadingBar) >= config.displayWidth:
-				setup.reset()
+				setup.registration.reset()
 				return
 
 def buttonVeryLongPressHandler(event):
