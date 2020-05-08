@@ -116,6 +116,11 @@ if [ $development = true ]; then
 	echo -e "\tpython3 -m radio_mnm"
 else
 	step "Registering service..." true
+	
+	# First create the service file
+	echo "$serviceFile" > "$scriptLocation/radio-mnm.service"
+
+	# Then copy it into the correct location
 	cp "$scriptLocation/radio-mnm.service" "/etc/systemd/system"
 
 	# Reload daemon (necessary if a radio-mnm.service has already been registered).
