@@ -67,8 +67,6 @@ class Radio():
 		radioTable = db.table("Radio_mnm")
 		radio = radioTable.get(doc_id=1)
 
-		display.notification(_("Fetching streams"))
-
 		try:
 			headers = { "apiKey": radio["apiKey"] }
 			response = requests.get(config.apiServer + "/radio/api/1/channels?homeId=" + radio["homeId"], headers=headers, verify=config.verifyCertificate)
