@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #####################################
 #                                   #
 #               Setup               #
@@ -14,13 +16,34 @@ fi
 
 scriptLocation="$(dirname $(readlink -f "$0"))"
 
+currentStep=1
+function step() {
+	if [ $2 ]; then
+		newLine=false
+	else
+		newLine=true
+	fi
+	
+	if [ $newLine = true ]; then
+		echo -e "\nStep $currentStep - $1\n\n"
+	else
+		# Don't create newline
+		echo -en "\nStep $currentStep - $1"
+	fi
+
+	currentStep=$((currentStep+1))
+}
+
+
 #####################################
 #                                   #
 #        Install dependencies       #
 #                                   #
 #####################################
+step "Update"
 apt-get update -y
 
+step "Install dependencies"
 apt-get install -y \
 	vlc \
 	pulseaudio \
@@ -29,6 +52,7 @@ apt-get install -y \
 	nano \
 	git
 
+step "Install Python dependencies"
 pip3 install -r "$scriptLocation/../requirements.txt"
 
 
@@ -37,7 +61,7 @@ pip3 install -r "$scriptLocation/../requirements.txt"
 # Create missing files and folders  #
 #                                   #
 #####################################
-echo -n "Creating necessary folders..."
+step "Creating necessary folders..." true
 
 # Make db and logs directories or the script will error out
 if [ ! -d "$scriptLocation/../db" ]; then
@@ -48,7 +72,7 @@ if [ ! -d "$scriptLocation/../logs" ]; then
 	mkdir "$scriptLocation/../logs"
 fi
 
-echo "\tDone!"
+echo -e "\tDone!\n\n"
 
 
 #####################################
@@ -56,7 +80,7 @@ echo "\tDone!"
 #         Register service          #
 #                                   #
 #####################################
-echo -n "Registering service..."
+step "Registering service..." true
 cp "$scriptLocation/radio-mnm.service" "/etc/systemd/system"
 
 # Reload daemon (necessary if a radio-mnm.service has already been registered).
@@ -68,6 +92,6 @@ sudo systemctl start radio-mnm.service
 # Start the service on boot
 sudo systemctl enable radio-mnm.service
 
-echo "\t\tDone!"
+echo -e "\t\tDone!\n\n"
 
-echo "\nThe service is running successfully and starts automatically on boot"
+echo -e "\nThe service is running successfully and starts automatically on boot"
