@@ -1,9 +1,12 @@
 import os
 import gettext
+import logging
 
 nno = gettext.translation("base", localedir="locales", languages=["nno"])
 
-debug = True
+debug = False
+
+productionLoggingLevel = logging.INFO
 
 # If running on a raspberry pi, set to true
 # This is a bit over simplified, but it works (just checks if the machine

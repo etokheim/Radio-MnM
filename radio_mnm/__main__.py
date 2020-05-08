@@ -31,14 +31,14 @@ else:
 	formatter = logging.Formatter("%(asctime)s - %(levelname)s	│ %(message)s")
 
 	rotateHandler.setFormatter(formatter)
-	logger.setLevel(logging.DEBUG)
+	logger.setLevel(config.productionLoggingLevel)
 	
 	logger.addHandler(rotateHandler)
 
 from radio_mnm import app
 
 def main():
-	# The logic for starting your application.
+	logger.info("Starting up")
 	app.run()
 
 if __name__ == "__main__":
