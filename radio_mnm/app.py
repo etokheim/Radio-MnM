@@ -75,14 +75,20 @@ class ResetCountdown(threading.Thread):
 		# Add the text to a variable so we only have to translate it once.
 		confirmText = _("ARE YOU SURE?")
 		confirmTextLength = len(confirmText)
+		display.notification(confirmText)
+		time.sleep(0.3)
 
 		while button.state == "down":
-			self.loadingBar = self.loadingBar + "█"
+			self.loadingBar = self.loadingBar + "*"
+			# self.loadingBar = self.loadingBar + "█"
 			if config.displayHeight == 1:
 				display.notification(self.loadingBar + confirmText[len(self.loadingBar) : confirmTextLength])
 			else: 
 				display.notification(confirmText + "\n\r" + self.loadingBar)
-			time.sleep(3 / config.displayWidth)
+			
+			# Sleeping shorter than 0.3 seconds seems to make the display go corrupt...
+			time.sleep(0.3)
+			# time.sleep(3 / config.displayWidth)
 			
 			if len(self.loadingBar) >= config.displayWidth:
 				setup.registration.reset()
