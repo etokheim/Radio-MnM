@@ -145,7 +145,7 @@ class Radio():
 		bestMatchBitrate = streams[0]["bitrate"]
 
 		for i in range(len(streams)):
-			if min(streams[i]["bitrate"] - config.quality, streams[bestMatchIndex]["bitrate"]) - config.quality != bestMatchBitrate:
+			if min(streams[i]["bitrate"] - config.bitrate, streams[bestMatchIndex]["bitrate"]) - config.bitrate != bestMatchBitrate:
 				bestMatchBitrate = streams[i]["bitrate"]
 				bestMatchIndex = i
 		

@@ -31,7 +31,7 @@ else:
 	formatter = logging.Formatter("%(asctime)s - %(levelname)s	│ %(message)s")
 
 	rotateHandler.setFormatter(formatter)
-	logger.setLevel(config.productionLoggingLevel)
+	logger.setLevel(config.productionLogLevel)
 	
 	logger.addHandler(rotateHandler)
 
