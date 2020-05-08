@@ -2,3 +2,6 @@ __pycache__
 db/db.json
 .vscode/.ropeproject
 logs
+
+# This file needs to be dynamically generated for the app to be location independent
+scripts/radio-mnm.service

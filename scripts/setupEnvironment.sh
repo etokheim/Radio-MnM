@@ -21,6 +21,9 @@ fi
 
 scriptLocation="$(dirname $(readlink -f "$0"))"
 
+# Just removes the last directory from the scriptLocation
+appLocation="$(echo $scriptLocation | sed 's,/*[^/]\+/*$,,')"
+
 currentStep=1
 function step() {
 	if [ $2 ]; then
@@ -91,6 +94,23 @@ echo -e "\t\e[32mDone!\e[0m\n\n"
 #         Register service          #
 #                                   #
 #####################################
+serviceFile=\
+"[Unit]
+Description=Radio M&M
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 -u -m radio_mnm
+WorkingDirectory=$appLocation
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=pi
+EnvironmentFile=.env
+
+[Install]
+WantedBy=multi-user.target"
+
 if [ $development = true ]; then
 	echo -e "\nDev environment is ready. You can start the app by running the following command:"
 	echo -e "\tpython3 -m radio_mnm"
