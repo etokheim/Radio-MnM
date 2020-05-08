@@ -128,6 +128,10 @@ class Registration():
 			
 			# Then fetch channels
 			config.radio.fetchChannels()
+			
+			# And finally start playing
+			if len(config.radio.channels) > 0:
+				config.radio.play()
 		
 		def stop(self):
 			self.running = False
