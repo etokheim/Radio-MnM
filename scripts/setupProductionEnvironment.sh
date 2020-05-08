@@ -25,10 +25,12 @@ function step() {
 	fi
 	
 	if [ $newLine = true ]; then
-		echo -e "\nStep $currentStep - $1\n\n"
+		# Underlined, light gray
+		echo -e "\n\e[94mStep $currentStep - $1\e[0m\n\n"
 	else
+		# Underlined, light gray
 		# Don't create newline
-		echo -en "\nStep $currentStep - $1"
+		echo -en "\n\e[94mStep $currentStep - $1\e[0m"
 	fi
 
 	currentStep=$((currentStep+1))
@@ -72,7 +74,7 @@ if [ ! -d "$scriptLocation/../logs" ]; then
 	mkdir "$scriptLocation/../logs"
 fi
 
-echo -e "\tDone!\n\n"
+echo -e "\t\e[32mDone!\e[0m\n\n"
 
 
 #####################################
@@ -92,6 +94,6 @@ sudo systemctl start radio-mnm.service
 # Start the service on boot
 sudo systemctl enable radio-mnm.service
 
-echo -e "\t\tDone!\n\n"
+echo -e "\t\t\e[32mDone!\e[0m\n\n"
 
 echo -e "\nThe service is running successfully and starts automatically on boot"
