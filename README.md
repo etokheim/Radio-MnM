@@ -3,31 +3,41 @@
 ## Setup
 ### Production
 
-   1. Make a copy of `env.example` and rename it to `.env`
+   1. Follow these steps to connect your display, power switch and button via the Pi's GPIO pins
+   2. Open a terminal on your Raspberry Pi
+   3. Navigate to where you want the app. Ie. in your home directory:
+      ```bash
+      cd
+      ```
+   4. Clone this repository (downloads the application files):
+      ```bash
+      git clone [url]
+      ```
+         - You can get the url by clicking the clone button in the top right corner. If in doubt, use the HTTPS version.
+   5. Make a copy of `env.example` and rename it to `.env`
       ```bash
       $ cp env.example .env
       ```
-   2. Edit the .env file
+   6. Edit the .env file with a text editor. Ie. Nano:
       ```bash
       $ nano .env
       ```
-   3. Make the configuration script executable:
+         - `ctrl` + `x` and follow the instructions to save and exit
+   7. Make the configuration script executable:
       ```bash
-      $ chmod +x scripts/setupProductionEnvironment.sh
+      $ chmod +x scripts/setupEnvironment.sh
       ```
-   4. Run the configuration script:
+   8. Run the configuration script:
       ```bash
-      $ ./scripts/setupProductionEnvironment.sh
+      $ ./scripts/setupEnvironment.sh
       ```
 
 ### Development
 
-_Install everything from production including the following:_
-
-   1. Follow step 1 - 3 for production setup
+   1. Follow the steps for a production setup until you are going to execute  setupEnvironment.sh. Don't execute it that way.
    2. Run the configuration script (notice the argument **--development**):
          ```bash
-         $ ./scripts/setupProductionEnvironment.sh --development
+         $ ./scripts/setupEnvironment.sh --development
          ```
    3. Start the app:
       ```bash
