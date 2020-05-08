@@ -14,6 +14,11 @@ if [ `whoami` != root ]
 	exit
 fi
 
+development=false
+if [ $1 == "--development" ]; then
+	development=true
+fi
+
 scriptLocation="$(dirname $(readlink -f "$0"))"
 
 currentStep=1
@@ -57,6 +62,10 @@ apt-get install -y \
 step "Install Python dependencies"
 pip3 install -r "$scriptLocation/../requirements.txt"
 
+if [ $development = true ]; then
+	apt-get install -y gettext
+fi
+
 
 #####################################
 #                                   #
@@ -82,18 +91,23 @@ echo -e "\t\e[32mDone!\e[0m\n\n"
 #         Register service          #
 #                                   #
 #####################################
-step "Registering service..." true
-cp "$scriptLocation/radio-mnm.service" "/etc/systemd/system"
+if [ $development = true ]; then
+	echo -e "\nDev environment is ready. You can start the app by running the following command:"
+	echo -e "\tpython3 -m radio_mnm"
+else
+	step "Registering service..." true
+	cp "$scriptLocation/radio-mnm.service" "/etc/systemd/system"
 
-# Reload daemon (necessary if a radio-mnm.service has already been registered).
-sudo systemctl daemon-reload
+	# Reload daemon (necessary if a radio-mnm.service has already been registered).
+	sudo systemctl daemon-reload
 
-# Start the service
-sudo systemctl start radio-mnm.service
+	# Start the service
+	sudo systemctl start radio-mnm.service
 
-# Start the service on boot
-sudo systemctl enable radio-mnm.service
+	# Start the service on boot
+	sudo systemctl enable radio-mnm.service
 
-echo -e "\t\t\e[32mDone!\e[0m\n\n"
+	echo -e "\t\t\e[32mDone!\e[0m\n\n"
 
-echo -e "\nThe service is running successfully and starts automatically on boot"
+	echo -e "\nThe service is running successfully and starts automatically on boot"
+fi
