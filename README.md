@@ -48,8 +48,8 @@
 
 ## Debugging
 Try the following if you don't get audio output:
- 3. `pulseaudio --start`
- 4. Set the audio jack output as the primary output device:
+ 1. `pulseaudio --start`
+ 2. Set the audio jack output as the primary output device:
     - `raspi-config` -> advanced -> audio -> output, force 3.5 mm audio jack
 
 ## TODOs:
