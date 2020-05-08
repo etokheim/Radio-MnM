@@ -5,7 +5,7 @@
 # The script is not very foolproof yet. Things TODO:
 # - Dynamically update all translation .po files, don't hard code it
 
-scriptLocation="$( cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null 2>&1 && pwd )"
+scriptLocation="$(dirname $(readlink -f "$0"))"
 localesLocation="$scriptLocation/../locales"
 
 xgettext \
