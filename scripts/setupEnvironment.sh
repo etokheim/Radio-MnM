@@ -1,10 +1,10 @@
 #!/bin/bash
 
-#####################################
-#                                   #
-#               Setup               #
-#                                   #
-#####################################
+######################################
+#                                    #
+#               Setup                #
+#                                    #
+######################################
 # Exit if any command fails
 set -e
 
@@ -45,11 +45,11 @@ function step() {
 }
 
 
-#####################################
-#                                   #
-#        Install dependencies       #
-#                                   #
-#####################################
+######################################
+#                                    #
+#        Install dependencies        #
+#                                    #
+######################################
 step "Update"
 apt-get update -y
 
@@ -76,12 +76,14 @@ if [ $development = true ]; then
 fi
 
 
-#####################################
-#                                   #
-# Create missing files and folders  #
-#                                   #
-#####################################
-step "Creating necessary folders..." true
+######################################
+#                                    #
+#    Fixing file permissions and     #
+# creating missing files and folders #
+#                                    #
+######################################
+step "Updating file permissions and creating necessary folders..." true
+
 
 # Make db and logs directories or the script will error out
 if [ ! -d "$scriptLocation/../db" ]; then
@@ -92,14 +94,35 @@ if [ ! -d "$scriptLocation/../logs" ]; then
 	mkdir "$scriptLocation/../logs"
 fi
 
+# If we are in a production environment
+if [ $development = false ]; then
+	# Create a radio-mnm user with as few as possible permissions and let it run the app
+	if ! id "radio-mnm" >/dev/null 2>&1; then
+		useradd -m radio-mnm
+
+		# Grant access to GPIO pins
+		adduser radio-mnm gpio
+		
+		# Grant access to play audio
+		adduser radio-mnm audio
+	fi
+	
+	# Give all the files to radio-mnm
+	chown radio-mnm "$appLocation" -R
+	chmod 774 . -R
+fi
+
+# Making the rest of the script files executable
+chmod +x "$appLocation/load-dotenv.sh" "$scriptLocation/update.sh" "$scriptLocation/locales_apply_update.sh" "$scriptLocation/locales_update.sh"
+
 echo -e "\t\e[32mDone!\e[0m\n\n"
 
 
-#####################################
-#                                   #
-#         Register service          #
-#                                   #
-#####################################
+######################################
+#                                    #
+#         Register service           #
+#                                    #
+######################################
 serviceFile=\
 "[Unit]
 Description=Radio M&M
@@ -111,8 +134,8 @@ WorkingDirectory=$appLocation
 StandardOutput=inherit
 StandardError=inherit
 Restart=always
-User=pi
-EnvironmentFile=.env
+User=radio-mnm
+EnvironmentFile=$appLocation/.env
 
 [Install]
 WantedBy=multi-user.target"
@@ -123,11 +146,18 @@ if [ $development = true ]; then
 else
 	step "Registering service..." true
 	
-	# First create the service file
+	# First create the service file. This file will belong to root, as we are running as
+	# sudo, but we can't do anything about it as we don't know who the normal user is.
+	# Therefor we will give free access to this file afterwards.
 	echo "$serviceFile" > "$scriptLocation/radio-mnm.service"
 
-	# Then copy it into the correct location
+	# Give everyone access to the file, as we don't know which user to give it to.
+	chmod 666 "$scriptLocation/radio-mnm.service"
+
+	# Then copy it into the correct location and give it stricter permissions.
 	cp "$scriptLocation/radio-mnm.service" "/etc/systemd/system"
+	chown root:root "/etc/systemd/system/radio-mnm.service"
+	chmod 644 "/etc/systemd/system/radio-mnm.service"
 
 	# Reload daemon (necessary if a radio-mnm.service has already been registered).
 	sudo systemctl daemon-reload
@@ -138,7 +168,7 @@ else
 	# Start the service on boot
 	sudo systemctl enable radio-mnm.service
 
-	echo -e "\t\t\e[32mDone!\e[0m\n\n"
+	echo -e "\t\t\t\t\t\t\e[32mDone!\e[0m\n\n"
 
 	echo -e "\nThe service is running successfully and starts automatically on boot"
 fi
