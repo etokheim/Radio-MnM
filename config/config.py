@@ -10,7 +10,7 @@ def castToBool(string):
 
 nno = gettext.translation("base", localedir="locales", languages=["nno"])
 
-debug = os.environ["mnm_debug"]
+debug = castToBool(os.environ["mnm_debug"])
 
 level = os.environ["mnm_productionLogLevel"]
 if level == "critical":
