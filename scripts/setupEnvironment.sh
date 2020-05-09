@@ -53,6 +53,12 @@ function step() {
 step "Update"
 apt-get update -y
 
+# Only upgrade if we are in a production environment
+# Dev users might not appreciate an auto upgrade.
+if [ $development = false ]; then
+	apt-get upgrade -y
+fi
+
 step "Install dependencies"
 apt-get install -y \
 	vlc \
