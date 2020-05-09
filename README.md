@@ -61,6 +61,9 @@ Try the following if you don't get audio output:
 
 _Any help is appreciated!_
 
- 1. Fix error messages:
-    1. `ES_OUT_SET_(GROUP_)PCR is called too late (pts_delay increased to 1000 ms)`
-        - Appears to have no negative side effects..? Though others says their video freezes if they are streaming video when the error comes.
+   1. Fix error messages:
+      1. `ES_OUT_SET_(GROUP_)PCR is called too late (pts_delay increased to 1000 ms)`
+         - Appears to have no negative side effects..? Though others says their video freezes if they are streaming video when the error comes.
+      2. `vlcpulse audio output error: PulseAudio server connection failure: Connection refused`
+      3. `prefetch stream error: unimplemented query (264) in control`
+         - No apparent impact
