@@ -39,7 +39,12 @@
          ```bash
          $ ./scripts/setupEnvironment.sh --development
          ```
-   3. Start the app:
+   3. Load the environment variables into the shell you are using:
+         ```bash
+         $ source ./load-dotenv.sh
+         ```
+            - Note: you have to do this for every new shell you want to start the app from. Ie. if you restart your computer or open another terminal window, you have to repeat this step.
+   4. Start the app:
       ```bash
       python3 -m radio_mnm
       ```
