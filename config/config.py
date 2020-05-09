@@ -4,7 +4,7 @@ import logging
 
 nno = gettext.translation("base", localedir="locales", languages=["nno"])
 
-debug = os.environ["mnm_debug"] or False
+debug = os.environ["mnm_debug"]
 
 level = os.environ["mnm_productionLogLevel"]
 if level == "critical":
@@ -36,7 +36,7 @@ if os.uname()[4][:3] == "arm":
 # 64 kbps - A common bitrate for speech podcasts.
 # 128 kbps - Common standard for musical and high quality podcasts.
 # 320 kbps - Very high quality - almost indistinguishable from a CD.
-bitrate = os.environ["mnm_bitrate"] or 128
+bitrate = os.environ["mnm_bitrate"]
 
 player = None
 
@@ -49,19 +49,19 @@ on = False
 checkPowerSwitchStateInterval = 0.25
 checkButtonStateInterval = 0.01
 
-apiServer = os.environ["mnm_apiServer"] or "https://radio.tokheimgrafisk.no"
+apiServer = os.environ["mnm_apiServer"]
 verifyCertificate = "https://radio.tokheimgrafisk.no" == apiServer
 
 # Will be set to the radio 
 radio = None
 
 # In characters, not pixels
-displayWidth = os.environ["mnm_displayWidth"] or 16
-displayHeight = os.environ["mnm_displayHeight"] or 2
+displayWidth = os.environ["mnm_displayWidth"]
+displayHeight = os.environ["mnm_displayHeight"]
 
 # Weird display quirk, where one line is two lines for the computer. I guess this is due to
 # some cost saving initiative in display production.
-oneDisplayLineIsTwoLines = os.environ["mnm_oneDisplayLineIsTwoLines"] or False
+oneDisplayLineIsTwoLines = os.environ["mnm_oneDisplayLineIsTwoLines"]
 
 # For how many steps we should pause when displaying the start of the line
 displayScrollingStartPauseSteps = 12
