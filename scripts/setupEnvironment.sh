@@ -39,11 +39,11 @@ function step() {
 	
 	if [ $newLine = true ]; then
 		# Underlined, light gray
-		echo -e "\n\e[94mStep $currentStep - $1\e[0m\n\n"
+		echo -e "\n\n\e[94mStep $currentStep - $1\e[0m\n"
 	else
 		# Underlined, light gray
 		# Don't create newline
-		echo -en "\n\e[94mStep $currentStep - $1\e[0m"
+		echo -en "\n\n\e[94mStep $currentStep - $1\e[0m"
 	fi
 
 	currentStep=$((currentStep+1))
@@ -126,7 +126,7 @@ fi
 # Making the rest of the script files executable for owner and group members
 chmod g+x,u+x "$appLocation/load-dotenv.sh" "$scriptLocation/update.sh" "$scriptLocation/locales_apply_update.sh" "$scriptLocation/locales_update.sh"
 
-echo -e "\t\e[32mDone!\e[0m\n\n"
+echo -e "\t\e[32mDone!\e[0m\n"
 
 
 ######################################
@@ -180,7 +180,7 @@ else
 	# Start the service on boot
 	sudo systemctl enable radio-mnm.service
 
-	echo -e "\t\t\t\t\t\t\e[32mDone!\e[0m\n\n"
+	echo -e "\t\t\t\t\t\t\e[32mDone!\e[0m\n"
 
 
 	######################################
@@ -217,7 +217,7 @@ else
 
 	# Remove the temporary cron file
 	rm tmp.cron
-	echo -e "\t\t\t\t\e[32mDone!\e[0m\n\n"
+	echo -e "\t\t\t\t\e[32mDone!\e[0m\n"
 
 	echo "
 

@@ -36,11 +36,11 @@ function step() {
 	
 	if [ $newLine = true ]; then
 		# Underlined, light gray
-		echo -e "\n\e[94mStep $currentStep - $1\e[0m\n\n"
+		echo -e "\n\n\e[94mStep $currentStep - $1\e[0m\n"
 	else
 		# Underlined, light gray
 		# Don't create newline
-		echo -en "\n\e[94mStep $currentStep - $1\e[0m"
+		echo -en "\n\n\e[94mStep $currentStep - $1\e[0m"
 	fi
 
 	currentStep=$((currentStep+1))
