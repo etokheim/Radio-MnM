@@ -24,6 +24,11 @@ scriptLocation="$(dirname $(readlink -f "$0"))"
 # Just removes the last directory from the scriptLocation
 appLocation="$(echo $scriptLocation | sed 's,/*[^/]\+/*$,,')"
 
+# Let's just guess who the local user is based on who owns the python module folder.
+# Note that we are using the group, not the owner, as we edit the owner and this script
+# could be run multiple times (even though it's not really necessary).
+userName=$(stat -c '%G' $appLocation/radio_mnm)
+
 currentStep=1
 function step() {
 	if [ $2 ]; then
@@ -94,6 +99,10 @@ if [ ! -d "$scriptLocation/../logs" ]; then
 	mkdir "$scriptLocation/../logs"
 fi
 
+# Since the folders are made by root, lets change the group to the local user. We will change the owner
+# later.
+chgrp $userName db logs
+
 # If we are in a production environment
 if [ $development = false ]; then
 	# Create a radio-mnm user with as few as possible permissions and let it run the app
@@ -153,8 +162,9 @@ else
 	# Therefor we will give free access to this file afterwards.
 	echo "$serviceFile" > "$scriptLocation/radio-mnm.service"
 
-	# Give everyone access to the file, as we don't know which user to give it to.
-	chmod 666 "$scriptLocation/radio-mnm.service"
+	# Update permissions
+	chown "radio-mnm:$userName" "$scriptLocation/radio-mnm.service"
+	chmod g+rw "$scriptLocation/radio-mnm.service"
 
 	# Then copy it into the correct location and give it stricter permissions.
 	cp "$scriptLocation/radio-mnm.service" "/etc/systemd/system"
