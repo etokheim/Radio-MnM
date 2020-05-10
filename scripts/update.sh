@@ -46,6 +46,8 @@ function step() {
 	currentStep=$((currentStep+1))
 }
 
+echo -e "Started updating: $(date)"
+
 #####################################
 #                                   #
 #             Update OS             #
@@ -76,3 +78,5 @@ git --git-dir="$appLocation/.git" pull
 step "Installing any new Python dependencies"
 pip3 install -r "$appLocation/requirements.txt"
 service radio-mnm start
+
+echo -e "Finished updating: $(date)"
