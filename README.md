@@ -31,6 +31,7 @@ We figured we should be able to build something. Better, simpler and inherently 
 #### Setup the Pi
 <details>
    <summary>Click to expand</summary>
+   
    1. Download any version of Raspbian Buster
       - We recommend the Lite version
       - Should work with any Linux distribution, but this is not tested at all. If you do, you might have to edit the `install.sh` script, but otherwise it should run fine.
