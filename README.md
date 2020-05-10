@@ -18,7 +18,67 @@ We figured we should be able to build something. Better, simpler and inherently 
 
 ## Setup
 ### Production
+#### What you'll need:
+   1. An LCD display
+   2. A power switch
+      - If you are retrofitting we recommend connecting to the radio's own power switch
+   3. A regular button
+      - To switch channels
+   4. A Raspberry Pi
+      - Only works on PIs, but it shouldn't matter which version
+      - On PI Zeros you also need a sound card for audio output
 
+#### Setup the Pi
+<details>
+   <summary>Click to expand</summary>
+   1. Download any version of Raspbian Buster
+      - We recommend the Lite version
+      - Should work with any Linux distribution, but this is not tested at all. If you do, you might have to edit the `install.sh` script, but otherwise it should run fine.
+   2. Follow their [installation guide](https://www.raspberrypi.org/documentation/installation/installing-images/README.md), but **do not boot it** before reading the next step
+   3. (Skip this if you are connecting to the Internet via a cable). If you don't want to connect an external display to setup WIFI, follow these steps to make the PI automatically connect to your local network after starting up:
+      1. Open the `boot` partition on the newly formatted SD-card
+      2. Create a new file named: `wpa_supplicant.conf`.
+      3. Open this file in any editor and add the following:
+         ```
+         country=NO # Your 2-digit country code
+         network={
+            ssid="YOUR_NETWORK_NAME"
+            psk="YOUR_PASSWORD"
+         }
+         ```
+         - Note: for unsecured networks, replace `psk="YOUR_PASSWORD` with `key_mgmt=NONE`
+   4. Boot the PI and wait for it to start (about 2 minutes)
+   5. Get the IP-address of the PI:
+      - Option one:
+         1. Open a terminal
+            - Windows:
+               1. Open CMD or PowerShell
+            - Linux:
+               1. `ctrl` + `alt` + `t`
+         2. Type the following:
+            ```sh
+            ping raspberrypi.local
+            ```
+               - Press `ctrl` + `c` to stop pinging.
+         3. If you get a reply, the output should contain your PI's IP. Copy it.
+      - Option two:
+         1. Open your router's administration page and look for the pi in it's device list.
+            - Note that not all routers supports this
+   6. Open a terminal
+      - Windows:
+         1. PowerShell, not CMD
+      - Linux:
+         1. `ctrl` + `alt` + `t`
+   7. Type the following:
+      ```sh
+      ssh pi@[ip address]
+      ```
+      - Hit enter and type your password (probably `raspberry`)
+   
+You should now be connected to the Raspberry and can proceed to the next section on how to install the actual application!
+</details>   
+
+#### Install Radio M&M
    1. Follow these steps to connect your display, power switch and button via the Pi's GPIO pins
    2. Open a terminal on your Raspberry Pi
    3. Navigate to where you want the app. Ie. in your home directory:
