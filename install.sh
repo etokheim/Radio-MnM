@@ -19,10 +19,10 @@ if [ $1 == "--development" ]; then
 	development=true
 fi
 
-scriptLocation="$(dirname $(readlink -f "$0"))"
-
 # Just removes the last directory from the scriptLocation
-appLocation="$(echo $scriptLocation | sed 's,/*[^/]\+/*$,,')"
+appLocation="$(dirname $(readlink -f "$0"))"
+
+scriptLocation="$appLocation/scripts"
 
 # Let's just guess who the local user is based on who owns the python module folder.
 # Note that we are using the group, not the owner, as we edit the owner and this script
