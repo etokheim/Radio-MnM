@@ -91,16 +91,20 @@ You should now be connected to the Raspberry and can proceed to the next section
       git clone [url]
       ```
          - You can get the url by clicking the clone button in the top right corner. If in doubt, use the HTTPS version.
-   5. Make a copy of `env.example` and rename it to `.env`
+   5. Go into the now downloaded application:
+      ```bash
+      $ cd radio-mnm
+      ```
+   6. Make a copy of `env.example` and rename it to `.env`
       ```bash
       $ cp env.example .env
       ```
-   6. Edit the .env file with a text editor. Ie. Nano:
+   7. Edit the .env file with a text editor. Ie. Nano:
       ```bash
       $ nano .env
       ```
          - `ctrl` + `x` and follow the instructions to save and exit
-   7. Run the configuration script:
+   8. Run the configuration script:
       ```bash
       $ ./install.sh
       ```
