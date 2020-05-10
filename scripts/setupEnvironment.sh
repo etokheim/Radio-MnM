@@ -109,11 +109,13 @@ if [ $development = false ]; then
 	
 	# Give all the files to radio-mnm
 	chown radio-mnm "$appLocation" -R
-	chmod 774 . -R
+
+	# Give group read and write access to every file
+	chmod g+rw . -R
 fi
 
-# Making the rest of the script files executable
-chmod +x "$appLocation/load-dotenv.sh" "$scriptLocation/update.sh" "$scriptLocation/locales_apply_update.sh" "$scriptLocation/locales_update.sh"
+# Making the rest of the script files executable for owner and group members
+chmod g+x,u+x "$appLocation/load-dotenv.sh" "$scriptLocation/update.sh" "$scriptLocation/locales_apply_update.sh" "$scriptLocation/locales_update.sh"
 
 echo -e "\t\e[32mDone!\e[0m\n\n"
 
