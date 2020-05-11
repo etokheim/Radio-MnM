@@ -88,6 +88,10 @@ radio = None
 # Initial radio volume
 volume = int(os.environ["mnm_volume"])
 
+saveListeningHistory = castToBool(os.environ["mnm_saveListeningHistory"])
+
+sendState = castToBool(os.environ["mnm_sendState"])
+
 
 ###################################
 #                                 #

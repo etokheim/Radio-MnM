@@ -164,6 +164,9 @@ class Radio():
 		return bestMatchIndex
 
 	def addToListeningHistory(self, startedListening, playedChannel, playingChannel = None):
+		if not config.saveListeningHistory:
+			return False
+
 		db = TinyDB('./db/db.json')
 		radioTable = db.table("Radio_mnm")
 		radio = radioTable.get(doc_id=1)
@@ -194,6 +197,9 @@ class Radio():
 			logger.error("Couldn't post listening history: " + str(status_code))
 
 	def sendState(self, state):
+		if not config.sendState:
+			return False
+		
 		db = TinyDB('./db/db.json')
 		radioTable = db.table("Radio_mnm")
 		radio = radioTable.get(doc_id=1)
