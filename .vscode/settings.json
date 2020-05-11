@@ -1,8 +1,13 @@
 {
 	"cSpell.words": [
+		"amixer",
+		"compat",
 		"gethostbyname",
 		"gpio",
 		"kbps",
+		"mode",
+		"rplcd",
+		"sset",
 		"tinydb",
 		"uname",
 		"zope"
