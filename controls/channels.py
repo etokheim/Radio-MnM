@@ -8,6 +8,7 @@ import sys
 import time
 import gettext
 import socket
+import subprocess
 
 _ = config.nno.gettext
 
@@ -22,6 +23,8 @@ class Radio():
 		self.media = self.instance.media_new("")
 		self.selectedChannel = None
 		self.lastPowerState = None
+		self.volume = config.volume
+		self.setVolume(self.volume)
 
 		# When the user started listening. For analytics purposes.
 		self.startedListeningTime = None
@@ -139,6 +142,15 @@ class Radio():
 
 		logger.debug("bumps " + str(bumps) + ", bumping to: " + str(bumpTo))
 		self.playChannel(self.channels[bumpTo])
+
+	def setVolume(self, volume):
+		try:
+			subprocess.call(["amixer", "-D", "pulse", "sset", "Master", str(volume) + "%"])
+			return True
+		
+		except ValueError:
+			pass
+
 
 	def getBestBitRateMatch(self, streams):
 		bestMatchIndex = 0

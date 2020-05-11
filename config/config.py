@@ -77,3 +77,6 @@ displayScrollingStopPauseSteps = 8
 
 # Time between scrolls
 displayScrollSpeed = 0.2 # seconds
+
+# Initial radio volume
+volume = int(os.environ["mnm_volume"])
