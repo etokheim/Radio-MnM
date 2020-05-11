@@ -1,13 +1,32 @@
+###################################
+#                                 #
+#            Overview             #
+#                                 #
+###################################
+# The config file is a nice place to set, transform or parse values in a central place.
+
+
+###################################
+
 import os
 import gettext
 import logging
 
+# Boolean environment variables has to be casted to Python booleans as they are only parsed
+# as strings. A string will always evaluate to true.
 def castToBool(string):
 	if string == "True" or string == "true" or string == "1":
 		return True
 	else:
 		return False
 
+###################################
+#                                 #
+#              Setup              #
+#                                 #
+###################################
+# Language
+# TODO: Get language from API
 nno = gettext.translation("base", localedir="locales", languages=["nno"])
 
 debug = castToBool(os.environ["mnm_debug"])
@@ -35,6 +54,23 @@ raspberry = False
 if os.uname()[4][:3] == "arm":
 	raspberry = True
 
+longPressThreshold = 600
+veryLongPressThreshold = 5000
+
+checkPowerSwitchStateInterval = 0.25
+checkButtonStateInterval = 0.01
+
+apiServer = os.environ["mnm_apiServer"]
+verifyCertificate = True
+
+
+###################################
+#                                 #
+#              Radio              #
+#                                 #
+###################################
+# TODO: Move radio out of the config file
+
 # Bitrates
 # Put an int in the bitrate variable, and the stream closest to that bitrate will be used.
 # 32 kbps - Poor audio quality
@@ -44,24 +80,21 @@ if os.uname()[4][:3] == "arm":
 # 320 kbps - Very high quality - almost indistinguishable from a CD.
 bitrate = int(os.environ["mnm_bitrate"])
 
-player = None
-
-playingChannel = 0
-
-longPressThreshold = 600
-veryLongPressThreshold = 5000
 on = False
-
-checkPowerSwitchStateInterval = 0.25
-checkButtonStateInterval = 0.01
-
-apiServer = os.environ["mnm_apiServer"]
-verifyCertificate = "https://radio.tokheimgrafisk.no" == apiServer
 
 # Will be set to the radio 
 radio = None
 
-# In characters, not pixels
+# Initial radio volume
+volume = int(os.environ["mnm_volume"])
+
+
+###################################
+#                                 #
+#             Display             #
+#                                 #
+###################################
+# Amount of characters, not pixels
 displayWidth = int(os.environ["mnm_displayWidth"])
 displayHeight = int(os.environ["mnm_displayHeight"])
 
@@ -78,14 +111,7 @@ displayScrollingStopPauseSteps = 8
 # Time between scrolls
 displayScrollSpeed = 0.2 # seconds
 
-# Initial radio volume
-volume = int(os.environ["mnm_volume"])
-
-###################################
-#                                 #
-#             Display             #
-#                                 #
-###################################
+# Which GPIO pins the LCD pins are connected to
 lcdRsToGpio			= int(os.environ["mnm_lcdRsToGpio"])
 lcdEnToGpio			= int(os.environ["mnm_lcdEnToGpio"])
 lcdData4ToGpio		= int(os.environ["mnm_lcdData4ToGpio"])
