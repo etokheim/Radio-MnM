@@ -35,8 +35,8 @@ raspberry = False
 if os.uname()[4][:3] == "arm":
 	raspberry = True
 
-# Qualities
-# Put a number in the quality variable, and the stream closest to that bitrate will be used.
+# Bitrates
+# Put an int in the bitrate variable, and the stream closest to that bitrate will be used.
 # 32 kbps - Poor audio quality
 # 48 kbps - A reasonable lower end rate for longer speech-only podcasts
 # 64 kbps - A common bitrate for speech podcasts.
@@ -80,3 +80,18 @@ displayScrollSpeed = 0.2 # seconds
 
 # Initial radio volume
 volume = int(os.environ["mnm_volume"])
+
+###################################
+#                                 #
+#             Display             #
+#                                 #
+###################################
+lcdRsToGpio			= int(os.environ["mnm_lcdRsToGpio"])
+lcdEnToGpio			= int(os.environ["mnm_lcdEnToGpio"])
+lcdData4ToGpio		= int(os.environ["mnm_lcdData4ToGpio"])
+lcdData5ToGpio		= int(os.environ["mnm_lcdData5ToGpio"])
+lcdData6ToGpio		= int(os.environ["mnm_lcdData6ToGpio"])
+lcdData7ToGpio		= int(os.environ["mnm_lcdData7ToGpio"])
+lcdCompatibleMode	= castToBool(os.environ["mnm_lcdCompatibleMode"])
+lcdDotSize			= int(os.environ["mnm_lcdDotSize"])
+lcdCharMap			= os.environ["mnm_lcdCharMap"]

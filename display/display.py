@@ -33,21 +33,21 @@ if config.raspberry:
 		# (int) Number of display rows (usually 1, 2 or 4). Default: 4.
 		rows=actualDisplayHeight,
 		
-		pin_rs=26,
+		pin_rs=config.lcdRsToGpio,
 		
-		pin_e=19,
+		pin_e=config.lcdEnToGpio,
 		
-		pins_data=[13, 6, 5, 11],
+		pins_data=[config.lcdData4ToGpio, config.lcdData5ToGpio, config.lcdData6ToGpio, config.lcdData7ToGpio],
 		
 		numbering_mode=GPIO.BCM,
 		
-		compat_mode = True,
+		compat_mode = config.lcdCompatibleMode,
 		
 		# (int) Some 1 line displays allow a font height of 10px. Allowed: 8 or 10.
-		dotsize = 8,
+		dotsize = config.lcdDotSize,
 		
 		# The character map used. Depends on your LCD. This must be either A00 or A02 or ST0B.
-		charmap = 'A00',
+		charmap = config.lcdCharMap,
 		
 		# (bool) – Whether or not to automatically insert line breaks. Default: True.
 		# Note: If we turn it on, it seems like we can't fill the last character of the lines.
