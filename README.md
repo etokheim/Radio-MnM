@@ -90,25 +90,29 @@ You should now be connected to the Raspberry and can proceed to the next section
       ```bash
       cd
       ```
-   4. Clone this repository (downloads the application files):
+   4. Install git:
+      ```bash
+      sudo apt install git
+      ```
+   5. Clone this repository (downloads the application files):
       ```bash
       git clone [url]
       ```
          - You can get the url by clicking the clone button in the top right corner. If in doubt, use the HTTPS version.
-   5. Go into the now downloaded application:
+   6. Go into the now downloaded application:
       ```bash
       $ cd radio-mnm
       ```
-   6. Make a copy of `env.example` and rename it to `.env`
+   7. Make a copy of `example.env` and rename it to `.env`
       ```bash
       $ cp env.example .env
       ```
-   7. Edit the .env file with a text editor. Ie. Nano:
+   8. Edit the .env file with a text editor. Ie. Nano:
       ```bash
       $ nano .env
       ```
          - `ctrl` + `x` and follow the instructions to save and exit
-   8. Run the configuration script:
+   9. Run the configuration script:
       ```bash
       $ ./install.sh
       ```
