@@ -48,8 +48,12 @@ We figured we should be able to build something. Better, simpler and inherently 
          }
          ```
          - Note: for unsecured networks, replace `psk="YOUR_PASSWORD` with `key_mgmt=NONE`
-   4. Boot the PI and wait for it to start (about 2 minutes)
-   5. Get the IP-address of the PI:
+   4. Enable ssh:
+      1. Also in the `boot` partition on the Raspbian sd-card
+      2. Create a new file named: `ssh`
+         - Note that the file shouldn't have any file extension or content.
+   5. Boot the PI and wait for it to start (about 2 minutes)
+   6. Get the IP-address of the PI:
       - Option one:
          1. Open a terminal
             - Windows:
@@ -65,12 +69,12 @@ We figured we should be able to build something. Better, simpler and inherently 
       - Option two:
          1. Open your router's administration page and look for the pi in it's device list.
             - Note that not all routers supports this
-   6. Open a terminal
+   7. Open a terminal
       - Windows:
          1. PowerShell, not CMD
       - Linux:
          1. `ctrl` + `alt` + `t`
-   7. Type the following:
+   8. Type the following:
       ```sh
       ssh pi@[ip address]
       ```
