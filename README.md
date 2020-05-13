@@ -114,7 +114,7 @@ You should now be connected to the Raspberry and can proceed to the next section
          - `ctrl` + `x` and follow the instructions to save and exit
    9. Run the configuration script:
       ```bash
-      $ ./install.sh
+      $ sudo ./install.sh
       ```
 
 ### Development
