@@ -92,7 +92,11 @@ You should now be connected to the Raspberry and can proceed to the next section
       ```
    4. Install git:
       ```bash
+      sudo apt update
       sudo apt install git
+      
+      # It's also recommended to update the rest of the system by doing
+      sudo apt upgrade
       ```
    5. Clone this repository (downloads the application files):
       ```bash
