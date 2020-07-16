@@ -60,8 +60,8 @@ step "Upgrade"
 apt-get upgrade -y
 
 step "Clean up after updates"
-apt-get autoremove
-apt-get autoclean
+apt-get autoremove -y
+apt-get autoclean -y
 
 
 #####################################
