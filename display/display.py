@@ -14,19 +14,8 @@ if config.raspberry == True:
 else:
 	from EmulatorGUI.EmulatorGUI import GPIO
 
-
-if config.raspberry:
-	# Compensate for a weird display quirk. Read more in the comments above
-	# config.oneDisplayLineIsTwoLines
-	if config.oneDisplayLineIsTwoLines:
-		actualDisplayWidth = config.displayWidth // 2
-		actualDisplayHeight = config.displayHeight * 2
-	else:
-		actualDisplayWidth = config.displayWidth
-		actualDisplayHeight = config.displayHeight
-
-	# We are using the GPIO numbering scheme
-	lcd = CharLCD(
+def initializeLcd():
+	return CharLCD(
 		# (int) Number of columns per row (usually 16 or 20). Default: 20.
 		cols=actualDisplayWidth,
 		
@@ -69,6 +58,19 @@ if config.raspberry:
 		# (bool) – Whether the backlight is enabled initially. Default: True.
 		backlight_enabled = True,
 	)
+
+if config.raspberry:
+	# Compensate for a weird display quirk. Read more in the comments above
+	# config.oneDisplayLineIsTwoLines
+	if config.oneDisplayLineIsTwoLines:
+		actualDisplayWidth = config.displayWidth // 2
+		actualDisplayHeight = config.displayHeight * 2
+	else:
+		actualDisplayWidth = config.displayWidth
+		actualDisplayHeight = config.displayHeight
+
+	# We are using the GPIO numbering scheme
+	lcd = initializeLcd()
 
 class Display(threading.Thread):
 	def __init__(self):
@@ -134,13 +136,15 @@ class Display(threading.Thread):
 
 	def pause(self):
 		self.clear()
+		lcd = None
+		lcd = initializeLcd()
 		self.pauseEvent.clear()
 		logger.debug("Paused display handling loop")
 
 	def resume(self):
 		self.pauseEvent.set()
 		# \n for new line \r for moving to the beginning of current line
-		display.notification(">- RADIO M&M  -<\n\r" + _("Got ") + str(len(config.radio.channels)) + _(" channels"), 4)
+		display.notification(">- RADIO M&M  -<\n\r" + _("Got ") + str(len(config.radio.channels)) + _(" channels"), 3)
 		logger.debug("Resumed display handling loop")
 
 	# A notification has a limited lifespan. It is displayed for a set duration in seconds (defaults to 2).
