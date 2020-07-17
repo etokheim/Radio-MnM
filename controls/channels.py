@@ -264,5 +264,34 @@ class Radio():
 		else:
 			return strState
 	
+	class StreamMonitor(threading.Thread):
+		def __init__(self, parent):
+			threading.Thread.__init__(self)
+			self.parent = parent
+			self.running = True
+
+			# When paused is set, the thread will run, when it's not set, the thread will wait
+			self.pauseEvent = threading.Event()
+
+		def run(self):
+			while self.running:
+				time.sleep(1)
+
+				if str(self.parent.getState()) == "State.Error":
+					self.parent.player.stop()
+					self.parent.player.play()
+					
+
+			if not self.running:
+				return
+		
+		def stop(self):
+			self.running = False
+			print("Stopped the stream monitor loop")
+
+	def startStreamMonitor(self):
+		self.streamMonitor = self.StreamMonitor(self)
+		self.streamMonitor.start()
 
 config.radio = Radio()
+config.radio.startStreamMonitor()
