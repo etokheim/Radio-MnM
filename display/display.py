@@ -157,7 +157,7 @@ class Display(threading.Thread):
 
 	# Clears the display
 	def clear(self):
-		if config.debug:
+		if config.virtualDisplay:
 			print("│ - -  Display cleared   - - │")
 		
 		if config.raspberry:
@@ -268,7 +268,7 @@ class Display(threading.Thread):
 
 		# Simulate a display in the terminal, if we are running in debug mode
 		# Do not directly use this function to write to the display. Use notification()
-		if config.debug:
+		if config.virtualDisplay:
 			self.writeToSimulatedScreen(message)
 		
 		# Write message to the actual display, if we are running on a Raspberry Pi

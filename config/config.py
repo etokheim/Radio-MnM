@@ -98,6 +98,9 @@ sendState = castToBool(os.environ["mnm_sendState"])
 #             Display             #
 #                                 #
 ###################################
+# Render a virtual display in the console output
+virtualDisplay = castToBool(os.environ["mnm_virtualDisplay"])
+
 # Amount of characters, not pixels
 displayWidth = int(os.environ["mnm_displayWidth"])
 displayHeight = int(os.environ["mnm_displayHeight"])
