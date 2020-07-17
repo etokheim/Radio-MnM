@@ -9,6 +9,7 @@ import time
 import gettext
 import socket
 import subprocess
+import threading
 
 _ = config.nno.gettext
 
@@ -25,6 +26,10 @@ class Radio():
 		self.lastPowerState = None
 		self.volume = config.volume
 		self.setVolume(self.volume)
+
+		# Get state of player (class Vlc.state)
+		# Buffering || Ended || Error || NothingSpecial || Opening || Paused || Playing || Stopped
+		self.getState = self.player.get_state
 
 		# When the user started listening. For analytics purposes.
 		self.startedListeningTime = None
@@ -225,5 +230,39 @@ class Radio():
 			logger.debug("Successfully posted state " + state + " (" + str(status_code) + ")")
 		else:
 			logger.error("Couldn't post state: " + str(status_code))
+
+	def getStateText(self):
+		# TODO: Find a better way to do this.
+		# state's type is <class 'vlc.State'>
+		# I'd rather not compare strings if I don't have to.
+		state = self.player.get_state()
+		strState = str(state)
+		if strState == "State.Playing":
+			return "Playing"
+			
+		elif strState == "State.Buffering":
+			return "Buffering"
+
+		elif strState == "State.Ended":
+			return "Ended"
+
+		elif strState == "State.Error":
+			return "Error"
+
+		elif strState == "State.NothingSpecial":
+			return "NothingSpecial"
+
+		elif strState == "State.Opening":
+			return "Opening"
+
+		elif strState == "State.Paused":
+			return "Paused"
+
+		elif strState == "State.Stopped":
+			return "Stopped"
+
+		else:
+			return strState
+	
 
 config.radio = Radio()

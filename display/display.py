@@ -97,17 +97,22 @@ class Display(threading.Thread):
 
 			# Set standard content if radio is on
 			if config.on:
-				# meta can be None for a second after the channel starts playing (or if it's actually empty)
-				meta = config.radio.media.get_meta(12)
-				if meta is None:
-					meta = ""
-				
 				# Set standard content
 				# Selected channel can be None when the radio is on, only right after a reset.
 				if config.radio.selectedChannel is not None:
+
 					# Format standard content based on screen size
 					if config.displayHeight >= 2:
-						self.standardContent = config.radio.selectedChannel["name"] + "\n\r" + str(meta)
+						# meta can be None for a second after the channel starts playing (or if it's actually empty)
+						secondLine = config.radio.media.get_meta(12)
+						if secondLine is None:
+							secondLine = ""
+						
+						state = str(config.radio.getState())
+						if state != "State.Playing" and state != "State.NothingSpecial":
+							secondLine = config.radio.getStateText()
+
+						self.standardContent = config.radio.selectedChannel["name"] + "\n\r" + str(secondLine)
 					else:
 						self.standardContent = config.radio.selectedChannel["name"]
 				elif self.standardContent == "":
