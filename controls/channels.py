@@ -34,22 +34,20 @@ def logCallback(data, level, ctx, fmt, args):
 	# Skip if level is lower than warning
 	if level < 3:
 		 return
-	print("Level = " + str(level))
 
 	# Format given fmt/args pair
 	BUF_LEN = 1024
 	outBuf = ctypes.create_string_buffer(BUF_LEN)
 	vsnprintf(outBuf, BUF_LEN, fmt, args)
 
-	# Print it out, or do something else
+	# Transform to ascii string
 	log = outBuf.raw.decode('ascii').strip().strip('\x00')
-	print('---- LOG: ' + log)
 
-	if "VLC is unable to open the MRL" in log:
-		print("Can't connect")
-		config.radio.channelError = "Can't connect"
+	# Handle any errors
+	if level > 3:
+		config.radio.handleError(log)
 
-	# Output vlc logs to out log
+	# Output vlc logs to our log
 	if level == 5:
 		logger.critical(log)
 	elif level == 4:
@@ -72,7 +70,12 @@ class Radio():
 		self.volume = config.volume
 		self.setVolume(self.volume)
 
-		# If there was an error on the channel, this variable contains a string
+		# String
+		# Is set if there is a global error (ie. not related to channels)
+		self.error = None
+
+		# String
+		# Is set if there is an error on the channel
 		# Ie. if we couldn't open the channel
 		self.channelError = None
 
@@ -314,6 +317,19 @@ class Radio():
 
 		else:
 			return strState
+
+	def handleError(self, error):
+		if "VLC is unable to open the MRL" in error:
+			print("Can't connect")
+			config.radio.channelError = "Can't connect"
+		elif "PulseAudio server connection failure: Connection refused" in error:
+			# Does this error fix itself?
+			config.radio.error = "Can't output audio"
+		# elif "Network error" in error:
+			# TODO: Handle temporary loss of internet access by repeatedly trying to restart the stream
+		elif "unimplemented query (264) in control" in error:
+			# TODO: Figure out what this is
+			return
 	
 	class StreamMonitor(threading.Thread):
 		def __init__(self, parent):
