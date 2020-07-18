@@ -102,15 +102,25 @@ class Display(threading.Thread):
 				if config.radio.selectedChannel is not None:
 
 					# Format standard content based on screen size
+					# Set the second line's content:
 					if config.displayHeight >= 2:
-						# meta can be None for a second after the channel starts playing (or if it's actually empty)
+						# By default, display the meta (ie. [Song] - [Artist])
 						secondLine = config.radio.media.get_meta(12)
-						if secondLine is None:
-							secondLine = ""
 						
+						# Get the radio's state
 						state = str(config.radio.getState())
-						if state != "State.Playing" and state != "State.NothingSpecial":
+
+						# Display any channel errors
+						if config.radio.channelError:
+							secondLine = config.radio.channelError
+
+						# Display any special states
+						elif state != "State.Playing" and state != "State.NothingSpecial":
 							secondLine = config.radio.getStateText()
+
+						# Meta can be None for a second after the channel starts playing (or if it's actually empty)
+						elif secondLine is None:
+							secondLine = ""
 
 						self.standardContent = config.radio.selectedChannel["name"] + "\n\r" + str(secondLine)
 					else:
