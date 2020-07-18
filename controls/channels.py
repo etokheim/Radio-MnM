@@ -10,6 +10,35 @@ import gettext
 import socket
 import subprocess
 import threading
+import ctypes
+
+libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library('c'))
+vsnprintf = libc.vsnprintf
+
+vsnprintf.restype = ctypes.c_int
+vsnprintf.argtypes = (
+    ctypes.c_char_p,
+    ctypes.c_size_t,
+    ctypes.c_char_p,
+    ctypes.c_void_p,
+)
+
+# Your callback here
+@vlc.CallbackDecorators.LogCb
+def logCallback(data, level, ctx, fmt, args):
+	# Skip if level is lower than warning
+	if level < 3:
+		 return
+	print("Level = " + str(level))
+
+	# Format given fmt/args pair
+	BUF_LEN = 1024
+	outBuf = ctypes.create_string_buffer(BUF_LEN)
+	vsnprintf(outBuf, BUF_LEN, fmt, args)
+
+	# Print it out, or do something else
+	log = outBuf.raw.decode('ascii').strip().strip('\x00')
+	print('---- LOG: ' + log)
 
 _ = config.nno.gettext
 
@@ -20,6 +49,7 @@ class Radio():
 	def __init__(self):
 		self.channels = []
 		self.instance = vlc.Instance()
+		self.log = vlc.Log()
 		self.player = self.instance.media_player_new()
 		self.media = self.instance.media_new("")
 		self.selectedChannel = None
@@ -27,12 +57,18 @@ class Radio():
 		self.volume = config.volume
 		self.setVolume(self.volume)
 
+		# If there was an error on the channel, this variable contains a string
+		# Ie. if we couldn't open the channel
+		self.channelError = None
+
 		# Get state of player (class Vlc.state)
 		# Buffering || Ended || Error || NothingSpecial || Opening || Paused || Playing || Stopped
 		self.getState = self.player.get_state
 
 		# When the user started listening. For analytics purposes.
 		self.startedListeningTime = None
+
+		self.instance.log_set(logCallback, None)
 
 	def playChannel(self, channel):
 		# Channel should always be valid, so this clause shouldn't trigger, unless there is a bug.
