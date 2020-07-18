@@ -31,8 +31,9 @@ vsnprintf.argtypes = (
 # Your callback here
 @vlc.CallbackDecorators.LogCb
 def logCallback(data, level, ctx, fmt, args):
-	# Skip if level is lower than warning
-	if level < 3:
+	# Skip if level is lower than error
+	# TODO: Try to solve as many warnings as possible
+	if level < 4:
 		 return
 
 	# Format given fmt/args pair
@@ -45,7 +46,11 @@ def logCallback(data, level, ctx, fmt, args):
 
 	# Handle any errors
 	if level > 3:
-		config.radio.handleError(log)
+		shouldLog = config.radio.handleError(log)
+
+		# If noisy error, then don't log it
+		if not shouldLog:
+			return
 
 	# Output vlc logs to our log
 	if level == 5:
@@ -329,7 +334,7 @@ class Radio():
 			# TODO: Handle temporary loss of internet access by repeatedly trying to restart the stream
 		elif "unimplemented query (264) in control" in error:
 			# TODO: Figure out what this is
-			return
+			return False
 	
 	class StreamMonitor(threading.Thread):
 		def __init__(self, parent):
