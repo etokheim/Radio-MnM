@@ -12,6 +12,11 @@ import subprocess
 import threading
 import ctypes
 
+_ = config.nno.gettext
+
+from display.display import display
+from controls import setup
+
 libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library('c'))
 vsnprintf = libc.vsnprintf
 
@@ -40,10 +45,20 @@ def logCallback(data, level, ctx, fmt, args):
 	log = outBuf.raw.decode('ascii').strip().strip('\x00')
 	print('---- LOG: ' + log)
 
-_ = config.nno.gettext
+	if "VLC is unable to open the MRL" in log:
+		print("Can't connect")
+		config.radio.channelError = "Can't connect"
 
-from display.display import display
-from controls import setup
+	# Output vlc logs to out log
+	if level == 5:
+		logger.critical(log)
+	elif level == 4:
+		logger.error(log)
+	elif level == 3:
+		logger.warning(log)
+	elif level == 2:
+		logger.info(log)
+
 
 class Radio():
 	def __init__(self):
