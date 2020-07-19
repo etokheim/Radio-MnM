@@ -5,6 +5,8 @@ import threading
 import time
 import gettext
 import sys
+from helpers import helpers
+import os
 
 _ = config.nno.gettext
 
@@ -22,21 +24,21 @@ def initializeLcd():
 		# (int) Number of display rows (usually 1, 2 or 4). Default: 4.
 		rows=actualDisplayHeight,
 		
-		pin_rs=config.lcdRsToGpio,
+		pin_rs=int(os.environ["mnm_lcdRsToGpio"]),
 		
-		pin_e=config.lcdEnToGpio,
+		pin_e=int(os.environ["mnm_lcdEnToGpio"]),
 		
-		pins_data=[config.lcdData4ToGpio, config.lcdData5ToGpio, config.lcdData6ToGpio, config.lcdData7ToGpio],
+		pins_data=[int(os.environ["mnm_lcdData4ToGpio"]), int(os.environ["mnm_lcdData5ToGpio"]), int(os.environ["mnm_lcdData6ToGpio"]), int(os.environ["mnm_lcdData7ToGpio"])],
 		
 		numbering_mode=GPIO.BCM,
 		
-		compat_mode = config.lcdCompatibleMode,
+		compat_mode = helpers.castToBool(os.environ["mnm_lcdCompatibleMode"]),
 		
 		# (int) Some 1 line displays allow a font height of 10px. Allowed: 8 or 10.
-		dotsize = config.lcdDotSize,
+		dotsize = int(os.environ["mnm_lcdDotSize"]),
 		
 		# The character map used. Depends on your LCD. This must be either A00 or A02 or ST0B.
-		charmap = config.lcdCharMap,
+		charmap = os.environ["mnm_lcdCharMap"],
 		
 		# (bool) – Whether or not to automatically insert line breaks. Default: True.
 		# Note: If we turn it on, it seems like we can't fill the last character of the lines.
@@ -61,13 +63,12 @@ def initializeLcd():
 
 if config.raspberry:
 	# Compensate for a weird display quirk. Read more in the comments above
-	# config.oneDisplayLineIsTwoLines
-	if config.oneDisplayLineIsTwoLines:
-		actualDisplayWidth = config.displayWidth // 2
-		actualDisplayHeight = config.displayHeight * 2
+	if helpers.castToBool(os.environ["mnm_oneDisplayLineIsTwoLines"]):
+		actualDisplayWidth = int(os.environ["mnm_displayWidth"]) // 2
+		actualDisplayHeight = int(os.environ["mnm_displayHeight"]) * 2
 	else:
-		actualDisplayWidth = config.displayWidth
-		actualDisplayHeight = config.displayHeight
+		actualDisplayWidth = int(os.environ["mnm_displayWidth"])
+		actualDisplayHeight = int(os.environ["mnm_displayHeight"])
 
 	# We are using the GPIO numbering scheme
 	lcd = initializeLcd()
@@ -82,10 +83,31 @@ class Display(threading.Thread):
 		# When paused is set, the thread will run, when it's not set, the thread will wait
 		self.pauseEvent = threading.Event()
 		self.currentlyDisplayingMessage = ""
+
+		# For how many steps we should pause when displaying the start of the line (1 step = displayScrollSpeed)
+		self.displayScrollingStartPauseSteps = 12
+
+		# For how many steps we should pause when displaying the end of the line (1 step = displayScrollSpeed)
+		self.displayScrollingStopPauseSteps = 8
+
+		# Time between scrolls
+		self.displayScrollSpeed = 0.2 # seconds
 		
-		self.scrollOffset = 0 - config.displayScrollingStartPauseSteps
+		self.scrollOffset = 0 - self.displayScrollingStartPauseSteps
 		self.lastDisplayedMessage = ""
 		self.lastDisplayedCroppedMessage = ""
+
+		# Render a virtual display in the console output
+		self.virtualDisplay = helpers.castToBool(os.environ["mnm_virtualDisplay"])
+
+		# Amount of characters, not pixels
+		self.displayWidth = int(os.environ["mnm_displayWidth"])
+		self.displayHeight = int(os.environ["mnm_displayHeight"])
+
+		# Weird display quirk, where one line is two lines for the computer. I guess this is due to
+		# some cost saving initiative in display production.
+		self.oneDisplayLineIsTwoLines = helpers.castToBool(os.environ["mnm_oneDisplayLineIsTwoLines"])
+
 
 	def run(self):
 		# Wait, if the thread is set on hold
@@ -103,7 +125,7 @@ class Display(threading.Thread):
 
 					# Format standard content based on screen size
 					# Set the second line's content:
-					if config.displayHeight >= 2:
+					if self.displayHeight >= 2:
 						# By default, display the meta (ie. [Song] - [Artist])
 						secondLine = config.radio.media.get_meta(12)
 						
@@ -142,7 +164,7 @@ class Display(threading.Thread):
 					self.currentlyDisplayingMessage = self.standardContent
 					self.displayMessage("channelInfo")
 
-			time.sleep(config.displayScrollSpeed)
+			time.sleep(self.displayScrollSpeed)
 
 	def stop(self):
 		self.clear()
@@ -172,7 +194,7 @@ class Display(threading.Thread):
 
 	# Clears the display
 	def clear(self):
-		if config.virtualDisplay:
+		if self.virtualDisplay:
 			print("│ - -  Display cleared   - - │")
 		
 		if config.raspberry:
@@ -185,10 +207,10 @@ class Display(threading.Thread):
 		# If there is a new text to display
 		if self.lastDisplayedMessage != self.currentlyDisplayingMessage:
 			# Reset the text offset (scroll position)
-			self.scrollOffset = 0 - config.displayScrollingStartPauseSteps
+			self.scrollOffset = 0 - self.displayScrollingStartPauseSteps
 			
 			# Only do this if displaying channel info
-			if messageType == "channelInfo" and config.displayHeight >= 2:
+			if messageType == "channelInfo" and self.displayHeight >= 2:
 				# When the text changes, "clear the second line" for å brief moment, so the user
 				# more easily can understand that a new text was inserted.
 				# Crap, this only works for channels, but notifications are also parsed through here...
@@ -199,11 +221,11 @@ class Display(threading.Thread):
 		composedMessage = ""
 		croppedLines = []
 		longestLineLength = 0
-		displayWidth = config.displayWidth
+		displayWidth = self.displayWidth
 
 		loopTimes = len(lines)
-		if loopTimes > config.displayHeight:
-			loopTimes = config.displayHeight
+		if loopTimes > self.displayHeight:
+			loopTimes = self.displayHeight
 
 		for i in range(loopTimes):
 			line = lines[i]
@@ -250,12 +272,12 @@ class Display(threading.Thread):
 		# If we are at the end of the line, we keep scrolling however for N steps.
 		# Since scrolling further than the last line has no visual effect, this
 		# is used to make a pause to give the user time to finish reading.
-		# N (aka the pause) = config.displayScrollingStopPauseSteps
-		if self.scrollOffset + displayWidth - config.displayScrollingStopPauseSteps <= longestLineLength:
+		# N (aka the pause) = self.displayScrollingStopPauseSteps
+		if self.scrollOffset + displayWidth - self.displayScrollingStopPauseSteps <= longestLineLength:
 			self.scrollOffset = self.scrollOffset + 1
 		else:
 			# Reset the scrollOffset
-			self.scrollOffset = 0 - config.displayScrollingStartPauseSteps
+			self.scrollOffset = 0 - self.displayScrollingStartPauseSteps
 
 		# TODO: Fix notifications displaying twice:
 		# If the displayed message was new, set the lastDisplayedMessages to
@@ -283,21 +305,21 @@ class Display(threading.Thread):
 
 		# Simulate a display in the terminal, if we are running in debug mode
 		# Do not directly use this function to write to the display. Use notification()
-		if config.virtualDisplay:
+		if self.virtualDisplay:
 			self.writeToSimulatedScreen(message)
 		
 		# Write message to the actual display, if we are running on a Raspberry Pi
 		if config.raspberry:
 			# Handle weir display quirk, where one line in the code only refers to half a line on the actual
 			# display. Ie.: to fill a 16x1 display, you have to do 12345678\n90123456
-			if config.oneDisplayLineIsTwoLines:
+			if self.oneDisplayLineIsTwoLines:
 				stripCarriages = message.replace("\r", "")
 				lines = stripCarriages.split("\n")
 				message = ""
 
 				for line in lines:
 					# Double / always returns a floored result (int, not float). 8 / 2 = 4.0, 8 // 2 = 4...
-					message = message + line[0:config.displayWidth // 2] + "\n\r" + line[config.displayWidth // 2:config.displayWidth]
+					message = message + line[0:self.displayWidth // 2] + "\n\r" + line[self.displayWidth // 2:self.displayWidth]
 
 			lcd.write_string(message)
 
@@ -308,7 +330,7 @@ class Display(threading.Thread):
 		
 		# Add new lines until i matches the display's height
 		while True:
-			if len(lines) < config.displayHeight:
+			if len(lines) < self.displayHeight:
 				lines.append("")
 			else:
 				break
@@ -324,7 +346,7 @@ class Display(threading.Thread):
 		bottom = "└"
 
 		# Left border + padding + displayWidth + padding + right border
-		for i in range(paddingSize + config.displayWidth + paddingSize):
+		for i in range(paddingSize + self.displayWidth + paddingSize):
 			top = top + borderXStyle
 			bottom = bottom + borderXStyle
 			paddingLine = paddingLine + " "
@@ -343,7 +365,7 @@ class Display(threading.Thread):
 			line = lines[i]
 			# Add n spaces to the end of the message, where n = the number of character spaces left on the
 			# simulated screen.
-			for j in range(config.displayWidth - len(line)):
+			for j in range(self.displayWidth - len(line)):
 				line = line + " "
 			
 			content = 	content + \

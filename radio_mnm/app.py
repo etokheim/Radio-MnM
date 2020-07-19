@@ -110,7 +110,7 @@ def powerSwitchUpHandler(event):
 	config.radio.stop()
 	config.radio.display.pause()
 	button.pause()
-	config.radio.sendState("suspended")
+	config.radio.handleSendState("suspended")
 
 	# I'm not quite sure I have to reset all of these values
 	config.radio.display.currentlyDisplayingMessage = ""
@@ -133,9 +133,9 @@ def powerSwitchDownHandler(event):
 	config.radio.registration.start()
 	
 	if config.radio.lastPowerState != "off":
-		config.radio.sendState("noPower")
+		config.radio.handleSendState("noPower")
 
-	config.radio.sendState("on")
+	config.radio.handleSendState("on")
 
 	if len(config.radio.channels) > 0:
 		config.radio.play()

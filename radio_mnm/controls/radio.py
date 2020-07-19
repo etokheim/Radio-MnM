@@ -11,11 +11,13 @@ import socket
 import subprocess
 import threading
 import ctypes
+import os
 
 _ = config.nno.gettext
 
 from display.display import Display
 from controls.registration import Registration
+from helpers import helpers
 
 libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library('c'))
 vsnprintf = libc.vsnprintf
@@ -76,8 +78,17 @@ class Radio():
 		self.media = self.instance.media_new("")
 		self.selectedChannel = None
 		self.lastPowerState = None
-		self.volume = config.volume
+		self.volume = int(os.environ["mnm_volume"])
 		self.setVolume(self.volume)
+
+		# Bitrates
+		# Put an int in the bitrate variable, and the stream closest to that bitrate will be used.
+		# 32 kbps - Poor audio quality
+		# 48 kbps - A reasonable lower end rate for longer speech-only podcasts
+		# 64 kbps - A common bitrate for speech podcasts.
+		# 128 kbps - Common standard for musical and high quality podcasts.
+		# 320 kbps - Very high quality - almost indistinguishable from a CD.
+		self.bitrate = int(os.environ["mnm_bitrate"])
 
 		# String
 		# Is set if there is a global error (ie. not related to channels)
@@ -94,6 +105,9 @@ class Radio():
 
 		# When the user started listening. For analytics purposes.
 		self.startedListeningTime = None
+
+		self.saveListeningHistory = helpers.castToBool(os.environ["mnm_saveListeningHistory"])
+		self.sendState = helpers.castToBool(os.environ["mnm_sendState"])
 
 		self.instance.log_set(logCallback, None)
 
@@ -225,14 +239,14 @@ class Radio():
 		bestMatchBitrate = streams[0]["bitrate"]
 
 		for i in range(len(streams)):
-			if min(streams[i]["bitrate"] - config.bitrate, streams[bestMatchIndex]["bitrate"]) - config.bitrate != bestMatchBitrate:
+			if min(streams[i]["bitrate"] - self.bitrate, streams[bestMatchIndex]["bitrate"]) - self.bitrate != bestMatchBitrate:
 				bestMatchBitrate = streams[i]["bitrate"]
 				bestMatchIndex = i
 		
 		return bestMatchIndex
 
 	def addToListeningHistory(self, startedListening, playedChannel, playingChannel = None):
-		if not config.saveListeningHistory:
+		if not self.saveListeningHistory:
 			return False
 
 		db = TinyDB('./db/db.json')
@@ -264,8 +278,8 @@ class Radio():
 		else:
 			logger.error("Couldn't post listening history: " + str(status_code))
 
-	def sendState(self, state):
-		if not config.sendState:
+	def handleSendState(self, state):
+		if not self.sendState:
 			return False
 		
 		db = TinyDB('./db/db.json')

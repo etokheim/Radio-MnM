@@ -1,3 +1,4 @@
+import os
 import sys
 sys.path.append("radio_mnm/")
 
@@ -7,6 +8,23 @@ sys.path.append("radio_mnm/")
 import logging
 from logging.handlers import RotatingFileHandler
 from config import config
+
+# Set log level
+level = os.environ["mnm_productionLogLevel"]
+if level == "critical":
+	productionLogLevel = logging.CRITICAL
+elif level == "error":
+	productionLogLevel = logging.ERROR
+elif level == "warning":
+	productionLogLevel = logging.WARNING
+elif level == "warn":
+	productionLogLevel = logging.WARNING
+elif level == "info":
+	productionLogLevel = logging.INFO
+elif level == "debug":
+	productionLogLevel = logging.DEBUG
+else:
+	productionLogLevel = logging.INFO
 
 # Create a new logger
 logger = logging.getLogger("Radio_mnm")
