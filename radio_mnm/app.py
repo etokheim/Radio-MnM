@@ -18,13 +18,9 @@ import gettext
 import switches.button
 import switches.power
 from controls import radio
-from controls.registration import Registration
 
 config.nno.install()
 _ = config.nno.gettext
-
-# Initiate registration
-registration = Registration()
 
 button = switches.button.Button(18)
 
@@ -91,7 +87,7 @@ class ResetCountdown(threading.Thread):
 			# time.sleep(3 / config.displayWidth)
 			
 			if len(self.loadingBar) >= config.displayWidth:
-				Registration.registration.reset()
+				config.radio.registration.reset()
 				return
 
 def buttonVeryLongPressHandler(event):
@@ -134,7 +130,7 @@ def powerSwitchDownHandler(event):
 
 	# TODO: Maybe rename .start() methods that aren't threads, as it can be confusing.
 	# Starts the registration if the radio isn't registered
-	registration.start()
+	config.radio.registration.start()
 	
 	if config.radio.lastPowerState != "off":
 		config.radio.sendState("noPower")

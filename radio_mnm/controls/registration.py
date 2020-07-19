@@ -158,4 +158,4 @@ class Registration():
 		config.radio.media = config.radio.instance.media_new("")
 		config.radio.selectedChannel = None
 		
-		registration.start()
+		self.start()

@@ -15,7 +15,7 @@ import ctypes
 _ = config.nno.gettext
 
 from display.display import Display
-from controls import registration
+from controls.registration import Registration
 
 libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library('c'))
 vsnprintf = libc.vsnprintf
@@ -66,6 +66,8 @@ def logCallback(data, level, ctx, fmt, args):
 class Radio():
 	def __init__(self):
 		self.display = Display()
+		self.registration = Registration()
+
 		self.channels = []
 		self.instance = vlc.Instance()
 		self.log = vlc.Log()
@@ -159,7 +161,7 @@ class Radio():
 				self.display.notification(_("This radio was\n\runregistered!"))
 				time.sleep(3)
 				self.display.notification(_("Resetting radio\n\rin three seconds"))
-				setup.registration.reset()
+				self.registration.reset()
 				return
 
 			# Recover by using channels from local db instead if we have them

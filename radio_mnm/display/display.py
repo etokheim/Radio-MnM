@@ -360,5 +360,3 @@ class Display(threading.Thread):
 			bottom
 		)
 		return
-
-# display = Display()
