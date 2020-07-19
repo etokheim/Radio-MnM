@@ -111,10 +111,10 @@ class Display(threading.Thread):
 		# Custom characters
 		self.ae = (
 			0b00000,
+			0b00000,
 			0b01011,
 			0b10101,
 			0b10111,
-			0b10100,
 			0b10100,
 			0b01011,
 			0b00000
@@ -181,7 +181,6 @@ class Display(threading.Thread):
 		lcd.create_char(3, self.OE)
 		lcd.create_char(4, self.aa)
 		lcd.create_char(5, self.AA)
-
 
 	def run(self):
 		# Wait, if the thread is set on hold
