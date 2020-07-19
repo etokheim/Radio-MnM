@@ -15,7 +15,7 @@ import ctypes
 _ = config.nno.gettext
 
 from display.display import display
-from controls import setup
+from controls import registration
 
 libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library('c'))
 vsnprintf = libc.vsnprintf
@@ -349,7 +349,8 @@ class Radio():
 			while self.running:
 				time.sleep(1)
 
-				if str(self.parent.getState()) == "State.Error":
+				# Try to recover from error state
+				if str(self.parent.getState()) == "State.Error" and config.on:
 					self.parent.player.stop()
 					self.parent.player.play()
 					

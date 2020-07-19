@@ -17,7 +17,7 @@ _ = config.nno.gettext
 
 from display.display import display
 from config import config
-from controls import channels
+from controls import Radio
 
 class Registration():
 	def __init__(self):
@@ -160,5 +160,3 @@ class Registration():
 		config.radio.selectedChannel = None
 		
 		registration.start()
-
-registration = Registration()

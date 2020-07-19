@@ -26,7 +26,7 @@ if config.raspberry == True:
 else:
 	from EmulatorGUI.EmulatorGUI import GPIO
 	
-from controls import channels
+from controls import Radio
 
 pushing = False
 pushStart = 0

@@ -17,14 +17,15 @@ import gettext
 
 import switches.button
 from switches import power
-from controls import channels
+from controls import Radio
 from display.display import display
-from controls import setup
+from controls.registration import Registration
 
 config.nno.install()
 _ = config.nno.gettext
 
-registration = setup.registration
+# Initiate registration
+registration = Registration()
 
 button = switches.button.Button(18)
 
@@ -91,7 +92,7 @@ class ResetCountdown(threading.Thread):
 			# time.sleep(3 / config.displayWidth)
 			
 			if len(self.loadingBar) >= config.displayWidth:
-				setup.registration.reset()
+				Registration.registration.reset()
 				return
 
 def buttonVeryLongPressHandler(event):

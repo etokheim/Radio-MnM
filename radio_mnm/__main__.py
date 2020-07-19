@@ -1,3 +1,6 @@
+import sys
+sys.path.append("radio_mnm/")
+
 # The log setup must be done before importing everything else, as some of the other modules also
 # use the logging module. However, I think this only was a problem while we were using the root
 # logger. We have now switched to a separate logger "Radio_mnm".
@@ -35,7 +38,7 @@ else:
 	
 	logger.addHandler(rotateHandler)
 
-from radio_mnm import app
+import app
 
 def main():
 	logger.info("Starting up")
