@@ -68,6 +68,7 @@ class Radio():
 		self.display = Display()
 		self.registration = Registration()
 
+		self.on = False
 		self.channels = []
 		self.instance = vlc.Instance()
 		self.log = vlc.Log()
@@ -353,7 +354,7 @@ class Radio():
 				time.sleep(1)
 
 				# Try to recover from error state
-				if str(self.parent.getState()) == "State.Error" and config.on:
+				if str(self.parent.getState()) == "State.Error" and config.radio.on:
 					self.parent.player.stop()
 					self.parent.player.play()
 					

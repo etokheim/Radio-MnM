@@ -96,7 +96,7 @@ class Display(threading.Thread):
 			self.pauseEvent.wait()
 
 			# Set standard content if radio is on
-			if config.on:
+			if config.radio.on:
 				# Set standard content
 				# Selected channel can be None when the radio is on, only right after a reset.
 				if config.radio.selectedChannel is not None:

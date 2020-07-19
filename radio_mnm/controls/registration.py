@@ -87,7 +87,7 @@ class Registration():
 				isRegistered = self.parent.checkIfRegistered()
 
 				# If the radio is turned off, stop checking if it's been registered.
-				if not config.on:
+				if not config.radio.on:
 					self.stop()
 					return
 

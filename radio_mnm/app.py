@@ -106,7 +106,7 @@ def powerSwitchUpHandler(event):
 	logger.debug("powerSwitchUpHandler %r" % event)
 	
 	# TODO: Most of this should go into a radio.off() method.
-	config.on = False
+	config.radio.on = False
 	config.radio.stop()
 	config.radio.display.pause()
 	button.pause()
@@ -124,7 +124,7 @@ def powerSwitchDownHandler(event):
 	logger.debug("powerSwitchDownHandler %r" % event)
 
 	# TODO: Most of this should go into a radio.on() method.
-	config.on = True
+	config.radio.on = True
 	config.radio.display.resume()
 	button.resume()
 

@@ -80,8 +80,6 @@ verifyCertificate = True
 # 320 kbps - Very high quality - almost indistinguishable from a CD.
 bitrate = int(os.environ["mnm_bitrate"])
 
-on = False
-
 # Will be set to the radio 
 radio = None
 
