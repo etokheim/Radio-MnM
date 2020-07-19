@@ -14,7 +14,7 @@ import ctypes
 
 _ = config.nno.gettext
 
-from display.display import display
+from display.display import Display
 from controls import registration
 
 libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library('c'))
@@ -65,6 +65,7 @@ def logCallback(data, level, ctx, fmt, args):
 
 class Radio():
 	def __init__(self):
+		self.display = Display()
 		self.channels = []
 		self.instance = vlc.Instance()
 		self.log = vlc.Log()
@@ -150,25 +151,25 @@ class Radio():
 				logger.error("Failed to fetch channels with HTTP error code: " + str(status_code))
 				raise Exception(response, status_code)
 		except Exception:
-			display.notification(_("Failed to get\n\rchannels!"))
+			self.display.notification(_("Failed to get\n\rchannels!"))
 			time.sleep(2)
 			logger.exception(Exception)
 			
 			if status_code == 410:
-				display.notification(_("This radio was\n\runregistered!"))
+				self.display.notification(_("This radio was\n\runregistered!"))
 				time.sleep(3)
-				display.notification(_("Resetting radio\n\rin three seconds"))
+				self.display.notification(_("Resetting radio\n\rin three seconds"))
 				setup.registration.reset()
 				return
 
 			# Recover by using channels from local db instead if we have them
 			channels = radio["channels"]
 			if channels:
-				display.notification(_("Using local\n\rchannels instead"))
+				self.display.notification(_("Using local\n\rchannels instead"))
 				time.sleep(1)
 				self.channels = channels
 			else:
-				display.notification(_("Couldn't get\n\rchannels!") + " (" + str(status_code) + ")")
+				self.display.notification(_("Couldn't get\n\rchannels!") + " (" + str(status_code) + ")")
 				logger.error("------------ EXITED ------------")
 				time.sleep(1)
 				# Exit with code "112, Host is down"

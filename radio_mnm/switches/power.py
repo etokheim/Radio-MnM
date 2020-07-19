@@ -13,8 +13,7 @@ if config.raspberry == True:
 else:
 	from EmulatorGUI.EmulatorGUI import GPIO
 
-from controls import Radio
-from display import display
+from controls import radio
 from config import config
 
 # Button 2

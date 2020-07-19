@@ -16,9 +16,8 @@ import threading
 import gettext
 
 import switches.button
-from switches import power
-from controls import Radio
-from display.display import display
+import switches.power
+from controls import radio
 from controls.registration import Registration
 
 config.nno.install()
@@ -71,21 +70,21 @@ class ResetCountdown(threading.Thread):
 		self.loadingBar = ""
 
 	def run(self):
-		display.notification(_("RESETTING RADIO") + "\n****************")
+		config.radio.display.notification(_("RESETTING RADIO") + "\n****************")
 		time.sleep(1.5)
 		# Add the text to a variable so we only have to translate it once.
 		confirmText = _("ARE YOU SURE?")
 		confirmTextLength = len(confirmText)
-		display.notification(confirmText)
+		config.radio.display.notification(confirmText)
 		time.sleep(0.3)
 
 		while button.state == "down":
 			self.loadingBar = self.loadingBar + "*"
 			# self.loadingBar = self.loadingBar + "█"
 			if config.displayHeight == 1:
-				display.notification(self.loadingBar + confirmText[len(self.loadingBar) : confirmTextLength])
+				config.radio.display.notification(self.loadingBar + confirmText[len(self.loadingBar) : confirmTextLength])
 			else: 
-				display.notification(confirmText + "\n\r" + self.loadingBar)
+				config.radio.display.notification(confirmText + "\n\r" + self.loadingBar)
 			
 			# Sleeping shorter than 0.3 seconds seems to make the display go corrupt...
 			time.sleep(0.3)
@@ -113,15 +112,15 @@ def powerSwitchUpHandler(event):
 	# TODO: Most of this should go into a radio.off() method.
 	config.on = False
 	config.radio.stop()
-	display.pause()
+	config.radio.display.pause()
 	button.pause()
 	config.radio.sendState("suspended")
 
 	# I'm not quite sure I have to reset all of these values
-	display.currentlyDisplayingMessage = ""
-	display.notificationMessage = ""
-	display.lastDisplayedMessage = ""
-	display.lastDisplayedCroppedMessage = ""
+	config.radio.display.currentlyDisplayingMessage = ""
+	config.radio.display.notificationMessage = ""
+	config.radio.display.lastDisplayedMessage = ""
+	config.radio.display.lastDisplayedCroppedMessage = ""
 
 powerSwitch.listen(powerSwitch.up, powerSwitchUpHandler)
 
@@ -130,7 +129,7 @@ def powerSwitchDownHandler(event):
 
 	# TODO: Most of this should go into a radio.on() method.
 	config.on = True
-	display.resume()
+	config.radio.display.resume()
 	button.resume()
 
 	# TODO: Maybe rename .start() methods that aren't threads, as it can be confusing.
@@ -148,7 +147,7 @@ def powerSwitchDownHandler(event):
 powerSwitch.listen(powerSwitch.down, powerSwitchDownHandler)
 
 def run():
-	display.start()
+	config.radio.display.start()
 	button.start()
 	powerSwitch.start()
 

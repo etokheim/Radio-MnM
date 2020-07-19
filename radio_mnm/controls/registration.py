@@ -15,9 +15,8 @@ import sys
 
 _ = config.nno.gettext
 
-from display.display import display
 from config import config
-from controls import Radio
+from controls import radio
 
 class Registration():
 	def __init__(self):
@@ -56,14 +55,14 @@ class Registration():
 
 			if self.tooWideCodeErrorCount >= 10:
 				logger.error("Couldn't get a code that fit on the display")
-				display.notification(_("Too tiny display"))
+				config.radio.display.notification(_("Too tiny display"))
 				sys.exit(1)
 
 			# Display the code on the display, and set the display duration to a very long time
 			if config.displayHeight == 1:
-				display.standardContent = self.response["code"]
+				config.radio.display.standardContent = self.response["code"]
 			else:
-				display.standardContent = _("Register radio:") + "\n\r" + self.response["code"]
+				config.radio.display.standardContent = _("Register radio:") + "\n\r" + self.response["code"]
 			
 			# Start isRegisteredThread
 			self.checkIfRegisteredLoop = self.CheckIfRegisteredLoop(self)
@@ -104,16 +103,16 @@ class Registration():
 
 			if isRegistered["status"] == False:
 				if config.displayHeight == 1:
-					display.notification(_("Getting new code"))
+					config.radio.display.notification(_("Getting new code"))
 				else:
-					display.notification(_("Code expired, \n\rfetching new one"))
+					config.radio.display.notification(_("Code expired, \n\rfetching new one"))
 					
 				# Give user time to read the message
 				time.sleep(1)
 				self.start()
 				return
 			
-			display.notification(_("Registered! :D"))
+			config.radio.display.notification(_("Registered! :D"))
 			logger.info("Device successfully registered!")
 
 			radioTable.insert({
@@ -143,7 +142,7 @@ class Registration():
 		if self.checkIfRegisteredLoop:
 			self.checkIfRegisteredLoop.stop()
 
-		display.notification(_("Resetting radio") + "\n****************")
+		config.radio.display.notification(_("Resetting radio") + "\n****************")
 
 		# Stop playing
 		config.radio.stop()
