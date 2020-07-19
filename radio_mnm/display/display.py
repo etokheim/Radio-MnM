@@ -108,6 +108,80 @@ class Display(threading.Thread):
 		# some cost saving initiative in display production.
 		self.oneDisplayLineIsTwoLines = helpers.castToBool(os.environ["mnm_oneDisplayLineIsTwoLines"])
 
+		# Custom characters
+		self.ae = (
+			0b00000,
+			0b01011,
+			0b10101,
+			0b10111,
+			0b10100,
+			0b10100,
+			0b01011,
+			0b00000
+		)
+
+		self.AE = (
+			0b00111,
+			0b01100,
+			0b10100,
+			0b10111,
+			0b11100,
+			0b10100,
+			0b10111,
+			0b00000
+		)
+
+		self.oe = (
+			0b00000,
+			0b00000,
+			0b01111,
+			0b10011,
+			0b10101,
+			0b11001,
+			0b11110,
+			0b00000
+		)
+
+		self.OE = (
+			0b01111,
+			0b10001,
+			0b10011,
+			0b10101,
+			0b11001,
+			0b10001,
+			0b11110,
+			0b00000
+		)
+
+		self.aa = (
+			0b00100,
+			0b01010,
+			0b01110,
+			0b00001,
+			0b01111,
+			0b10001,
+			0b01111,
+			0b00000
+		)
+
+		self.AA = (
+			0b00100,
+			0b01010,
+			0b01110,
+			0b10001,
+			0b11111,
+			0b10001,
+			0b10001,
+			0b00000
+		)
+
+		lcd.create_char(0, self.ae)
+		lcd.create_char(1, self.AE)
+		lcd.create_char(2, self.oe)
+		lcd.create_char(3, self.OE)
+		lcd.create_char(4, self.aa)
+		lcd.create_char(5, self.AA)
+
 
 	def run(self):
 		# Wait, if the thread is set on hold
@@ -321,7 +395,18 @@ class Display(threading.Thread):
 					# Double / always returns a floored result (int, not float). 8 / 2 = 4.0, 8 // 2 = 4...
 					message = message + line[0:self.displayWidth // 2] + "\n\r" + line[self.displayWidth // 2:self.displayWidth]
 
+			message = self.replaceCustomCharacters(message)
+
 			lcd.write_string(message)
+
+	def replaceCustomCharacters(self, message):
+		message = message.replace("æ", "\x00")
+		message = message.replace("Æ", "\x01")
+		message = message.replace("ø", "\x02")
+		message = message.replace("Ø", "\x03")
+		message = message.replace("å", "\x04")
+		message = message.replace("Å", "\x05")
+		return message
 
 	def writeToSimulatedScreen(self, message):
 		# Split message up into an array of lines
