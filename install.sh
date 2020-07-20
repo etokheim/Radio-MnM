@@ -217,6 +217,27 @@ else
 
 	# Remove the temporary cron file
 	rm tmp.cron
+
+	# Set very strict editing permissions for the update script, as it can be run as sudo
+	# by radio-mnm, who isn't sudo. Too loose permissions is a severe security issue.
+	chown root:root "$scriptLocation/update.sh"
+	chmod 700 "$scriptLocation/update.sh"
+
+	# Let the radio-mnm user run the update script as sudo "without actually" being sudo
+	addLine="radio-mnm ALL=(ALL) NOPASSWD: $scriptLocation/update.sh"
+	sudoersLocation="/etc/sudoers"
+
+	# Only add the line if it's not there
+	if ! grep -q "$addLine" "$sudoersLocation"; then
+		echo "Line didn't exist, adding it"
+
+		# Don't know why redirecting sed into the sudoers file doesn't work, but
+		# creating a tmp file works fine aswell.
+		sed "/%sudo	ALL=(ALL:ALL) ALL/a $addLine" $sudoersLocation > tmpSudoers
+		cat tmpSudoers > $sudoersLocation
+		rm tmpSudoers
+	fi
+
 	echo -e "\t\t\t\t\e[32mDone!\e[0m\n"
 
 	echo "
