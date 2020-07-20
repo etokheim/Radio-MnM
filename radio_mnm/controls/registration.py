@@ -48,7 +48,7 @@ class Registration():
 			self.response = self.response.json()
 
 			# If the code doesn't fit on the screen, start over
-			if len(self.response["code"]) > config.displayWidth:
+			if len(self.response["code"]) > config.radio.display.displayWidth:
 				self.tooWideCodeErrorCount = self.tooWideCodeErrorCount + 1
 				self.start()
 				return
@@ -58,8 +58,8 @@ class Registration():
 				config.radio.display.notification(_("Too tiny display"))
 				sys.exit(1)
 
-			# Display the code on the display, and set the display duration to a very long time
-			if config.displayHeight == 1:
+			# Display the code on the display
+			if config.radio.display.displayHeight == 1:
 				config.radio.display.standardContent = self.response["code"]
 			else:
 				config.radio.display.standardContent = _("Register radio:") + "\n\r" + self.response["code"]
@@ -102,7 +102,7 @@ class Registration():
 			radioTable = db.table("Radio_mnm")
 
 			if isRegistered["status"] == False:
-				if config.displayHeight == 1:
+				if config.radio.display.displayHeight == 1:
 					config.radio.display.notification(_("Getting new code"))
 				else:
 					config.radio.display.notification(_("Code expired, \n\rfetching new one"))
