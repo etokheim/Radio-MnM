@@ -14,6 +14,7 @@ import zope.event
 import zope.event.classhandler
 import threading
 import gettext
+import os
 
 import switches.button
 import switches.power
@@ -56,7 +57,15 @@ button.listen(button.up, buttonUpHandler)
 
 def buttonLongPressHandler(event):
 	logger.debug("buttonLongPressHandler %r" % event)
-	config.radio.bump(-1)
+	
+	# If it's less than longPressThreshold + 500 since you turned on the radio,
+	# run update script.
+	# Else switch to last channel
+	if int(round(time.time() * 1000)) - config.radio.turnOnTime < config.longPressThreshold + 500:
+		config.radio.display.notification("Updating (15min)\r\nDon't pull the plug!", 5)
+		os.system("sudo scripts/update.sh")
+	else:
+		config.radio.bump(-1)
 
 button.listen(button.longPress, buttonLongPressHandler)
 
@@ -127,6 +136,8 @@ def powerSwitchDownHandler(event):
 	config.radio.on = True
 	config.radio.display.resume()
 	button.resume()
+
+	config.radio.turnOnTime = int(round(time.time() * 1000))
 
 	# TODO: Maybe rename .start() methods that aren't threads, as it can be confusing.
 	# Starts the registration if the radio isn't registered

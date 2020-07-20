@@ -80,6 +80,7 @@ class Radio():
 		self.lastPowerState = None
 		self.volume = int(os.environ["mnm_volume"])
 		self.setVolume(self.volume)
+		self.turnOnTime = None
 
 		# Bitrates
 		# Put an int in the bitrate variable, and the stream closest to that bitrate will be used.
