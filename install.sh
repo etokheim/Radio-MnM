@@ -49,6 +49,12 @@ function step() {
 	currentStep=$((currentStep+1))
 }
 
+# Exit if there is no .env file
+if [ ! -f "$appLocation/.env" ]; then
+	echo -e `The .env file is missing. Copy and configure example.env by doing:
+	cp example.env .env`
+	exit
+fi
 
 ######################################
 #                                    #
