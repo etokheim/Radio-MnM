@@ -175,12 +175,24 @@ class Display(threading.Thread):
 			0b00000
 		)
 
+		self.g = (
+			0b00000,
+			0b00000,
+			0b01111,
+			0b10001,
+			0b10001,
+			0b01111,
+			0b00001,
+			0b01110
+		)
+
 		lcd.create_char(0, self.ae)
 		lcd.create_char(1, self.AE)
 		lcd.create_char(2, self.oe)
 		lcd.create_char(3, self.OE)
 		lcd.create_char(4, self.aa)
 		lcd.create_char(5, self.AA)
+		lcd.create_char(6, self.g)
 
 	def run(self):
 		# Wait, if the thread is set on hold
@@ -405,6 +417,7 @@ class Display(threading.Thread):
 		message = message.replace("Ø", "\x03")
 		message = message.replace("å", "\x04")
 		message = message.replace("Å", "\x05")
+		message = message.replace("g", "\x06")
 		return message
 
 	def writeToSimulatedScreen(self, message):
