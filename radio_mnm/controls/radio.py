@@ -154,8 +154,12 @@ class Radio():
 		radio = radioTable.get(doc_id=1)
 
 		try:
+			# Define status_code here, as if the request fails, we go straight
+			# to the exception block, which evaluates status_code
+			status_code = None
+
 			headers = { "apiKey": radio["apiKey"] }
-			response = requests.get(config.apiServer + "/radio/api/1/channels?homeId=" + radio["homeId"], headers=headers, verify=config.verifyCertificate)
+			response = requests.get(config.apiServer + "/radio/api/1/channels?homeId=" + radio["homeId"], headers=headers, verify=config.verifyCertificate, timeout=5)
 			status_code = response.status_code
 			response = response.json()
 			
@@ -172,8 +176,11 @@ class Radio():
 			self.display.notification(_("Failed to get\n\rchannels!"))
 			time.sleep(2)
 			logger.exception(Exception)
-			
-			if status_code == 410:
+
+			# If status_code is not set, the request failed before returning
+			if not status_code:
+				logger.debug("Got no channels from the server (most likely a timeout). Is the server up?")
+			elif status_code == 410:
 				self.display.notification(_("This radio was\n\runregistered!"))
 				time.sleep(3)
 				self.display.notification(_("Resetting radio\n\rin three seconds"))
