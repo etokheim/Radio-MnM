@@ -82,6 +82,9 @@ class Radio():
 		self.setVolume(self.volume)
 		self.turnOnTime = None
 
+		# Is set
+		self.serverUp = True
+
 		# Bitrates
 		# Put an int in the bitrate variable, and the stream closest to that bitrate will be used.
 		# 32 kbps - Poor audio quality
@@ -169,6 +172,8 @@ class Radio():
 
 				# Add channels to the database for use in case the server goes down
 				radioTable.update({ "channels": self.channels }, doc_ids=[1])
+				
+				self.serverUp = True
 			else:
 				logger.error("Failed to fetch channels with HTTP error code: " + str(status_code))
 				raise Exception(response, status_code)
@@ -180,6 +185,7 @@ class Radio():
 			# If status_code is not set, the request failed before returning
 			if not status_code:
 				logger.debug("Got no channels from the server (most likely a timeout). Is the server up?")
+				self.serverUp = False
 			elif status_code == 410:
 				self.display.notification(_("This radio was\n\runregistered!"))
 				time.sleep(3)
@@ -254,6 +260,10 @@ class Radio():
 		return bestMatchIndex
 
 	def addToListeningHistory(self, startedListening, playedChannel, playingChannel = None):
+		# Don't send requests if the server is (was) down
+		if not self.serverUp:
+			return False
+
 		if not self.saveListeningHistory:
 			return False
 
@@ -276,7 +286,7 @@ class Radio():
 			"playingChannelId": playingChannel["_id"]
 		}
 
-		response = requests.post(config.apiServer + "/radio/api/1/listeningHistory", data=data, verify=config.verifyCertificate)
+		response = requests.post(config.apiServer + "/radio/api/1/listeningHistory", data=data, verify=config.verifyCertificate, timeout=5)
 
 		status_code = response.status_code
 		response = response.json()
@@ -287,6 +297,10 @@ class Radio():
 			logger.error("Couldn't post listening history: " + str(status_code))
 
 	def handleSendState(self, state):
+		# Don't send requests if the server is (was) down
+		if not self.serverUp:
+			return False
+
 		if not self.sendState:
 			return False
 		
@@ -306,7 +320,7 @@ class Radio():
 			"ip": socket.gethostbyname(socket.gethostname())
 		}
 
-		response = requests.post(config.apiServer + "/radio/api/1/state", data=data, verify=config.verifyCertificate)
+		response = requests.post(config.apiServer + "/radio/api/1/state", data=data, verify=config.verifyCertificate, timeout=5)
 
 		status_code = response.status_code
 		response = response.json()
