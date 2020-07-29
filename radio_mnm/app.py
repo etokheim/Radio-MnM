@@ -86,16 +86,16 @@ class ResetCountdown(threading.Thread):
 		while button.state == "down":
 			self.loadingBar = self.loadingBar + "*"
 			# self.loadingBar = self.loadingBar + "█"
-			if config.displayHeight == 1:
+			if config.radio.display.displayHeight == 1:
 				config.radio.display.notification(self.loadingBar + confirmText[len(self.loadingBar) : confirmTextLength])
 			else: 
 				config.radio.display.notification(confirmText + "\n\r" + self.loadingBar)
 			
 			# Sleeping shorter than 0.3 seconds seems to make the display go corrupt...
 			time.sleep(0.3)
-			# time.sleep(3 / config.displayWidth)
+			# time.sleep(3 / config.radio.display.displayWidth)
 			
-			if len(self.loadingBar) >= config.displayWidth:
+			if len(self.loadingBar) >= config.radio.display.displayWidth:
 				config.radio.registration.reset()
 				return
 
