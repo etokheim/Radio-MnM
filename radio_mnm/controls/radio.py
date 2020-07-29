@@ -259,6 +259,7 @@ class Radio():
 		
 		return bestMatchIndex
 
+	# TODO: Make async, so we don't have to wait for request to be sent before switching channels
 	def addToListeningHistory(self, startedListening, playedChannel, playingChannel = None):
 		# Don't send requests if the server is (was) down
 		if not self.serverUp:
@@ -296,6 +297,7 @@ class Radio():
 		else:
 			logger.error("Couldn't post listening history: " + str(status_code))
 
+	# TODO: Make async, so we don't have to wait for request to be sent before turning off
 	def handleSendState(self, state):
 		# Don't send requests if the server is (was) down
 		if not self.serverUp:
