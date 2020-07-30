@@ -70,13 +70,12 @@ apt-get autoclean -y
 #                                   #
 #####################################
 step "Download Radio M&M updates"
-service radio-mnm stop
 # pip3 install --upgrade git+https://git.tokheimgrafisk.no/tokheim/radio-mnm/radio-mnm.git
 git --git-dir="$appLocation/.git" pull
 
 # TODO: Only install new dependencies if there was an update
 step "Installing any new Python dependencies"
 pip3 install -r "$appLocation/requirements.txt"
-service radio-mnm start
 
 echo -e "Finished updating: $(date)"
+service radio-mnm restart
