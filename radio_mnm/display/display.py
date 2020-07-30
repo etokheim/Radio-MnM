@@ -204,50 +204,7 @@ class Display(threading.Thread):
 
 			# Set standard content if radio is on
 			if config.radio.on:
-				# Set standard content
-				# Selected channel can be None when the radio is on, only right after a reset.
-				if config.radio.selectedChannel is not None:
-
-					# Format standard content based on screen size
-					# Set the second line's content:
-					if self.displayHeight >= 2:
-						# By default, display the meta (ie. [Song] - [Artist])
-						secondLine = config.radio.media.get_meta(12)
-						
-						# Get the radio's state
-						state = config.radio.state
-
-						# Display any channel errors
-						if config.radio.channelError:
-							secondLine = config.radio.channelError
-
-						# Display any special states
-						elif state["code"] != "playing":
-							secondLine = state["text"]
-
-						# Meta can be None for a second after the channel starts playing (or if it's actually empty)
-						elif secondLine is None:
-							secondLine = ""
-
-						self.standardContent = config.radio.selectedChannel["name"] + "\n\r" + str(secondLine)
-					else:
-						self.standardContent = config.radio.selectedChannel["name"]
-				elif self.standardContent == "":
-					self.standardContent = "No channels"
-
-				# Clear expired notifications
-				if int(round(time.time() * 1000)) >= self.notificationExpireTime and self.notificationExpireTime != False:
-					self.notificationMessage = ""
-					self.notificationExpireTime = False
-
-				# TODO: Maybe it's better now to send the message as a parameter instead of setting
-				# it to "currentlyDisplayingMessage"?
-				if self.notificationMessage:
-					self.currentlyDisplayingMessage = self.notificationMessage
-					self.displayMessage()
-				else:
-					self.currentlyDisplayingMessage = self.standardContent
-					self.displayMessage("channelInfo")
+				self.writeStandardContent()
 
 			time.sleep(self.displayScrollSpeed)
 
@@ -268,6 +225,52 @@ class Display(threading.Thread):
 		# \n for new line \r for moving to the beginning of current line
 		config.radio.display.notification(">- RADIO M&M  -<\n\r" + _("Got ") + str(len(config.radio.channels)) + _(" channels"), 3)
 		logger.debug("Resumed display handling loop")
+
+	def writeStandardContent(self):
+		# Set standard content
+		# Selected channel can be None when the radio is on, only right after a reset.
+		if config.radio.selectedChannel is not None:
+
+			# Format standard content based on screen size
+			# Set the second line's content:
+			if self.displayHeight >= 2:
+				# By default, display the meta (ie. [Song] - [Artist])
+				secondLine = config.radio.media.get_meta(12)
+				
+				# Get the radio's state
+				state = config.radio.state
+
+				# Display any channel errors
+				if config.radio.channelError:
+					secondLine = config.radio.channelError
+
+				# Display any special states
+				elif state["code"] != "playing":
+					secondLine = state["text"]
+
+				# Meta can be None for a second after the channel starts playing (or if it's actually empty)
+				elif secondLine is None:
+					secondLine = ""
+
+				self.standardContent = config.radio.selectedChannel["name"] + "\n\r" + str(secondLine)
+			else:
+				self.standardContent = config.radio.selectedChannel["name"]
+		elif self.standardContent == "":
+			self.standardContent = "No channels"
+
+		# Clear expired notifications
+		if int(round(time.time() * 1000)) >= self.notificationExpireTime and self.notificationExpireTime != False:
+			self.notificationMessage = ""
+			self.notificationExpireTime = False
+
+		# TODO: Maybe it's better now to send the message as a parameter instead of setting
+		# it to "currentlyDisplayingMessage"?
+		if self.notificationMessage:
+			self.currentlyDisplayingMessage = self.notificationMessage
+			self.displayMessage()
+		else:
+			self.currentlyDisplayingMessage = self.standardContent
+			self.displayMessage("channelInfo")
 
 	# A notification has a limited lifespan. It is displayed for a set duration in seconds (defaults to 2).
 	# When a notification expires, the standard content is displayed. Standard content is what's playing etc.
