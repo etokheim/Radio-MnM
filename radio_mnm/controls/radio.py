@@ -83,6 +83,14 @@ class Radio():
 		self.setVolume(self.volume)
 		self.turnOnTime = None
 
+		# A variable to hold the buffer timer.
+		# Removes buffer from the state if there hasn't been sent another buffer event
+		# since the timer started.
+		self.bufferTimer = None
+
+		# What the state was previous to buffering
+		self.preBufferState = None
+
 		# Is set when fetching channels. If it fails, we assume the server is down.
 		self.serverUp = True
 
@@ -104,9 +112,12 @@ class Radio():
 		# Ie. if we couldn't open the channel
 		self.channelError = None
 
-		# Get state of player (class Vlc.state)
-		# Buffering || Ended || Error || NothingSpecial || Opening || Paused || Playing || Stopped
-		self.state = None
+		# State of radio (Dictionary)
+		# { code: "buffering" || "ended" || "opening" || "paused" || "playing" || "stopped", text: "text description" }
+		self.state = {
+			"code": "starting",
+			"text": _("Starting")
+		}
 
 		# When the user started listening. For analytics purposes.
 		self.startedListeningTime = None
@@ -124,52 +135,77 @@ class Radio():
 		self.events.event_attach(vlc.EventType.MediaPlayerEndReached, self.endReachedEvent)
 		self.events.event_attach(vlc.EventType.MediaPlayerEncounteredError, self.errorEvent)
 
-	def errorEvent(self, event):
+	def errorEvent(self, event = None):
 		logger.error("errorEvent:, " + str(event))
 
-	def endReachedEvent(self, event):
-		logger.debug("EndReached")
+	def endReachedEvent(self, event = None):
+		logger.error("The player reacher the end... Weird... Did you lose the internet connection? Trying to restart the stream.")
 		self.state = {
 			"code": "endReached",
 			"text": _("End reached")
 		}
+		
+		# Try to start stream again if it's "ended".
+		time.sleep(1)
+		self.player.play()
 
-	def stoppedEvent(self, event):
+	def stoppedEvent(self, event = None):
 		logger.debug("Stopped")
 		self.state = {
 			"code": "stopped",
 			"text": _("Stopped")
 		}
 
-	def pausedEvent(self, event):
+	def pausedEvent(self, event = None):
 		logger.debug("Paused")
 		self.state = {
 			"code": "paused",
 			"text": _("Paused")
 		}
 
-	def playingEvent(self, event):
+	def playingEvent(self, event = None):
 		logger.debug("Playing")
 		self.state = {
 			"code": "playing",
 			"text": _("Playing")
 		}
 
-	def bufferingEvent(self, event):
-		# The buffering event is sent very often while buffering
-		if self.state["code"] != "buffering":
-			logger.debug("Buffering")
-			self.state = {
-				"code": "buffering",
-				"text": _("Buffering...")
-			}
-
-	def openingEvent(self, event):
+	def openingEvent(self, event = None):
 		logger.debug("Opening")
 		self.state = {
 			"code": "opening",
 			"text": _("Opening...")
 		}
+
+	def bufferingEvent(self, event = None):
+		# The buffering event is sent very often while buffering, so let's limit setting state to once
+		if self.state["code"] != "buffering":
+			logger.debug("Buffering")
+			
+			self.preBufferState = self.state
+
+			self.state = {
+				"code": "buffering",
+				"text": _("Buffering...")
+			}
+		
+		# Cancel timer for setting state back from "buffering" if it's been set
+		if self.bufferTimer:
+			self.bufferTimer.cancel()
+
+		# Start a timer to replace the "buffering" state with the state from before it was set to buffering
+		self.bufferTimer = threading.Timer(0.2, self.setPreBufferState) 
+		self.bufferTimer.start()
+
+	def setPreBufferState(self):
+		if self.preBufferState["code"] == "playing":
+			self.playingEvent()
+		elif self.preBufferState["code"] == "opening":
+			self.openingEvent()
+		else:
+			logger.error("We don't support setting state to the registered preBufferState (" + self.preBufferState["code"] + ")")
+
+		self.state = self.preBufferState
 
 	def playChannel(self, channel):
 		# Channel should always be valid, so this clause shouldn't trigger, unless there is a bug.
@@ -409,6 +445,7 @@ class Radio():
 			threading.Thread.__init__(self)
 			self.parent = parent
 			self.running = True
+			self.stopCount = 0
 
 			# When paused is set, the thread will run, when it's not set, the thread will wait
 			self.pauseEvent = threading.Event()
@@ -417,11 +454,18 @@ class Radio():
 			while self.running:
 				time.sleep(1)
 
-				# Try to recover from error state
-				if self.parent.channelError and config.radio.on:
-					if self.parent.channelError["code"] == "error":
+				# If the radio is on and stopped on several checks, something is wrong
+				if config.radio.on and self.parent.state["code"] == "stopped":
+					self.stopCount = self.stopCount + 1
+
+					if self.stopCount > 3:
+						logger.error("Radio stopped for some reason. Lost Internet connection? Trying to restart...")
 						self.parent.player.stop()
 						self.parent.player.play()
+						
+						self.stopCount = 0
+				else:
+					self.stopCount = 0
 
 			if not self.running:
 				return
