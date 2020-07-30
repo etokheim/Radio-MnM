@@ -157,6 +157,12 @@ _Any help is appreciated!_
       3. `prefetch stream error: unimplemented query (264) in control`
          - No apparent impact
 
+## Issues
+
+Corrupt displays:
+    - It seems normal character LCD's gets corrupt when two things are being written to it simoultaniously. Therefor we've tried to avoid it.
+    - Displays are also corrupted for some reason after turning the radio off and on again. We therefor reinitialize the display every time the radio is turned off.
+
 ## Credits / contributers
 Torstein Bjelland – Helped build the prototype.
 
