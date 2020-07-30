@@ -75,6 +75,7 @@ class Radio():
 		self.instance = vlc.Instance()
 		self.log = vlc.Log()
 		self.player = self.instance.media_player_new()
+		self.events = self.player.event_manager()
 		self.media = self.instance.media_new("")
 		self.selectedChannel = None
 		self.lastPowerState = None
@@ -82,7 +83,7 @@ class Radio():
 		self.setVolume(self.volume)
 		self.turnOnTime = None
 
-		# Is set
+		# Is set when fetching channels. If it fails, we assume the server is down.
 		self.serverUp = True
 
 		# Bitrates
@@ -105,7 +106,7 @@ class Radio():
 
 		# Get state of player (class Vlc.state)
 		# Buffering || Ended || Error || NothingSpecial || Opening || Paused || Playing || Stopped
-		self.getState = self.player.get_state
+		self.state = None
 
 		# When the user started listening. For analytics purposes.
 		self.startedListeningTime = None
@@ -113,7 +114,62 @@ class Radio():
 		self.saveListeningHistory = helpers.castToBool(os.environ["mnm_saveListeningHistory"])
 		self.sendState = helpers.castToBool(os.environ["mnm_sendState"])
 
+		# Listen for VLC events
 		self.instance.log_set(logCallback, None)
+		self.events.event_attach(vlc.EventType.MediaPlayerOpening, self.openingEvent)
+		self.events.event_attach(vlc.EventType.MediaPlayerBuffering, self.bufferingEvent)
+		self.events.event_attach(vlc.EventType.MediaPlayerPlaying, self.playingEvent)
+		self.events.event_attach(vlc.EventType.MediaPlayerPaused, self.pausedEvent)
+		self.events.event_attach(vlc.EventType.MediaPlayerStopped, self.stoppedEvent)
+		self.events.event_attach(vlc.EventType.MediaPlayerEndReached, self.endReachedEvent)
+		self.events.event_attach(vlc.EventType.MediaPlayerEncounteredError, self.errorEvent)
+
+	def errorEvent(self, event):
+		logger.error("errorEvent:, " + str(event))
+
+	def endReachedEvent(self, event):
+		logger.debug("EndReached")
+		self.state = {
+			"code": "endReached",
+			"text": _("End reached")
+		}
+
+	def stoppedEvent(self, event):
+		logger.debug("Stopped")
+		self.state = {
+			"code": "stopped",
+			"text": _("Stopped")
+		}
+
+	def pausedEvent(self, event):
+		logger.debug("Paused")
+		self.state = {
+			"code": "paused",
+			"text": _("Paused")
+		}
+
+	def playingEvent(self, event):
+		logger.debug("Playing")
+		self.state = {
+			"code": "playing",
+			"text": _("Playing")
+		}
+
+	def bufferingEvent(self, event):
+		# The buffering event is sent very often while buffering
+		if self.state["code"] != "buffering":
+			logger.debug("Buffering")
+			self.state = {
+				"code": "buffering",
+				"text": _("Buffering...")
+			}
+
+	def openingEvent(self, event):
+		logger.debug("Opening")
+		self.state = {
+			"code": "opening",
+			"text": _("Opening...")
+		}
 
 	def playChannel(self, channel):
 		# Channel should always be valid, so this clause shouldn't trigger, unless there is a bug.
@@ -332,46 +388,16 @@ class Radio():
 		else:
 			logger.error("Couldn't post state: " + str(status_code))
 
-	def getStateText(self):
-		# TODO: Find a better way to do this.
-		# state's type is <class 'vlc.State'>
-		# I'd rather not compare strings if I don't have to.
-		state = self.player.get_state()
-		strState = str(state)
-		if strState == "State.Playing":
-			return "Playing"
-			
-		elif strState == "State.Buffering":
-			return "Buffering"
-
-		elif strState == "State.Ended":
-			return "Ended"
-
-		elif strState == "State.Error":
-			return "Error"
-
-		elif strState == "State.NothingSpecial":
-			return "NothingSpecial"
-
-		elif strState == "State.Opening":
-			return "Opening"
-
-		elif strState == "State.Paused":
-			return "Paused"
-
-		elif strState == "State.Stopped":
-			return "Stopped"
-
-		else:
-			return strState
-
 	def handleError(self, error):
 		if "VLC is unable to open the MRL" in error:
-			print("Can't connect")
-			config.radio.channelError = "Can't connect"
+			print("Can't open channel")
+			config.radio.channelError = {
+				"text": _("Can't open channel"),
+				"code": 1
+			}
 		elif "PulseAudio server connection failure: Connection refused" in error:
 			# Does this error fix itself?
-			config.radio.error = "Can't output audio"
+			config.radio.error = _("Can't output audio")
 		# elif "Network error" in error:
 			# TODO: Handle temporary loss of internet access by repeatedly trying to restart the stream
 		elif "unimplemented query (264) in control" in error:
@@ -392,10 +418,10 @@ class Radio():
 				time.sleep(1)
 
 				# Try to recover from error state
-				if str(self.parent.getState()) == "State.Error" and config.radio.on:
-					self.parent.player.stop()
-					self.parent.player.play()
-					
+				if self.parent.channelError and config.radio.on:
+					if self.parent.channelError["code"] == "error":
+						self.parent.player.stop()
+						self.parent.player.play()
 
 			if not self.running:
 				return

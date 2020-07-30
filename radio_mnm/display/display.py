@@ -215,15 +215,15 @@ class Display(threading.Thread):
 						secondLine = config.radio.media.get_meta(12)
 						
 						# Get the radio's state
-						state = str(config.radio.getState())
+						state = config.radio.state
 
 						# Display any channel errors
 						if config.radio.channelError:
 							secondLine = config.radio.channelError
 
 						# Display any special states
-						elif state != "State.Playing" and state != "State.NothingSpecial":
-							secondLine = config.radio.getStateText()
+						elif state["code"] != "playing":
+							secondLine = state["text"]
 
 						# Meta can be None for a second after the channel starts playing (or if it's actually empty)
 						elif secondLine is None:
