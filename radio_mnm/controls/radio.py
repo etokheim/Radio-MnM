@@ -142,7 +142,7 @@ class Radio():
 		logger.error("The player reacher the end... Weird... Did you lose the internet connection? Trying to restart the stream.")
 		self.state = {
 			"code": "endReached",
-			"text": _("End reached")
+			"text": _("Stopped sending")
 		}
 		
 		# Try to start stream again if it's "ended".
@@ -153,14 +153,14 @@ class Radio():
 		logger.debug("Stopped")
 		self.state = {
 			"code": "stopped",
-			"text": _("Stopped")
+			"text": _("Stopped playing")
 		}
 
 	def pausedEvent(self, event = None):
 		logger.debug("Paused")
 		self.state = {
 			"code": "paused",
-			"text": _("Paused")
+			"text": _("Paused playing")
 		}
 
 	def playingEvent(self, event = None):
@@ -174,7 +174,7 @@ class Radio():
 		logger.debug("Opening")
 		self.state = {
 			"code": "opening",
-			"text": _("Opening...")
+			"text": _("Opening channel")
 		}
 
 	def bufferingEvent(self, event = None):
