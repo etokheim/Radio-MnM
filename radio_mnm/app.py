@@ -62,11 +62,11 @@ def buttonLongPressHandler(event):
 	# run update script.
 	# Else switch to last channel
 	if int(round(time.time() * 1000)) - config.radio.turnOnTime < config.longPressThreshold + 500:
-		config.radio.display.notification("Updating (15min)\r\nDon't pull the plug!", 5)
-		config.radio.state = {
+		config.radio.updating = {
 			"code": "updating",
 			"text": _("Updating, don't pull the plug!")
 		}
+		config.radio.display.notification("Updating (15min)\r\nDon't pull the plug!", 5)
 		os.system("sudo scripts/update.sh")
 	else:
 		config.radio.bump(-1)

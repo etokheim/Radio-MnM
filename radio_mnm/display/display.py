@@ -241,7 +241,11 @@ class Display(threading.Thread):
 				state = config.radio.state
 
 				# Display any errors
-				if config.radio.error:
+				if config.radio.updating:
+					secondLine = config.radio.updating["text"]
+
+				# Display any errors
+				elif config.radio.error:
 					secondLine = config.radio.error["text"]
 
 				# Display any channel errors

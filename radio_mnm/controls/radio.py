@@ -103,6 +103,9 @@ class Radio():
 		# 320 kbps - Very high quality - almost indistinguishable from a CD.
 		self.bitrate = int(os.environ["mnm_bitrate"])
 
+		# Is set if the radio is updating (Dictionary)
+		self.updating = None
+
 		# String
 		# Is set if there is a global error (ie. not related to channels)
 		self.error = None
@@ -440,8 +443,6 @@ class Radio():
 			# }
 			return False
 			
-		# elif "Network error" in error:
-			# TODO: Handle temporary loss of internet access by repeatedly trying to restart the stream
 		elif "unimplemented query (264) in control" in error:
 			# TODO: Figure out what this is
 			return False
