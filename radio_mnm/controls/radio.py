@@ -428,12 +428,15 @@ class Radio():
 		if "VLC is unable to open the MRL" in error:
 			print("Can't open channel")
 			config.radio.channelError = {
-				"text": _("Can't open channel"),
-				"code": 1
+				"text": _("Can't open channel (MRL)"),
+				"code": "cantOpenMrl"
 			}
 		elif "PulseAudio server connection failure: Connection refused" in error:
 			# Does this error fix itself?
-			config.radio.error = _("Can't output audio")
+			config.radio.error = {
+				"text": _("Can't output audio"),
+				"code": "pulseaudio"
+			}
 		# elif "Network error" in error:
 			# TODO: Handle temporary loss of internet access by repeatedly trying to restart the stream
 		elif "unimplemented query (264) in control" in error:
@@ -455,7 +458,7 @@ class Radio():
 				time.sleep(1)
 
 				# If the radio is on and stopped on several checks, something is wrong
-				if config.radio.on and self.parent.state["code"] == "stopped":
+				if self.parent.on and self.parent.state["code"] == "stopped":
 					self.stopCount = self.stopCount + 1
 
 					if self.stopCount > 3:
@@ -466,6 +469,13 @@ class Radio():
 						self.stopCount = 0
 				else:
 					self.stopCount = 0
+
+				# Recover from channel errors
+				if self.parent.channelError:
+					logger.debug("Trying to recover from channel error: " + self.parent.channelError["code"])
+					self.parent.channelError = None
+					self.parent.player.stop()
+					self.parent.player.play()
 
 			if not self.running:
 				return

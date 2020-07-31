@@ -240,9 +240,13 @@ class Display(threading.Thread):
 				# Get the radio's state
 				state = config.radio.state
 
+				# Display any errors
+				if config.radio.error:
+					secondLine = config.radio.error["code"]
+
 				# Display any channel errors
-				if config.radio.channelError:
-					secondLine = config.radio.channelError
+				elif config.radio.channelError:
+					secondLine = config.radio.channelError["code"]
 
 				# Display any special states
 				elif state["code"] != "playing":
