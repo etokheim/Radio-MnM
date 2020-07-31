@@ -37,7 +37,6 @@ msgid "Playing"
 msgstr "Spelar av"
 
 #: radio_mnm/controls/radio.py:180
-#, fuzzy
 msgid "Opening channel"
 msgstr "Opnar kanal"
 
@@ -126,7 +125,6 @@ msgid " channels"
 msgstr " kanalar"
 
 #: radio_mnm/display/display.py:267
-#, fuzzy
 msgid "No channels"
 msgstr "Ingen kanalar"
 
