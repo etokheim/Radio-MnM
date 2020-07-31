@@ -67,7 +67,10 @@ def buttonLongPressHandler(event):
 			"text": _("Updating, don't pull the plug!")
 		}
 		config.radio.display.notification("Updating (15min)\r\nDon't pull the plug!", 5)
-		os.system("sudo scripts/update.sh")
+
+		# Run the update from another thread, so the radio keeps responding to input
+		thread = threading.Thread(target = os.system, args = ("sudo scripts/update.sh", ))
+		thread.start()
 	else:
 		config.radio.bump(-1)
 
