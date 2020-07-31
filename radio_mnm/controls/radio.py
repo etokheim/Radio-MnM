@@ -431,12 +431,15 @@ class Radio():
 				"text": _("Can't open channel (MRL)"),
 				"code": "cantOpenMrl"
 			}
+
+		# This error seems to resolve itself or just doesn't impact the radio
 		elif "PulseAudio server connection failure: Connection refused" in error:
-			# Does this error fix itself?
-			config.radio.error = {
-				"text": _("Can't output audio"),
-				"code": "pulseaudio"
-			}
+			# config.radio.error = {
+			# 	"text": _("Can't output audio"),
+			# 	"code": "pulseaudio"
+			# }
+			return False
+			
 		# elif "Network error" in error:
 			# TODO: Handle temporary loss of internet access by repeatedly trying to restart the stream
 		elif "unimplemented query (264) in control" in error:
