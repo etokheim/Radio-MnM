@@ -18,6 +18,6 @@ xgettext \
 	--default-domain base \
 	--output "$localesLocation/base.pot" \
 	--language=Python \
-	*/*.py
+	radio_mnm/*/*.py
 
 msgmerge --update "$localesLocation/nno/LC_MESSAGES/base.po" "$localesLocation/base.pot"

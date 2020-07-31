@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Radio M&M 1.0\n"
 "Report-Msgid-Bugs-To: ertokheim@gmail.com\n"
-"POT-Creation-Date: 2020-05-07 14:35+0100\n"
+"POT-Creation-Date: 2020-07-31 12:28+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,78 +17,102 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: controls/channels.py:64
-msgid "Fetching streams"
+#: radio_mnm/controls/radio.py:122
+msgid "Starting"
 msgstr ""
 
-#: controls/channels.py:82
+#: radio_mnm/controls/radio.py:148
+msgid "Stopped sending"
+msgstr ""
+
+#: radio_mnm/controls/radio.py:159
+msgid "Stopped playing"
+msgstr ""
+
+#: radio_mnm/controls/radio.py:166
+msgid "Paused playing"
+msgstr ""
+
+#: radio_mnm/controls/radio.py:173
+msgid "Playing"
+msgstr ""
+
+#: radio_mnm/controls/radio.py:180
+msgid "Opening channel"
+msgstr ""
+
+#: radio_mnm/controls/radio.py:192
+msgid "Buffering..."
+msgstr ""
+
+#: radio_mnm/controls/radio.py:276
 msgid ""
 "Failed to get\n"
 "\rchannels!"
 msgstr ""
 
-#: controls/channels.py:87
+#: radio_mnm/controls/radio.py:285
 msgid ""
 "This radio was\n"
 "\runregistered!"
 msgstr ""
 
-#: controls/channels.py:89
+#: radio_mnm/controls/radio.py:287
 msgid ""
 "Resetting radio\n"
 "\rin three seconds"
 msgstr ""
 
-#: controls/channels.py:96
+#: radio_mnm/controls/radio.py:294
 msgid ""
 "Using local\n"
 "\rchannels instead"
 msgstr ""
 
-#: controls/channels.py:100
+#: radio_mnm/controls/radio.py:298
 msgid ""
 "Couldn't get\n"
 "\rchannels!"
 msgstr ""
 
-#: controls/setup.py:39
-msgid "Acquiring codes"
+#: radio_mnm/controls/radio.py:434
+msgid "Can't open channel (MRL)"
 msgstr ""
 
-#: controls/setup.py:48
+#: radio_mnm/controls/registration.py:58
+msgid "Too tiny display"
+msgstr ""
+
+#: radio_mnm/controls/registration.py:65
 msgid "Register radio:"
 msgstr ""
 
-#: controls/setup.py:59
+#: radio_mnm/controls/registration.py:106
 msgid "Getting new code"
 msgstr ""
 
-#: controls/setup.py:61
+#: radio_mnm/controls/registration.py:108
 msgid ""
 "Code expired, \n"
 "\rfetching new one"
 msgstr ""
 
-#: controls/setup.py:67
+#: radio_mnm/controls/registration.py:115
 msgid "Registered! :D"
 msgstr ""
 
-#: controls/setup.py:87
+#: radio_mnm/controls/registration.py:145
 msgid "Resetting radio"
 msgstr ""
 
-#: display/display.py:142
+#: radio_mnm/display/display.py:226
 msgid "Got "
 msgstr ""
 
-#: display/display.py:142
+#: radio_mnm/display/display.py:226
 msgid " channels"
 msgstr ""
 
-#: radio_mnm/app.py:73
-msgid "RESETTING RADIO"
-msgstr ""
-
-#: radio_mnm/app.py:76
-msgid "ARE YOU SURE?"
+#: radio_mnm/display/display.py:267
+msgid "No channels"
 msgstr ""
