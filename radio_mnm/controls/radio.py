@@ -257,7 +257,7 @@ class Radio():
 			status_code = None
 
 			headers = { "apiKey": radio["apiKey"] }
-			response = requests.get(config.apiServer + "/radio/api/1/channels?homeId=" + radio["homeId"], headers=headers, verify=config.verifyCertificate, timeout=5)
+			response = requests.get(config.apiServer + "/radio/api/1/channels?homeId=" + radio["homeId"], headers=headers, verify=config.verifyCertificate, timeout=3)
 			status_code = response.status_code
 			response = response.json()
 			
