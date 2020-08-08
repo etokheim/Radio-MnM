@@ -70,6 +70,12 @@ apt-get autoclean -y
 #                                   #
 #####################################
 step "Download Radio M&M updates"
+
+# Temporary step to change the repository URL to Github (from GitLab)
+git remote set-url origin https://github.com/etokheim/Radio-MnM.git
+echo "The remote is now:"
+git remote -v
+
 # pip3 install --upgrade git+https://git.tokheimgrafisk.no/tokheim/radio-mnm/radio-mnm.git
 git --git-dir="$appLocation/.git" pull
 
