@@ -80,15 +80,8 @@ class Rotary(threading.Thread):
 		self.click = click
 		self.left = left
 		self.right = right
-		self.longPress = longPress
-		self.longRelease = longRelease
-		self.veryLongPress = veryLongPress
-
-		self.state = "up"
-
-		self.pushStart = False
-		self.sentLongPressEvent = False
-		self.sentVeryLongPressEvent = False
+		self.press = press
+		self.release = release
 
 		self.listen = zope.event.classhandler.handler
 
@@ -106,90 +99,17 @@ class Rotary(threading.Thread):
 		GPIO.add_event_detect(switch, GPIO.BOTH, callback=self.switchHandler, bouncetime=50)
 
 	def rotationHandler(self, channel):
-		# print("GPIO", channel, "triggered. States: 16 =", str(GPIO.input(16)), "20 =", str(GPIO.input(20)))
-
 		if GPIO.input(self.dt) == 1:
-			print("Right")
 			zope.event.notify(self.right())
+			logger.debug("Rotary right")
 		else:
-			print("Left")
 			zope.event.notify(self.left())
+			logger.debug("Rotary left")
 
 	def switchHandler(self, channel):
 		if GPIO.input(self.switch) == 0:
-			print("Button was pressed")
+			zope.event.notify(self.press())
+			logger.debug("Rotary button press event")
 		else:
-			print("Button was released")
-
-	# Use Button.start(), not Button.run() to start thread
-	# run() would just start a blocking loop
-	# def run(self):
-	# 	while self.running:
-	# 		# Wait, if the thread is set on hold
-	# 		self.pauseEvent.wait()
-			
-	# 		time.sleep(0.01)
-
-	# 		button1State = GPIO.input(self.gpioPin)
-	# 		holdTime = 0
-
-	# 		if button1State == True and self.pushing == True:
-	# 			self.pushing = False
-
-	# 		# If pushing (only executed when state changes)
-	# 		if button1State == False and self.pushStart == 0:
-	# 			self.pushStart = int(round(time.time() * 1000))
-	# 			self.pushing = True
-				
-	# 			# The holdTime is defined twice because it has to be defined before self.pushStart
-	# 			# (as the hold time = now - self.pushStart)
-	# 			# TODO: Clean up by defining holdTime once. Just set it to:
-	# 			# holdTime = now - self.pushStart == 0 ? now : self.pushStart
-	# 			now = int(round(time.time() * 1000))
-	# 			holdTime = now - self.pushStart
-
-	# 			zope.event.notify(self.down())
-	# 			self.state = "down"
-
-	# 		elif self.pushStart != 0 and self.pushing == False:
-	# 			zope.event.notify(self.up())
-	# 			self.state = "up"
-
-	# 			if holdTime >= config.longPressThreshold:
-	# 				zope.event.notify(self.longClick())
-	# 			else:
-	# 				if not self.sentLongPressEvent:
-	# 					zope.event.notify(self.click())
-
-	# 				# When done pushing, set sentLongPressEvent to False again
-	# 				self.sentLongPressEvent = False
-	# 				self.sentVeryLongPressEvent = False
-
-	# 			self.pushStart = 0
-			
-	# 		# If pushing (Executed all the time)
-	# 		if button1State == False:
-	# 			now = int(round(time.time() * 1000))
-	# 			holdTime = now - self.pushStart
-
-	# 		if holdTime >= config.longPressThreshold:
-	# 			if self.sentLongPressEvent == False:
-	# 				self.sentLongPressEvent = True
-	# 				zope.event.notify(self.longPress())
-
-	# 		if holdTime >= config.veryLongPressThreshold:
-	# 			if self.sentVeryLongPressEvent == False:
-	# 				self.sentVeryLongPressEvent = True
-	# 				zope.event.notify(self.veryLongPress())
-
-	# def stop(self):
-	# 	self.running = False
-	# 	logger.warning("Stopped listening to button with GPIO " + str(self.gpioPin))
-
-	# def pause(self):
-	# 	self.pauseEvent.clear()
-	# 	logger.debug("Paused listening to button with GPIO " + str(self.gpioPin))
-
-	# def resume(self):
-	# 	self.pauseEvent.set()
-	# 	logger.debug("Resumed listening to button with GPIO " + str(self.gpioPin))
+			zope.event.notify(self.release())
+			logger.debug("Rotary button release event")
