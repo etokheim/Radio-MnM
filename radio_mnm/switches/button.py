@@ -35,7 +35,7 @@ downStart = 0
 GPIO.setmode(GPIO.BCM)
 
 # Button 1
-GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(8, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 class click(object):
 	def __repr__(self):

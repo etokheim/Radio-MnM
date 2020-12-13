@@ -17,13 +17,24 @@ import gettext
 import os
 
 import switches.button
+import switches.rotaryMechanic
 import switches.power
 from controls import radio
 
 config.nno.install()
 _ = config.nno.gettext
 
-button = switches.button.Button(18)
+button = switches.button.Button(8)
+rotary = switches.rotaryMechanic.Rotary(20, 12, 16)
+
+def rotaryLeft(event):
+	print("Rotary event left")
+
+def rotaryRight(event):
+	print("Rotary event right")
+
+rotary.listen(rotary.left, rotaryLeft)
+rotary.listen(rotary.right, rotaryRight)
 
 # Event is set to the the event which calls it. In this function's case it should be
 # set to "click".
