@@ -36,6 +36,7 @@ setup:
 audio:
     # Bitrate (int)
     # The radio will choose the stream with bitrate closest to the value you set.
+    # This variable will be moved to the server side later.
     # 32 kbps - Poor audio quality
     # 48 kbps - A reasonable lower end rate for longer speech-only podcasts
     # 64 kbps - A common bitrate for speech podcasts.
@@ -48,7 +49,11 @@ audio:
     volume: 85
 
 
+# Setup your components.
+# If you are missing a component, it's easy to contribute to the project to add
+# support for new components.
 components:
+    # Array of displays. Only one display is supported at this time.
     displays:
         - type: Character LCD
             width: 16
@@ -64,11 +69,14 @@ components:
             dotSize: 8
             lcdCharacterMap: A02
 
+    # Array of power buttons. Clicking it will toggle the radio's on state.
     powerButtons:
-        - GPIO: 12
+        # - GPIO: 12
 
+    # Array of power switches. Not reccomended for radio's which will be
+    # turned on/off remotely.
     powerSwitches:
-        - GPIO: 12
+        # - GPIO: 12
 
     navigationRotaries:
         - GPIO:
@@ -76,24 +84,32 @@ components:
             data: 13
           type: mechanic
     
+    # Array. An alternative to the easier to use navigationRotary, where left
+    # is equal to scrolling to the left.
     navigationButtons:
-        - GPIO:
-            left: 12
-            right: 13
+        # - GPIO:
+        #     left: 12
+        #     right: 13
 
+    # Array. Rotaries for controlling the volume.
     volumeRotaries:
-        - GPIO:
-            clk: 12
-            data: 13
-          type: mechanic
+        # - GPIO:
+        #     clk: 12
+        #     data: 13
+        #   type: mechanic
     
+    # Array. An alternative to the easier to use volumeRotaries, where down is
+    # equal to rotating the volume rotary to the left.
     volumeButtons:
         - GPIO:
             up: 12
             down: 13
 
+    # Array. A light which is turned on/off along with the radio to symbolise it's
+    # current state.
     powerLights:
         - GPIO: 12
 
+    # Array. Humidity/temperature sensors.
     DHT22s:
         - GPIO: 12
