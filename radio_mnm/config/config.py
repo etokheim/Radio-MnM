@@ -12,6 +12,7 @@ import os
 import gettext
 import logging
 from helpers import helpers
+import yaml
 
 castToBool = helpers.castToBool
 
@@ -43,6 +44,13 @@ checkButtonStateInterval = 0.01
 apiServer = os.environ["mnm_apiServer"]
 verifyCertificate = True
 
+config = None
+
+with open("config.yml", "r") as stream:
+	try:
+		config = yaml.safe_load(stream)
+	except yaml.YAMLError as exception:
+		print(exception)
 
 ###################################
 #                                 #

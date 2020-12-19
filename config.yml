@@ -56,26 +56,26 @@ components:
     # Array of displays. Only one display is supported at this time.
     displays:
         - type: Character LCD
-            width: 16
-            height: 2
-            GPIO:
-                rs: 14
-                en: 15
-                data4: 13
-                data5: 7
-                data6: 5
-                data7: 11
-            lcdCompatibillityMode: true
-            dotSize: 8
-            lcdCharacterMap: A02
+          width: 16
+          height: 2
+          GPIO:
+              rs: 14
+              en: 15
+              data4: 13
+              data5: 7
+              data6: 5
+              data7: 11
+          lcdCompatibillityMode: true
+          dotSize: 8
+          lcdCharacterMap: A02
 
     # Array of power buttons. Clicking it will toggle the radio's on state.
-    powerButtons:
+    # powerButtons:
         # - GPIO: 12
 
     # Array of power switches. Not reccomended for radio's which will be
     # turned on/off remotely.
-    powerSwitches:
+    # powerSwitches:
         # - GPIO: 12
 
     navigationRotaries:
@@ -86,13 +86,13 @@ components:
     
     # Array. An alternative to the easier to use navigationRotary, where left
     # is equal to scrolling to the left.
-    navigationButtons:
+    # navigationButtons:
         # - GPIO:
         #     left: 12
         #     right: 13
 
     # Array. Rotaries for controlling the volume.
-    volumeRotaries:
+    # volumeRotaries:
         # - GPIO:
         #     clk: 12
         #     data: 13

@@ -4,3 +4,4 @@ zope.event
 requests
 RPi.GPIO
 tinydb
+pyyaml
