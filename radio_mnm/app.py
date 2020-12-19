@@ -18,13 +18,15 @@ import os
 
 import switches.button
 import switches.rotaryMechanic
-import switches.power
 from controls import radio
 from display import display
+import components.powerSwitch
 
 radio = radio.Radio()
 
+# Consider moving this logic into the radio module
 radio.display = display.Display(radio)
+radio.powerSwitch = components.powerSwitch.PowerSwitch(radio, 17)
 
 # Couldn't figure out how to put the error handling into the radio class.
 # The problem was getting self into the logCallback function which is decorated
@@ -187,54 +189,11 @@ button.listen(button.veryLongPress, buttonVeryLongPressHandler)
 
 
 
-powerSwitch = switches.power.Switch(17)
 
-def powerSwitchUpHandler(event):
-	logger.debug("powerSwitchUpHandler %r" % event)
-	
-	# TODO: Most of this should go into a radio.off() method.
-	radio.on = False
-	radio.stop()
-	radio.display.pause()
-	button.pause()
-	radio.handleSendState("suspended")
-
-	# I'm not quite sure I have to reset all of these values
-	radio.display.currentlyDisplayingMessage = ""
-	radio.display.notificationMessage = ""
-	radio.display.lastDisplayedMessage = ""
-	radio.display.lastDisplayedCroppedMessage = ""
-
-powerSwitch.listen(powerSwitch.up, powerSwitchUpHandler)
-
-def powerSwitchDownHandler(event):
-	logger.debug("powerSwitchDownHandler %r" % event)
-
-	# TODO: Most of this should go into a radio.on() method.
-	radio.on = True
-	radio.display.resume()
-	button.resume()
-
-	radio.turnOnTime = int(round(time.time() * 1000))
-
-	# TODO: Maybe rename .start() methods that aren't threads, as it can be confusing.
-	# Starts the registration if the radio isn't registered
-	radio.registration.start()
-	
-	if radio.lastPowerState != "off":
-		radio.handleSendState("noPower")
-
-	radio.handleSendState("on")
-
-	if len(radio.channels) > 0:
-		radio.play()
-
-powerSwitch.listen(powerSwitch.down, powerSwitchDownHandler)
 
 def run():
 	radio.display.start()
 	button.start()
-	powerSwitch.start()
 
 	# If not running on a raspberry pi, fake the power button
 	# to always be switched on.
