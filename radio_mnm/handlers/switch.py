@@ -16,17 +16,6 @@ else:
 from controls import radio
 from config import config
 
-# Button 2
-GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-# I really have no idea how Zope events works, but this project is a very "learn
-# as we go" project. Anyways, what I wanted to do here was to create an event system
-# where I could subscribe to several events: click, down, up, longClick. This I
-# figured out, but I'm still unable to pass arguments down to the event handlers.
-# But as I don't need to pass down arguments yet, It's not a big problem yet. An
-# example of arguments could be an event for clicking the mouse. That should resolve
-# in an event, click, with arguments like pointer position x and y.
-
 class up(object):
 	def __repr__(self):
 		return self.__class__.__name__
@@ -38,6 +27,7 @@ class down(object):
 class Switch(Thread):
 	def __init__(self, gpioPin):
 		Thread.__init__(self)
+		GPIO.setup(gpioPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 		self.running = True
 		self.gpioPin = gpioPin
 
@@ -52,7 +42,7 @@ class Switch(Thread):
 	# Use Switch.start(), not Switch.run() to start thread
 	# run() would just start a blocking loop
 	def run(self):
-		logger.debug("Listening on power button (GPIO " + str(self.gpioPin) + ")")
+		logger.debug("Listening to switch (GPIO " + str(self.gpioPin) + ")")
 
 		while self.running:
 			time.sleep(config.checkPowerSwitchStateInterval)
@@ -77,4 +67,4 @@ class Switch(Thread):
 
 	def stop(self):
 		self.running = False
-		logger.warning("Stopped listening to the power switch")
+		logger.warning("Stopped listening GPIO " + str(self.gpioPin) + " switch")

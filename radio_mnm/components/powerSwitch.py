@@ -7,11 +7,11 @@ class PowerSwitch():
 	"""
 	Creates a new switch
 	"""
-	def __init__(self, radio, GPIO):
+	def __init__(self, radio, gpioPin):
 		self.radio = radio
 		
 		# Create a new switch
-		self.powerSwitch = switch.Switch(GPIO)
+		self.powerSwitch = switch.Switch(gpioPin)
 		
 		# Start listening
 		self.powerSwitch.start()
