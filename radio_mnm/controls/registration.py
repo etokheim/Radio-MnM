@@ -16,10 +16,10 @@ import sys
 _ = config.nno.gettext
 
 from config import config
-from controls import radio
 
 class Registration():
-	def __init__(self):
+	def __init__(self, radio):
+		self.radio = radio
 		logger.debug("Checking if radio is registered")
 		self.tooWideCodeErrorCount = 0
 		self.checkIfRegisteredLoop = None
@@ -40,7 +40,7 @@ class Registration():
 			logger.debug("Radio is registered.")
 			
 			# Update channels
-			config.radio.fetchChannels()
+			self.radio.fetchChannels()
 		else:
 			logger.debug("Radio isn't registered! Starting registration.")
 
@@ -48,21 +48,21 @@ class Registration():
 			self.response = self.response.json()
 
 			# If the code doesn't fit on the screen, start over
-			if len(self.response["code"]) > config.radio.display.displayWidth:
+			if len(self.response["code"]) > self.radio.display.displayWidth:
 				self.tooWideCodeErrorCount = self.tooWideCodeErrorCount + 1
 				self.start()
 				return
 
 			if self.tooWideCodeErrorCount >= 10:
 				logger.error("Couldn't get a code that fit on the display")
-				config.radio.display.notification(_("Too tiny display"))
+				self.radio.display.notification(_("Too tiny display"))
 				sys.exit(1)
 
 			# Display the code on the display
-			if config.radio.display.displayHeight == 1:
-				config.radio.display.standardContent = self.response["code"]
+			if self.radio.display.displayHeight == 1:
+				self.radio.display.standardContent = self.response["code"]
 			else:
-				config.radio.display.standardContent = _("Register radio:") + "\n\r" + self.response["code"]
+				self.radio.display.standardContent = _("Register radio:") + "\n\r" + self.response["code"]
 			
 			# Start isRegisteredThread
 			self.checkIfRegisteredLoop = self.CheckIfRegisteredLoop(self)
@@ -87,7 +87,7 @@ class Registration():
 				isRegistered = self.parent.checkIfRegistered()
 
 				# If the radio is turned off, stop checking if it's been registered.
-				if not config.radio.on:
+				if not self.radio.on:
 					self.stop()
 					return
 
@@ -102,17 +102,17 @@ class Registration():
 			radioTable = db.table("Radio_mnm")
 
 			if isRegistered["status"] == False:
-				if config.radio.display.displayHeight == 1:
-					config.radio.display.notification(_("Getting new code"))
+				if self.radio.display.displayHeight == 1:
+					self.radio.display.notification(_("Getting new code"))
 				else:
-					config.radio.display.notification(_("Code expired, \n\rfetching new one"))
+					self.radio.display.notification(_("Code expired, \n\rfetching new one"))
 					
 				# Give user time to read the message
 				time.sleep(1)
 				self.start()
 				return
 			
-			config.radio.display.notification(_("Registered! :D"))
+			self.radio.display.notification(_("Registered! :D"))
 			logger.info("Device successfully registered!")
 
 			radioTable.insert({
@@ -126,11 +126,11 @@ class Registration():
 			})
 			
 			# Then fetch channels
-			config.radio.fetchChannels()
+			self.radio.fetchChannels()
 			
 			# And finally start playing
-			if len(config.radio.channels) > 0:
-				config.radio.play()
+			if len(self.radio.channels) > 0:
+				self.radio.play()
 		
 		def stop(self):
 			self.running = False
@@ -142,10 +142,10 @@ class Registration():
 		if self.checkIfRegisteredLoop:
 			self.checkIfRegisteredLoop.stop()
 
-		config.radio.display.notification(_("Resetting radio") + "\n****************")
+		self.radio.display.notification(_("Resetting radio") + "\n****************")
 
 		# Stop playing
-		config.radio.stop()
+		self.radio.stop()
 
 		# TODO: Send request to delete itself
 		
@@ -154,8 +154,8 @@ class Registration():
 		logger.warning("Removed database")
 
 		# Remove the old channels from memory
-		config.radio.channels = []
-		config.radio.media = config.radio.instance.media_new("")
-		config.radio.selectedChannel = None
+		self.radio.channels = []
+		self.radio.media = self.radio.instance.media_new("")
+		self.radio.selectedChannel = None
 		
 		self.start()

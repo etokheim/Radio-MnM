@@ -74,7 +74,7 @@ if config.raspberry:
 	lcd = initializeLcd()
 
 class Display(threading.Thread):
-	def __init__(self):
+	def __init__(self, radio):
 		threading.Thread.__init__(self)
 		self.notificationMessage = ""
 		self.standardContent = ""
@@ -107,6 +107,8 @@ class Display(threading.Thread):
 		# Weird display quirk, where one line is two lines for the computer. I guess this is due to
 		# some cost saving initiative in display production.
 		self.oneDisplayLineIsTwoLines = helpers.castToBool(os.environ["mnm_oneDisplayLineIsTwoLines"])
+
+		self.radio = radio
 
 		# Custom characters
 		self.ae = (
@@ -202,8 +204,8 @@ class Display(threading.Thread):
 			# Wait, if the thread is set on hold
 			self.pauseEvent.wait()
 
-			# Set standard content if radio is on
-			if config.radio.on:
+			# Set standard content if self.radio is on
+			if self.radio.on:
 				self.writeStandardContent()
 
 			time.sleep(self.displayScrollSpeed)
@@ -223,34 +225,34 @@ class Display(threading.Thread):
 	def resume(self):
 		self.pauseEvent.set()
 		# \n for new line \r for moving to the beginning of current line
-		config.radio.display.notification(">- RADIO M&M  -<\n\r" + _("Got ") + str(len(config.radio.channels)) + _(" channels"), 3)
+		self.radio.display.notification(">- RADIO M&M  -<\n\r" + _("Got ") + str(len(self.radio.channels)) + _(" channels"), 3)
 		logger.debug("Resumed display handling loop")
 
 	def writeStandardContent(self):
 		# Set standard content
-		# Selected channel can be None when the radio is on, only right after a reset.
-		if config.radio.selectedChannel is not None:
+		# Selected channel can be None when the self.radio is on, only right after a reset.
+		if self.radio.selectedChannel is not None:
 
 			# Format standard content based on screen size
 			# Set the second line's content:
 			if self.displayHeight >= 2:
 				# By default, display the meta (ie. [Song] - [Artist])
-				secondLine = config.radio.media.get_meta(12)
+				secondLine = self.radio.media.get_meta(12)
 				
-				# Get the radio's state
-				state = config.radio.state
+				# Get the self.radio's state
+				state = self.radio.state
 
 				# Display any errors
-				if config.radio.updating:
-					secondLine = config.radio.updating["text"]
+				if self.radio.updating:
+					secondLine = self.radio.updating["text"]
 
 				# Display any errors
-				elif config.radio.error:
-					secondLine = config.radio.error["text"]
+				elif self.radio.error:
+					secondLine = self.radio.error["text"]
 
 				# Display any channel errors
-				elif config.radio.channelError:
-					secondLine = config.radio.channelError["text"]
+				elif self.radio.channelError:
+					secondLine = self.radio.channelError["text"]
 
 				# Display any special states
 				elif state["code"] != "playing":
@@ -260,9 +262,9 @@ class Display(threading.Thread):
 				elif secondLine is None:
 					secondLine = ""
 
-				self.standardContent = config.radio.selectedChannel["name"] + "\n\r" + str(secondLine)
+				self.standardContent = self.radio.selectedChannel["name"] + "\n\r" + str(secondLine)
 			else:
-				self.standardContent = config.radio.selectedChannel["name"]
+				self.standardContent = self.radio.selectedChannel["name"]
 		elif self.standardContent == "":
 			self.standardContent = _("No channels")
 

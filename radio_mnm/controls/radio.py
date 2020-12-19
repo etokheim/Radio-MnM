@@ -48,7 +48,7 @@ def logCallback(data, level, ctx, fmt, args):
 
 	# Handle any errors
 	if level > 3:
-		shouldLog = config.radio.handleError(log)
+		shouldLog = radio.handleError(log)
 
 		# If noisy error, then don't log it
 		if not shouldLog:
@@ -67,8 +67,7 @@ def logCallback(data, level, ctx, fmt, args):
 
 class Radio():
 	def __init__(self):
-		self.display = Display()
-		self.registration = Registration()
+		self.registration = Registration(self)
 
 		self.on = False
 		self.channels = []
@@ -137,6 +136,8 @@ class Radio():
 		self.events.event_attach(vlc.EventType.MediaPlayerStopped, self.stoppedEvent)
 		self.events.event_attach(vlc.EventType.MediaPlayerEndReached, self.endReachedEvent)
 		self.events.event_attach(vlc.EventType.MediaPlayerEncounteredError, self.errorEvent)
+
+		self.startStreamMonitor()
 
 	def errorEvent(self, event = None):
 		logger.error("errorEvent:, " + str(event))
@@ -430,14 +431,14 @@ class Radio():
 	def handleError(self, error):
 		if "VLC is unable to open the MRL" in error:
 			print("Can't open channel")
-			config.radio.channelError = {
+			radio.channelError = {
 				"text": _("Can't open channel (MRL)"),
 				"code": "cantOpenMrl"
 			}
 
 		# This error seems to resolve itself or just doesn't impact the radio
 		elif "PulseAudio server connection failure: Connection refused" in error:
-			# config.radio.error = {
+			# radio.error = {
 			# 	"text": _("Can't output audio"),
 			# 	"code": "pulseaudio"
 			# }
@@ -491,6 +492,3 @@ class Radio():
 	def startStreamMonitor(self):
 		self.streamMonitor = self.StreamMonitor(self)
 		self.streamMonitor.start()
-
-config.radio = Radio()
-config.radio.startStreamMonitor()
