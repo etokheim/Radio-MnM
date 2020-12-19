@@ -1,70 +1,52 @@
 import logging
 logger = logging.getLogger("Radio_mnm")
-from config import config
-import time
 import zope.event.classhandler
-from threading import Thread
-import gettext
+import threading
+from RPi import GPIO
 
-_ = config.nno.gettext
-
-if config.raspberry == True:
-	from RPi import GPIO
-else:
-	from EmulatorGUI.EmulatorGUI import GPIO
-
-from controls import radio
-from config import config
-
-class up(object):
+class off(object):
 	def __repr__(self):
 		return self.__class__.__name__
 
-class down(object):
+class on(object):
 	def __repr__(self):
 		return self.__class__.__name__
 
-class Switch(Thread):
+class Switch():
 	def __init__(self, gpioPin):
-		Thread.__init__(self)
 		GPIO.setup(gpioPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-		self.running = True
 		self.gpioPin = gpioPin
 
 		# Add class handlers
-		self.down = down
-		self.up = up
+		self.on = on
+		self.off = off
 
-		self.pushing = False
-
+		# Add listen handler
 		self.listen = zope.event.classhandler.handler
 
-	# Use Switch.start(), not Switch.run() to start thread
-	# run() would just start a blocking loop
-	def run(self):
+		# State (string)
+		# "on" || "off"
+		self.state = "off"
+
+		# Listen to events
 		logger.debug("Listening to switch (GPIO " + str(self.gpioPin) + ")")
+		GPIO.add_event_detect(gpioPin, GPIO.BOTH, callback=self.delayHandling, bouncetime=50)
 
-		while self.running:
-			time.sleep(config.checkPowerSwitchStateInterval)
-		
-			button2State = GPIO.input(self.gpioPin)
+		# Run the switch handler once, as the first state won't trigger an interrupt event
+		self.delayHandling(self.gpioPin)
 
-			# If pushing
-			if button2State == False:
-				# Only send wake event if state changed
-				if self.pushing == False:
-					# Send wake event
-					zope.event.notify(self.down())
+	# Delays the handling of the button state a little so we don't get the wrong reading
+	# due to the noise
+	def delayHandling(self, channel):
+		threading.Timer(.05, lambda: self.handleSwitchChange()).start()
 
-				self.pushing = True
+	def handleSwitchChange(self):
+		# Switch turned on
+		if GPIO.input(self.gpioPin) == 0:
+			zope.event.notify(self.on())
+			self.state = "on"
 
-			else:
-				if self.pushing == True:
-					# Send sleep event
-					zope.event.notify(self.up())
-
-					self.pushing = False
-
-	def stop(self):
-		self.running = False
-		logger.warning("Stopped listening GPIO " + str(self.gpioPin) + " switch")
+		# Switch turned off
+		else:
+			self.state = "off"
+			zope.event.notify(self.off())

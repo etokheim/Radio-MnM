@@ -12,15 +12,12 @@ class PowerSwitch():
 		
 		# Create a new switch
 		self.powerSwitch = switch.Switch(gpioPin)
-		
-		# Start listening
-		self.powerSwitch.start()
 
-		self.powerSwitch.listen(self.powerSwitch.up, self.powerSwitchUpHandler)
-		self.powerSwitch.listen(self.powerSwitch.down, self.powerSwitchDownHandler)
+		self.powerSwitch.listen(self.powerSwitch.on, self.onHandler)
+		self.powerSwitch.listen(self.powerSwitch.off, self.offHandler)
 
-	def powerSwitchUpHandler(self, event):
-		logger.debug("powerSwitchUpHandler %r" % event)
+	def offHandler(self, event):
+		logger.debug("offHandler %r" % event)
 		
 		# TODO: Most of this should go into a self.radio.off() method.
 		self.radio.on = False
@@ -36,8 +33,8 @@ class PowerSwitch():
 		self.radio.display.lastDisplayedMessage = ""
 		self.radio.display.lastDisplayedCroppedMessage = ""
 
-	def powerSwitchDownHandler(self, event):
-		logger.debug("powerSwitchDownHandler %r" % event)
+	def onHandler(self, event):
+		logger.debug("onHandler %r" % event)
 
 		# TODO: Most of this should go into a self.radio.on() method.
 		self.radio.on = True
@@ -47,10 +44,6 @@ class PowerSwitch():
 
 		self.radio.turnOnTime = int(round(time.time() * 1000))
 
-		# TODO: Maybe rename .start() methods that aren't threads, as it can be confusing.
-		# Starts the registration if the radio isn't registered
-		self.radio.registration.start()
-		
 		if self.radio.lastPowerState != "off":
 			self.radio.handleSendState("noPower")
 
