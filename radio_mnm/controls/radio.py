@@ -79,7 +79,7 @@ class Radio():
 		self.startedListeningTime = None
 
 		self.saveListeningHistory = helpers.castToBool(os.environ["mnm_saveListeningHistory"])
-		self.sendState = helpers.castToBool(os.environ["mnm_sendState"])
+		self.shouldSendState = helpers.castToBool(os.environ["mnm_sendState"])
 
 		# Listen for VLC events
 		self.events.event_attach(vlc.EventType.MediaPlayerOpening, self.openingEvent)
@@ -346,15 +346,19 @@ class Radio():
 		else:
 			logger.error("Couldn't post listening history: " + str(status_code))
 
-	# TODO: Make async, so we don't have to wait for request to be sent before turning off
 	def handleSendState(self, state):
 		# Don't send requests if the server is (was) down
 		if not self.serverUp:
 			return False
 
-		if not self.sendState:
+		if not self.shouldSendState:
 			return False
-		
+
+		# Quick and dirty way to make async
+		# TODO: Revisit this
+		threading.Timer(0, lambda: self.sendState(state)).start()
+
+	def sendState(self, state):
 		db = TinyDB('./db/db.json')
 		radioTable = db.table("Radio_mnm")
 		radio = radioTable.get(doc_id=1)
@@ -371,15 +375,19 @@ class Radio():
 			"ip": socket.gethostbyname(socket.gethostname())
 		}
 
-		response = requests.post(config.apiServer + "/radio/api/1/state", data=data, verify=config.verifyCertificate, timeout=5)
+		try:
+			response = requests.post(config.apiServer + "/radio/api/1/state", data=data, verify=config.verifyCertificate, timeout=5)
 
-		status_code = response.status_code
-		response = response.json()
-		
-		if status_code == 200:
-			logger.debug("Successfully posted state " + state + " (" + str(status_code) + ")")
-		else:
-			logger.error("Couldn't post state: " + str(status_code))
+			status_code = response.status_code
+			response = response.json()
+			
+			if status_code == 200:
+				logger.debug("Successfully posted state " + state + " (" + str(status_code) + ")")
+			else:
+				logger.error("Couldn't post state: " + str(status_code))
+		except requests.exceptions.ConnectionError as exception:
+			logger.error("Got a connection error while sending state " + state + ":")
+			logger.error(exception)
 
 	def handleError(self, error):
 		if "VLC is unable to open the MRL" in error:
