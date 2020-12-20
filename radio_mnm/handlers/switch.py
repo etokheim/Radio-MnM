@@ -43,10 +43,12 @@ class Switch():
 	def handleSwitchChange(self):
 		# Switch turned on
 		if GPIO.input(self.gpioPin) == 0:
-			zope.event.notify(self.on())
-			self.state = "on"
+			if self.state != "on":
+				zope.event.notify(self.on())
+				self.state = "on"
 
 		# Switch turned off
 		else:
-			self.state = "off"
-			zope.event.notify(self.off())
+			if self.state != "off":
+				zope.event.notify(self.off())
+				self.state = "off"
