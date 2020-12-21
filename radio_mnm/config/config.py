@@ -38,7 +38,6 @@ if os.uname()[4][:3] == "arm":
 longPressThreshold = 600
 veryLongPressThreshold = 5000
 
-checkPowerSwitchStateInterval = 0.25
 checkButtonStateInterval = 0.01
 
 apiServer = os.environ["mnm_apiServer"]
