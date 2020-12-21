@@ -90,7 +90,16 @@ class Radio():
 		self.events.event_attach(vlc.EventType.MediaPlayerEndReached, self.endReachedEvent)
 		self.events.event_attach(vlc.EventType.MediaPlayerEncounteredError, self.errorEvent)
 
-		self.startStreamMonitor()
+		# self.startStreamMonitor()
+
+		# Start with channels from DB
+		db = TinyDB('./db/db.json')
+		radioTable = db.table("Radio_mnm")
+		radio = radioTable.get(doc_id=1)
+
+		channels = radio["channels"]
+		if channels:
+			self.channels = channels
 
 	def errorEvent(self, event = None):
 		logger.error("errorEvent:, " + str(event))
@@ -201,6 +210,12 @@ class Radio():
 			self.addToListeningHistory(self.startedListeningTime, self.selectedChannel)
 
 	def fetchChannels(self):
+			t = threading.Thread(target=self.asyncFetchChannels, name='Fetching channels')
+			# Daemonize it so we don't have to manually kill the thread
+			t.daemon = True
+			t.start()
+
+	def asyncFetchChannels(self):
 		db = TinyDB('./db/db.json')
 		radioTable = db.table("Radio_mnm")
 		radio = radioTable.get(doc_id=1)
@@ -225,11 +240,14 @@ class Radio():
 				self.serverUp = True
 			else:
 				logger.error("Failed to fetch channels with HTTP error code: " + str(status_code))
-				raise Exception(response, status_code)
-		except Exception:
+		
+		# Handle exceptions from failed requests
+		except requests.exceptions.ConnectionError as exception:
+			logger.error("Got a connection error while fetching channels:")
+			logger.error(exception)
+
 			self.display.notification(_("Failed to get\n\rchannels!"))
 			time.sleep(2)
-			logger.exception(Exception)
 
 			# If status_code is not set, the request failed before returning
 			if not status_code:
@@ -242,18 +260,7 @@ class Radio():
 				self.registration.reset()
 				return
 
-			# Recover by using channels from local db instead if we have them
-			channels = radio["channels"]
-			if channels:
-				self.display.notification(_("Using local\n\rchannels instead"))
-				time.sleep(1)
-				self.channels = channels
-			else:
-				self.display.notification(_("Couldn't get\n\rchannels!") + " (" + str(status_code) + ")")
-				logger.error("------------ EXITED ------------")
-				time.sleep(1)
-				# Exit with code "112, Host is down"
-				sys.exit(112)
+			self.display.notification(_("No channels\n\ravailable!") + " (" + str(status_code) + ")")
 
 		# Only sets selectedChannel if it's not set and the radio has channels.
 		# If not, keep the None value
@@ -336,15 +343,20 @@ class Radio():
 			"playingChannelId": playingChannel["_id"]
 		}
 
-		response = requests.post(config.apiServer + "/radio/api/1/listeningHistory", data=data, verify=config.verifyCertificate, timeout=5)
+		try:
+			response = requests.post(config.apiServer + "/radio/api/1/listeningHistory", data=data, verify=config.verifyCertificate, timeout=5)
 
-		status_code = response.status_code
-		response = response.json()
+			status_code = response.status_code
+			response = response.json()
+			
+			if status_code == 200:
+				logger.debug("Successfully posted listening history (" + str(status_code) + ")")
+			else:
+				logger.error("Couldn't post listening history: " + str(status_code))
 		
-		if status_code == 200:
-			logger.debug("Successfully posted listening history (" + str(status_code) + ")")
-		else:
-			logger.error("Couldn't post listening history: " + str(status_code))
+		except requests.exceptions.ConnectionError as exception:
+			logger.error("Got a connection error while adding to listening history:")
+			logger.error(exception)
 
 	def handleSendState(self, state):
 		# Don't send requests if the server is (was) down
@@ -385,6 +397,7 @@ class Radio():
 				logger.debug("Successfully posted state " + state + " (" + str(status_code) + ")")
 			else:
 				logger.error("Couldn't post state: " + str(status_code))
+		
 		except requests.exceptions.ConnectionError as exception:
 			logger.error("Got a connection error while sending state " + state + ":")
 			logger.error(exception)
