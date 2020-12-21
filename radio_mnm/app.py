@@ -16,7 +16,7 @@ import threading
 import gettext
 import os
 
-import switches.rotaryMechanic
+import handlers.rotaryMechanic
 from controls import radio
 from display import display
 import components.powerSwitch as powerSwitch
