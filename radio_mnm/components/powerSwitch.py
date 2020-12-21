@@ -1,6 +1,7 @@
 import time
 import logging
 logger = logging.getLogger("Radio_mnm")
+from handlers import eventSwitch
 from handlers import switch
 
 class PowerSwitch():
@@ -11,7 +12,7 @@ class PowerSwitch():
 		self.radio = radio
 		
 		# Create a new switch
-		self.powerSwitch = switch.Switch(gpioPin)
+		self.powerSwitch = eventSwitch.Switch(gpioPin)
 
 		self.powerSwitch.listen(self.powerSwitch.on, self.onHandler)
 		self.powerSwitch.listen(self.powerSwitch.off, self.offHandler)
