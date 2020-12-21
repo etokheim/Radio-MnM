@@ -92,6 +92,9 @@ class Button(threading.Thread):
 
 		self.listen = zope.event.classhandler.handler
 
+		# Start listening
+		self.start()
+
 	# Use Button.start(), not Button.run() to start thread
 	# run() would just start a blocking loop
 	def run(self):
