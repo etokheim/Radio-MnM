@@ -21,6 +21,7 @@ from controls import radio
 from display import display
 import components.powerSwitch as powerSwitch
 import components.navigationButton as navigationButton
+import components.navigationRotary as navigationRotary
 
 radio = radio.Radio()
 
@@ -28,6 +29,8 @@ radio = radio.Radio()
 radio.display = display.Display(radio)
 radio.powerSwitch = powerSwitch.PowerSwitch(radio, 17)
 radio.navigationButton = navigationButton.NavigationButton(radio, 8)
+radio.navigationRotary = navigationRotary.NavigationRotary(radio, 20, 12)
+# rotary = switches.rotaryMechanic.Rotary(20, 12, 16)
 
 # Couldn't figure out how to put the error handling into the radio class.
 # The problem was getting self into the logCallback function which is decorated
@@ -85,18 +88,6 @@ radio.instance.log_set(logCallback, None)
 config.nno.install()
 _ = config.nno.gettext
 
-# rotary = switches.rotaryMechanic.Rotary(20, 12, 16)
-
-def rotaryLeft(event):
-	print("Rotary event left")
-	radio.bump()
-
-def rotaryRight(event):
-	print("Rotary event right")
-	radio.bump(-1)
-
-# rotary.listen(rotary.left, rotaryLeft)
-# rotary.listen(rotary.right, rotaryRight)
 
 def run():
 	radio.display.start()
