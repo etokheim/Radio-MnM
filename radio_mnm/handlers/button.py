@@ -34,37 +34,6 @@ downStart = 0
 
 GPIO.setmode(GPIO.BCM)
 
-# Button 1
-GPIO.setup(8, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-class click(object):
-	def __repr__(self):
-		return self.__class__.__name__
-
-class down(object):
-	def __repr__(self):
-		return self.__class__.__name__
-
-class up(object):
-	def __repr__(self):
-		return self.__class__.__name__
-
-# Fires when you release the button and you've pushed it longer than the long press threshold
-class longClick(object):
-	def __repr__(self):
-		return self.__class__.__name__
-
-# Fires at once when the long press threshold is reached
-class longPress(object):
-	def __repr__(self):
-		return self.__class__.__name__
-
-# Fires after 5 seconds of pressing
-class veryLongPress(object):
-	def __repr__(self):
-		return self.__class__.__name__
-
-
 class Button(threading.Thread):
 	def __init__(self, gpioPin):
 		threading.Thread.__init__(self)
@@ -73,14 +42,6 @@ class Button(threading.Thread):
 		self.running = True
 		# When paused is set, the thread will run, when it's not set, the thread will wait
 		self.pauseEvent = threading.Event()
-
-		# Add class handlers
-		self.click = click
-		self.down = down
-		self.up = up
-		self.longClick = longClick
-		self.longPress = longPress
-		self.veryLongPress = veryLongPress
 
 		self.state = "up"
 
@@ -94,6 +55,9 @@ class Button(threading.Thread):
 
 		# Start listening
 		self.start()
+		self.pauseEvent.set()
+
+		GPIO.setup(gpioPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 	# Use Button.start(), not Button.run() to start thread
 	# run() would just start a blocking loop
@@ -156,6 +120,8 @@ class Button(threading.Thread):
 					self.sentVeryLongPressEvent = True
 					zope.event.notify(self.veryLongPress())
 
+		print("Button is running " + str(self.running))
+
 	def stop(self):
 		self.running = False
 		logger.warning("Stopped listening to button with GPIO " + str(self.gpioPin))
@@ -167,3 +133,30 @@ class Button(threading.Thread):
 	def resume(self):
 		self.pauseEvent.set()
 		logger.debug("Resumed listening to button with GPIO " + str(self.gpioPin))
+
+	class click(object):
+		def __repr__(self):
+			return self.__class__.__name__
+
+	class down(object):
+		def __repr__(self):
+			return self.__class__.__name__
+
+	class up(object):
+		def __repr__(self):
+			return self.__class__.__name__
+
+	# Fires when you release the button and you've pushed it longer than the long press threshold
+	class longClick(object):
+		def __repr__(self):
+			return self.__class__.__name__
+
+	# Fires at once when the long press threshold is reached
+	class longPress(object):
+		def __repr__(self):
+			return self.__class__.__name__
+
+	# Fires after 5 seconds of pressing
+	class veryLongPress(object):
+		def __repr__(self):
+			return self.__class__.__name__
