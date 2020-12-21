@@ -2,7 +2,8 @@ import time
 import logging
 logger = logging.getLogger("Radio_mnm")
 from handlers import eventSwitch
-from handlers import switch
+
+import threading
 
 class PowerSwitch():
 	"""
@@ -45,10 +46,20 @@ class PowerSwitch():
 
 		self.radio.turnOnTime = int(round(time.time() * 1000))
 
+		if not self.radio.selectedChannel:
+			self.radio.selectedChannel = self.radio.channels[0]
+		
+		# Start playing
+		self.radio.play()
+
+		# TODO: Maybe rename .start() methods that aren't threads, as it can be confusing.
+		# Starts the registration if the radio isn't registered
+		self.radio.registration.start()
+
 		if self.radio.lastPowerState != "off":
 			self.radio.handleSendState("noPower")
 
 		self.radio.handleSendState("on")
 
-		if len(self.radio.channels) > 0:
-			self.radio.play()
+		# if len(self.radio.channels) > 0:
+		# 	self.radio.play()
