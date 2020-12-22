@@ -183,6 +183,9 @@ class Radio():
 		if not channel:
 			logger.error("Channel parameter is not a valid channel. Can't start player.")
 			return
+		elif channel == self.selectedChannel:
+			logger.debug("Switching to the same channel that was already playing. Skipping restart.")
+			return
 
 		# Before we update the selected channel, store the last played one
 		playedChannel = self.selectedChannel
