@@ -14,7 +14,6 @@ import os
 
 _ = config.nno.gettext
 
-from display.display import Display
 from controls.registration import Registration
 from helpers import helpers
 

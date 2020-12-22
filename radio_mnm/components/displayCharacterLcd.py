@@ -10,11 +10,8 @@ import os
 
 _ = config.nno.gettext
 
-if config.raspberry == True:
-	from RPi import GPIO
-	from RPLCD.gpio import CharLCD
-else:
-	from EmulatorGUI.EmulatorGUI import GPIO
+from RPi import GPIO
+from RPLCD.gpio import CharLCD
 
 def initializeLcd():
 	return CharLCD(
@@ -70,7 +67,6 @@ if config.raspberry:
 		actualDisplayWidth = int(os.environ["mnm_displayWidth"])
 		actualDisplayHeight = int(os.environ["mnm_displayHeight"])
 
-	# We are using the GPIO numbering scheme
 	lcd = initializeLcd()
 
 class Display(threading.Thread):

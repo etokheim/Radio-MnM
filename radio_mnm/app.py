@@ -18,7 +18,7 @@ import os
 
 import handlers.rotaryMechanic
 from controls import radio
-from display import display
+import components.displayCharacterLcd as display
 import components.powerSwitch as powerSwitch
 import components.navigationButton as navigationButton
 import components.volumeRotary as volumeRotary
