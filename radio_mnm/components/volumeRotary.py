@@ -2,7 +2,7 @@ from handlers import rotaryMechanic
 import logging
 logger = logging.getLogger("Radio_mnm")
 
-class NavigationRotary():
+class VolumeRotary():
 	def __init__(self, radio, clk, dt):
 		self.radio = radio
 		self.clk = clk
@@ -15,9 +15,9 @@ class NavigationRotary():
 
 	def rotaryLeftHandler(self, event):
 		logger.debug("rotaryLeftHandler %r" % event)
-		self.radio.bump(-1)
+		self.radio.setVolume(self.radio.volume - 10)
 
 	def rotaryRightHandler(self, event):
 		logger.debug("rotaryRightHandler %r" % event)
+		self.radio.setVolume(self.radio.volume + 10)
 		
-		self.radio.bump(1)

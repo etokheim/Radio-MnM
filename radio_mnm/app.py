@@ -21,7 +21,7 @@ from controls import radio
 from display import display
 import components.powerSwitch as powerSwitch
 import components.navigationButton as navigationButton
-import components.navigationRotary as navigationRotary
+import components.volumeRotary as volumeRotary
 
 radio = radio.Radio()
 
@@ -29,7 +29,7 @@ radio = radio.Radio()
 radio.display = display.Display(radio)
 radio.powerSwitch = powerSwitch.PowerSwitch(radio, 17)
 radio.navigationButton = navigationButton.NavigationButton(radio, 8)
-radio.navigationRotary = navigationRotary.NavigationRotary(radio, 20, 12)
+radio.volumeRotary = volumeRotary.VolumeRotary(radio, 20, 12)
 # rotary = switches.rotaryMechanic.Rotary(20, 12, 16)
 
 # Couldn't figure out how to put the error handling into the radio class.

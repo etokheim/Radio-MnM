@@ -335,8 +335,15 @@ class Radio():
 		return self.channels[bumpTo]
 
 	def setVolume(self, volume):
+		# Don't allow volumes less than 0 or more than 100
+		if volume < 0:
+			volume = 0
+		elif volume > 100:
+			volume = 100
+			
 		try:
 			subprocess.call(["amixer", "-D", "pulse", "sset", "Master", str(volume) + "%"])
+			self.volume = volume
 			return True
 		
 		except ValueError:
