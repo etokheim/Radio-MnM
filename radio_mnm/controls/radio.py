@@ -285,6 +285,7 @@ class Radio():
 		if self.delayedBumpTimer:
 			self.delayedBumpTimer.cancel()
 
+		self.display.notification(self.hoveredChannel["name"], 2)
 		self.delayedBumpTimer = threading.Timer(2, self.playChannel, args=[self.hoveredChannel])
 		self.delayedBumpTimer.start()
 		
