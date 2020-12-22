@@ -183,7 +183,7 @@ class Radio():
 		if not channel:
 			logger.error("Channel parameter is not a valid channel. Can't start player.")
 			return
-		elif channel == self.selectedChannel:
+		elif channel == self.selectedChannel and self.state["code"] == "playing":
 			logger.debug("Switching to the same channel that was already playing. Skipping restart.")
 			return
 
@@ -340,7 +340,7 @@ class Radio():
 			volume = 0
 		elif volume > 100:
 			volume = 100
-			
+
 		try:
 			subprocess.call(["amixer", "-D", "pulse", "sset", "Master", str(volume) + "%"])
 			self.volume = volume
