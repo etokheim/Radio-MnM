@@ -309,11 +309,8 @@ class Radio():
 			bumpTo = hoveredChannelIndex + remaining
 
 		logger.debug("offset " + str(offset) + ", bumping to: " + str(bumpTo))
-		# self.playChannel(self.channels[bumpTo])
 		return self.channels[bumpTo]
 
-		# self.bumpDeferrer.resume()
-		
 	def getChannelByOffset(self, offset):
 		# Number of channels to skip which remains after removing overflow.
 		# (Overflow: if you are playing channel 3 of 10 and is instructed to skip 202 channels ahead,
@@ -332,10 +329,7 @@ class Radio():
 			bumpTo = selectedChannelIndex + remaining
 
 		logger.debug("offset " + str(offset) + ", bumping to: " + str(bumpTo))
-		# self.playChannel(self.channels[bumpTo])
 		return self.channels[bumpTo]
-
-		# self.bumpDeferrer.resume()
 
 	def setVolume(self, volume):
 		try:
@@ -447,7 +441,7 @@ class Radio():
 	def handleError(self, error):
 		if "VLC is unable to open the MRL" in error:
 			print("Can't open channel")
-			radio.channelError = {
+			self.channelError = {
 				"text": _("Can't open channel (MRL)"),
 				"code": "cantOpenMrl"
 			}
