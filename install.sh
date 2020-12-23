@@ -50,9 +50,12 @@ function step() {
 }
 
 # Exit if there is no .env file
-if [ ! -f "$appLocation/.env" ]; then
-	echo -e "The .env file is missing. Copy and configure example.env by doing:
-	cp example.env .env"
+if [ ! -f "$appLocation/config.yml" ]; then
+	echo -e "Before you can install the app, you have to configure it. You can use the example-config.yml as a template by running the following command:
+	cp example-config.yml config.yml"
+	sleep 1
+	echo -e "Then you can edit the configuration file with your favorite editor. Example:
+	nano config.yml"
 	exit
 fi
 
@@ -130,7 +133,7 @@ if [ $development = false ]; then
 fi
 
 # Making the rest of the script files executable for owner and group members
-chmod g+x,u+x "$appLocation/load-dotenv.sh" "$scriptLocation/update.sh" "$scriptLocation/locales_apply_update.sh" "$scriptLocation/locales_update.sh"
+chmod g+x,u+x "$scriptLocation/update.sh" "$scriptLocation/locales_apply_update.sh" "$scriptLocation/locales_update.sh"
 
 echo -e "\t\e[32mDone!\e[0m\n"
 
@@ -152,7 +155,6 @@ StandardOutput=inherit
 StandardError=inherit
 Restart=always
 User=radio-mnm
-EnvironmentFile=$appLocation/.env
 
 [Install]
 WantedBy=multi-user.target"

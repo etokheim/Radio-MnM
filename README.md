@@ -107,13 +107,13 @@ You should now be connected to the Raspberry and can proceed to the next section
       ```bash
       $ cd radio-mnm
       ```
-   7. Make a copy of `example.env` and rename it to `.env`
+   7. Make a copy of `example-config.yml` and name it `config.yml`
       ```bash
-      $ cp env.example .env
+      $ cp example-config.yml config.yml
       ```
-   8. Edit the .env file with a text editor. Ie. Nano:
+   8. Edit the config.yml file with a text editor. Ie. Nano:
       ```bash
-      $ nano .env
+      $ nano config.yml
       ```
          - `ctrl` + `x` and follow the instructions to save and exit
    9. Run the configuration script:
@@ -123,17 +123,11 @@ You should now be connected to the Raspberry and can proceed to the next section
 
 ### Development
 
-   1. Follow the steps for a production setup until you are going to execute  setupEnvironment.sh. Don't execute it that way.
-   2. Run the configuration script (notice the argument **--development**):
+   1. Follow the same steps as for a production setup, **except for running the install script**. That should be done with the `--development` flag:
          ```bash
          $ ./install.sh --development
          ```
-   3. Load the environment variables into the shell you are using:
-         ```bash
-         $ source ./load-dotenv.sh
-         ```
-            - Note: you have to do this for every new shell you want to start the app from. Ie. if you restart your computer or open another terminal window, you have to repeat this step.
-   4. Start the app:
+   3. Now you can start the app:
       ```bash
       python3 -m radio_mnm
       ```
