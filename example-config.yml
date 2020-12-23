@@ -47,6 +47,13 @@ longPressThreshold: 600
 # Time in milliseconds you have to hold buttons to register a very long press
 veryLongPressThreshold: 5000
 
+# Channel switch delay (int)
+# Time in seconds the channel switch should be delayed.
+# This is useful to limit the amount of unnecessary requests. Ie. if you are switching
+# from channel 1 to 8, listening to the 6 channels in between might be a waste of
+# resources.
+channelSwitchDelay: 2
+
 
 audio:
     # Bitrate (int)

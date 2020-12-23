@@ -37,6 +37,7 @@ class Radio():
 		self.volume = config["audio"]["volume"]
 		self.setVolume(self.volume)
 		self.turnOnTime = None
+		self.channelSwitchDelay = config["channelSwitchDelay"]
 
 		# A variable to hold the buffer timer.
 		# Removes buffer from the state if there hasn't been sent another buffer event
@@ -287,8 +288,8 @@ class Radio():
 		if self.delayedBumpTimer:
 			self.delayedBumpTimer.cancel()
 
-		self.display.notification(self.hoveredChannel["name"], 2)
-		self.delayedBumpTimer = threading.Timer(2, self.playChannel, args=[self.hoveredChannel])
+		self.display.notification(self.hoveredChannel["name"], self.channelSwitchDelay)
+		self.delayedBumpTimer = threading.Timer(self.channelSwitchDelay, self.playChannel, args=[self.hoveredChannel])
 		self.delayedBumpTimer.start()
 		
 	def getHoveredChannelByOffset(self, offset):
