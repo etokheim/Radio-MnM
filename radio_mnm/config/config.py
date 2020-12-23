@@ -17,14 +17,7 @@ import yaml
 castToBool = helpers.castToBool
 
 
-###################################
-#                                 #
-#              Setup              #
-#                                 #
-###################################
-# Language
-# TODO: Get language from API
-nno = gettext.translation("base", localedir="locales", languages=["nno"])
+
 
 debug = castToBool(os.environ["mnm_debug"])
 
@@ -51,12 +44,13 @@ with open("config.yml", "r") as stream:
 	except yaml.YAMLError as exception:
 		print(exception)
 
-###################################
-#                                 #
-#              Radio              #
-#                                 #
-###################################
-# TODO: Move radio out of the config file
+config["getLanguage"] = gettext.translation("base", localedir="locales", languages=[config["language"]])
 
-# Will be set to the radio 
-radio = None
+###################################
+#                                 #
+#              Setup              #
+#                                 #
+###################################
+# Language
+# TODO: Get language from API
+nno = config["getLanguage"]

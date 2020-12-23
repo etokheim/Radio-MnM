@@ -1,12 +1,7 @@
 import logging
 logger = logging.getLogger("Radio_mnm")
-from config import config
-
-if config.raspberry == True:
-	from RPi import GPIO
-else:
-	from EmulatorGUI.EmulatorGUI import GPIO
-
+from config.config import config
+from RPi import GPIO
 import datetime
 import time
 from datetime import datetime
@@ -23,10 +18,12 @@ import components.powerSwitch as powerSwitch
 import components.navigationButton as navigationButton
 import components.volumeRotary as volumeRotary
 
+# config.config["components"]["displays"][0]["width"]
+
 radio = radio.Radio()
 
 # Consider moving this logic into the radio module
-radio.display = display.Display(radio)
+radio.display = display.Display(radio, config["components"]["displays"][0])
 radio.powerSwitch = powerSwitch.PowerSwitch(radio, 17)
 radio.navigationButton = navigationButton.NavigationButton(radio, 8)
 radio.volumeRotary = volumeRotary.VolumeRotary(radio, 20, 12)
@@ -85,9 +82,6 @@ def logCallback(data, level, ctx, fmt, args):
 
 radio.instance.log_set(logCallback, None)
 
-config.nno.install()
-_ = config.nno.gettext
-
-
+# Called from __main__
 def run():
 	radio.display.start()

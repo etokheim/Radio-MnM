@@ -6,72 +6,21 @@ import time
 import gettext
 import sys
 from helpers import helpers
-import os
 
-_ = config.nno.gettext
+_ = config.config["getLanguage"].gettext
 
 from RPi import GPIO
 from RPLCD.gpio import CharLCD
 
-def initializeLcd():
-	return CharLCD(
-		# (int) Number of columns per row (usually 16 or 20). Default: 20.
-		cols=actualDisplayWidth,
-		
-		# (int) Number of display rows (usually 1, 2 or 4). Default: 4.
-		rows=actualDisplayHeight,
-		
-		pin_rs=int(os.environ["mnm_lcdRsToGpio"]),
-		
-		pin_e=int(os.environ["mnm_lcdEnToGpio"]),
-		
-		pins_data=[int(os.environ["mnm_lcdData4ToGpio"]), int(os.environ["mnm_lcdData5ToGpio"]), int(os.environ["mnm_lcdData6ToGpio"]), int(os.environ["mnm_lcdData7ToGpio"])],
-		
-		numbering_mode=GPIO.BCM,
-		
-		compat_mode = helpers.castToBool(os.environ["mnm_lcdCompatibleMode"]),
-		
-		# (int) Some 1 line displays allow a font height of 10px. Allowed: 8 or 10.
-		dotsize = int(os.environ["mnm_lcdDotSize"]),
-		
-		# The character map used. Depends on your LCD. This must be either A00 or A02 or ST0B.
-		charmap = os.environ["mnm_lcdCharMap"],
-		
-		# (bool) – Whether or not to automatically insert line breaks. Default: True.
-		# Note: If we turn it on, it seems like we can't fill the last character of the lines.
-		# throws the following error:
-		# ValueError: Cursor position (1, 16) invalid on a 2x16 LCD.
-		#
-		# 16 is the 17th character, as 0, 0 is the first character of the first line. However
-		# what we tried to display was "f The World Was ", which is 16 characters long and should
-		# therefor fit on the display...I don't know why we get this error, but if i never populate
-		# the last character (of either lines), the program runs fine. (When I do this, the display
-		# of course doesn't use the last character space, which is a waste). Turning auto_linebreaks
-		# on seems to fix the issue, so we shouldn't use more time on this.
-		# 
-		# We used extra time on this because we thought it might have contributed to the character 
-		# corruption, but since it still happened when turning the auto_linebreaks off and limiting
-		# the display to 15 characters it seems unlikely.
-		auto_linebreaks = True,
-		
-		# (bool) – Whether the backlight is enabled initially. Default: True.
-		backlight_enabled = True,
-	)
-
-if config.raspberry:
-	# Compensate for a weird display quirk. Read more in the comments above
-	if helpers.castToBool(os.environ["mnm_oneDisplayLineIsTwoLines"]):
-		actualDisplayWidth = int(os.environ["mnm_displayWidth"]) // 2
-		actualDisplayHeight = int(os.environ["mnm_displayHeight"]) * 2
-	else:
-		actualDisplayWidth = int(os.environ["mnm_displayWidth"])
-		actualDisplayHeight = int(os.environ["mnm_displayHeight"])
-
-	lcd = initializeLcd()
-
 class Display(threading.Thread):
-	def __init__(self, radio):
+	def __init__(self, radio, setup):
 		threading.Thread.__init__(self)
+
+		self.setup = setup
+
+		if setup["type"] != "Character LCD":
+			raise Exception("Invalid display type: " + setup["type"] + ". Check your config.yml")
+
 		self.notificationMessage = ""
 		self.standardContent = ""
 		self.notificationExpireTime = False
@@ -94,17 +43,27 @@ class Display(threading.Thread):
 		self.lastDisplayedCroppedMessage = ""
 
 		# Render a virtual display in the console output
-		self.virtualDisplay = helpers.castToBool(os.environ["mnm_virtualDisplay"])
+		self.virtualDisplay = False
 
 		# Amount of characters, not pixels
-		self.displayWidth = int(os.environ["mnm_displayWidth"])
-		self.displayHeight = int(os.environ["mnm_displayHeight"])
+		self.displayWidth = setup["width"]
+		self.displayHeight = setup["height"]
 
 		# Weird display quirk, where one line is two lines for the computer. I guess this is due to
 		# some cost saving initiative in display production.
-		self.oneDisplayLineIsTwoLines = helpers.castToBool(os.environ["mnm_oneDisplayLineIsTwoLines"])
+		self.oneDisplayLineIsTwoLines = setup["oneDisplayLineIsTwoLines"]
 
 		self.radio = radio
+
+		# Compensate for a weird display quirk. Read more in the comments above
+		if setup["oneDisplayLineIsTwoLines"]:
+			self.actualDisplayWidth = setup["width"] // 2
+			self.actualDisplayHeight = setup["height"] * 2
+		else:
+			self.actualDisplayWidth = setup["width"]
+			self.actualDisplayHeight = setup["height"]
+
+		self.lcd = self.initializeLcd()
 
 		# Custom characters
 		self.ae = (
@@ -184,13 +143,14 @@ class Display(threading.Thread):
 			0b01110
 		)
 
-		lcd.create_char(0, self.ae)
-		lcd.create_char(1, self.AE)
-		lcd.create_char(2, self.oe)
-		lcd.create_char(3, self.OE)
-		lcd.create_char(4, self.aa)
-		lcd.create_char(5, self.AA)
-		lcd.create_char(6, self.g)
+		# TODO: Check if these should be moved into the initialize lcd function
+		self.lcd.create_char(0, self.ae)
+		self.lcd.create_char(1, self.AE)
+		self.lcd.create_char(2, self.oe)
+		self.lcd.create_char(3, self.OE)
+		self.lcd.create_char(4, self.aa)
+		self.lcd.create_char(5, self.AA)
+		self.lcd.create_char(6, self.g)
 
 	def run(self):
 		# Wait, if the thread is set on hold
@@ -214,7 +174,7 @@ class Display(threading.Thread):
 	def pause(self):
 		self.clear()
 		lcd = None
-		lcd = initializeLcd()
+		lcd = self.initializeLcd()
 		self.pauseEvent.clear()
 		logger.debug("Paused display handling loop")
 
@@ -223,6 +183,51 @@ class Display(threading.Thread):
 		# \n for new line \r for moving to the beginning of current line
 		self.radio.display.notification(">- RADIO M&M  -<\n\r" + _("Got ") + str(len(self.radio.channels)) + _(" channels"), 3)
 		logger.debug("Resumed display handling loop")
+
+	def initializeLcd(self):
+		return CharLCD(
+			# (int) Number of columns per row (usually 16 or 20). Default: 20.
+			cols=self.actualDisplayWidth,
+			
+			# (int) Number of display rows (usually 1, 2 or 4). Default: 4.
+			rows=self.actualDisplayHeight,
+			
+			pin_rs=self.setup["GPIO"]["rs"],
+			
+			pin_e=self.setup["GPIO"]["en"],
+			
+			pins_data=[self.setup["GPIO"]["data4"], self.setup["GPIO"]["data5"], self.setup["GPIO"]["data6"], self.setup["GPIO"]["data7"]],
+			
+			numbering_mode=GPIO.BCM,
+			
+			compat_mode = self.setup["lcdCompatibillityMode"],
+			
+			# (int) Some 1 line displays allow a font height of 10px. Allowed: 8 or 10.
+			dotsize = self.setup["dotSize"],
+			
+			# The character map used. Depends on your LCD. This must be either A00 or A02 or ST0B.
+			charmap = self.setup["lcdCharacterMap"],
+			
+			# (bool) – Whether or not to automatically insert line breaks. Default: True.
+			# Note: If we turn it on, it seems like we can't fill the last character of the lines.
+			# throws the following error:
+			# ValueError: Cursor position (1, 16) invalid on a 2x16 LCD.
+			#
+			# 16 is the 17th character, as 0, 0 is the first character of the first line. However
+			# what we tried to display was "f The World Was ", which is 16 characters long and should
+			# therefor fit on the display...I don't know why we get this error, but if i never populate
+			# the last character (of either lines), the program runs fine. (When I do this, the display
+			# of course doesn't use the last character space, which is a waste). Turning auto_linebreaks
+			# on seems to fix the issue, so we shouldn't use more time on this.
+			# 
+			# We used extra time on this because we thought it might have contributed to the character 
+			# corruption, but since it still happened when turning the auto_linebreaks off and limiting
+			# the display to 15 characters it seems unlikely.
+			auto_linebreaks = True,
+			
+			# (bool) – Whether the backlight is enabled initially. Default: True.
+			backlight_enabled = True,
+		)
 
 	def writeStandardContent(self):
 		# Set standard content
@@ -292,7 +297,7 @@ class Display(threading.Thread):
 			print("│ - -  Display cleared   - - │")
 		
 		if config.raspberry:
-			lcd.clear()
+			self.lcd.clear()
 
 	def displayMessage(self, messageType="notification"):
 		stripCarriages = self.currentlyDisplayingMessage.replace("\r", "")
@@ -417,7 +422,7 @@ class Display(threading.Thread):
 
 			message = self.replaceCustomCharacters(message)
 
-			lcd.write_string(message)
+			self.lcd.write_string(message)
 
 	def replaceCustomCharacters(self, message):
 		message = message.replace("æ", "\x00")

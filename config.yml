@@ -1,36 +1,37 @@
-setup:
-    # Debug (bool)
-    # Default False
-    debug: true
+# Debug (bool)
+# Default False
+debug: true
 
-    # Render a virtual display in the console output
-    # Default False
-    virtualDisplay: false
+# Render a virtual display in the console output
+# Default False
+virtualDisplay: false
 
-    # Sets the log level when in production (production is when debug is False).
-    # debug | info | warn (or warning) | error | critical
-    # Default: info
-    # Log level (str)
-    productionLogLevel: info
+# Sets the log level when in production (production is when debug is False).
+# debug | info | warn (or warning) | error | critical
+# Default: info
+# Log level (str)
+productionLogLevel: info
 
-    # Api server (str)
-    # Which server the radio should connect to. The server is where the radio
-    # registers, gets it's channels and information.
-    apiServer: https://radio.tokheimgrafisk.no
+# Api server (str)
+# Which server the radio should connect to. The server is where the radio
+# registers, gets it's channels and information.
+apiServer: https://radio.tokheimgrafisk.no
 
-    # Automatic updates (bool)
-    # If enabled, checks for updates every night at 03:30.
-    autoUpdate: true
+# Automatic updates (bool)
+# If enabled, checks for updates every night at 03:30.
+autoUpdate: true
 
-    # Save listening history (bool)
-    # Whether to store the listening history on the server.
-    # For analytic and statistic purposes.
-    saveListeningHistory: true
-    
-    # Send state (bool)
-    # Whether to report the radio's state to the API.
-    # Reports if the radio is on or off and it's local IP
-    sendState: true
+# Save listening history (bool)
+# Whether to store the listening history on the server.
+# For analytic and statistic purposes.
+saveListeningHistory: true
+
+# Send state (bool)
+# Whether to report the radio's state to the API.
+# Reports if the radio is on or off and it's local IP
+sendState: true
+
+language: nno
 
 
 audio:
@@ -68,6 +69,7 @@ components:
           lcdCompatibillityMode: true
           dotSize: 8
           lcdCharacterMap: A02
+          oneDisplayLineIsTwoLines: false
 
     # Array of power buttons. Clicking it will toggle the radio's on state.
     # powerButtons:

@@ -1,4 +1,3 @@
-import os
 import sys
 sys.path.append("radio_mnm/")
 
@@ -7,10 +6,10 @@ sys.path.append("radio_mnm/")
 # logger. We have now switched to a separate logger "Radio_mnm".
 import logging
 from logging.handlers import RotatingFileHandler
-from config import config
+from config.config import config
 
 # Set log level
-level = os.environ["mnm_productionLogLevel"]
+level = config["productionLogLevel"]
 if level == "critical":
 	productionLogLevel = logging.CRITICAL
 elif level == "error":
@@ -29,7 +28,7 @@ else:
 # Create a new logger
 logger = logging.getLogger("Radio_mnm")
 
-if config.debug:
+if config["debug"]:
 	# Console handler
 	streamHandler = logging.StreamHandler()
 
