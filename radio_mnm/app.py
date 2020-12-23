@@ -18,6 +18,7 @@ import components.powerSwitch as powerSwitch
 import components.navigationButton as navigationButton
 import components.volumeRotary as volumeRotary
 import components.powerButton as powerButton
+import components.temperatureAndHumidity as temperatureAndHumidity
 
 GPIO.setmode(GPIO.BCM)
 
@@ -29,6 +30,7 @@ radio.powerSwitch = powerSwitch.PowerSwitch(radio, 17)
 radio.navigationButton = navigationButton.NavigationButton(radio, 8)
 radio.volumeRotary = volumeRotary.VolumeRotary(radio, 20, 12)
 radio.powerButton = powerButton.PowerButton(radio, 16)
+radio.temperatureAndHumidity = temperatureAndHumidity.TemperatureAndHumidity(radio, 22)
 
 # Couldn't figure out how to put the error handling into the radio class.
 # The problem was getting self into the logCallback function which is decorated
