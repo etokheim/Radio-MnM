@@ -31,7 +31,21 @@ saveListeningHistory: true
 # Reports if the radio is on or off and it's local IP
 sendState: true
 
+# Verify certificate (bool)
+# Whether to verify the apiServer's certificate or not. This is highly recommended
+# unless you run the server locally.
+verifyCertificate: true
+
+# TODO: Move to the API
 language: nno
+
+# Long press threshold (int)
+# Time in milliseconds you have to hold buttons to register a long press
+longPressThreshold: 600
+
+# Very long press threshold (int)
+# Time in milliseconds you have to hold buttons to register a very long press
+veryLongPressThreshold: 5000
 
 
 audio:

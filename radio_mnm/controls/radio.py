@@ -1,6 +1,6 @@
 import logging
 logger = logging.getLogger("Radio_mnm")
-from config import config
+from config.config import config
 import vlc
 import requests
 from tinydb import TinyDB, Query
@@ -12,7 +12,7 @@ import subprocess
 import threading
 import os
 
-_ = config.nno.gettext
+_ = config["getLanguage"].gettext
 
 from controls.registration import Registration
 from helpers import helpers
@@ -34,7 +34,7 @@ class Radio():
 		# "hovered" channel.
 		self.hoveredChannel = None
 		self.lastPowerState = None
-		self.volume = int(os.environ["mnm_volume"])
+		self.volume = config["audio"]["volume"]
 		self.setVolume(self.volume)
 		self.turnOnTime = None
 
@@ -56,7 +56,7 @@ class Radio():
 		# 64 kbps - A common bitrate for speech podcasts.
 		# 128 kbps - Common standard for musical and high quality podcasts.
 		# 320 kbps - Very high quality - almost indistinguishable from a CD.
-		self.bitrate = int(os.environ["mnm_bitrate"])
+		self.bitrate = config["audio"]["bitrate"]
 
 		# Is set if the radio is updating (Dictionary)
 		self.updating = None
@@ -80,8 +80,8 @@ class Radio():
 		# When the user started listening. For analytics purposes.
 		self.startedListeningTime = None
 
-		self.saveListeningHistory = helpers.castToBool(os.environ["mnm_saveListeningHistory"])
-		self.shouldSendState = helpers.castToBool(os.environ["mnm_sendState"])
+		self.saveListeningHistory = config["saveListeningHistory"]
+		self.shouldSendState = config["sendState"]
 
 		# Listen for VLC events
 		self.events.event_attach(vlc.EventType.MediaPlayerOpening, self.openingEvent)
@@ -233,7 +233,7 @@ class Radio():
 			status_code = None
 
 			headers = { "apiKey": radio["apiKey"] }
-			response = requests.get(config.apiServer + "/radio/api/1/channels?homeId=" + radio["homeId"], headers=headers, verify=config.verifyCertificate, timeout=3)
+			response = requests.get(config["apiServer"] + "/radio/api/1/channels?homeId=" + radio["homeId"], headers=headers, verify=config["verifyCertificate"], timeout=3)
 			status_code = response.status_code
 			response = response.json()
 			
@@ -389,7 +389,7 @@ class Radio():
 		}
 
 		try:
-			response = requests.post(config.apiServer + "/radio/api/1/listeningHistory", data=data, verify=config.verifyCertificate, timeout=5)
+			response = requests.post(config["apiServer"] + "/radio/api/1/listeningHistory", data=data, verify=config["verifyCertificate"], timeout=5)
 
 			status_code = response.status_code
 			response = response.json()
@@ -433,7 +433,7 @@ class Radio():
 		}
 
 		try:
-			response = requests.post(config.apiServer + "/radio/api/1/state", data=data, verify=config.verifyCertificate, timeout=5)
+			response = requests.post(config["apiServer"] + "/radio/api/1/state", data=data, verify=config["verifyCertificate"], timeout=5)
 
 			status_code = response.status_code
 			response = response.json()

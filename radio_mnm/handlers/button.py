@@ -11,22 +11,17 @@
 # - etc.
 
 import logging
-logger = logging.getLogger("Radio_mnm")
 import gettext
 import time
 import zope.event.classhandler
 import threading
-
-from config import config
-
-_ = config.nno.gettext
-
-if config.raspberry == True:
-	from RPi import GPIO
-else:
-	from EmulatorGUI.EmulatorGUI import GPIO
-	
+from config.config import config
+from RPi import GPIO
 from controls import radio
+
+_ = config["getLanguage"].gettext
+logger = logging.getLogger("Radio_mnm")
+
 
 pushing = False
 pushStart = 0
@@ -93,7 +88,7 @@ class Button(threading.Thread):
 				zope.event.notify(self.up())
 				self.state = "up"
 
-				if holdTime >= config.longPressThreshold:
+				if holdTime >= config["longPressThreshold"]:
 					zope.event.notify(self.longClick())
 				else:
 					if not self.sentLongPressEvent:
@@ -110,12 +105,12 @@ class Button(threading.Thread):
 				now = int(round(time.time() * 1000))
 				holdTime = now - self.pushStart
 
-			if holdTime >= config.longPressThreshold:
+			if holdTime >= config["longPressThreshold"]:
 				if self.sentLongPressEvent == False:
 					self.sentLongPressEvent = True
 					zope.event.notify(self.longPress())
 
-			if holdTime >= config.veryLongPressThreshold:
+			if holdTime >= config["veryLongPressThreshold"]:
 				if self.sentVeryLongPressEvent == False:
 					self.sentVeryLongPressEvent = True
 					zope.event.notify(self.veryLongPress())

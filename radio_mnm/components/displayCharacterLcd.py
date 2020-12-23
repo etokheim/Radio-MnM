@@ -296,8 +296,7 @@ class Display(threading.Thread):
 		if self.virtualDisplay:
 			print("│ - -  Display cleared   - - │")
 		
-		if config.raspberry:
-			self.lcd.clear()
+		self.lcd.clear()
 
 	def displayMessage(self, messageType="notification"):
 		stripCarriages = self.currentlyDisplayingMessage.replace("\r", "")
@@ -407,22 +406,21 @@ class Display(threading.Thread):
 		if self.virtualDisplay:
 			self.writeToSimulatedScreen(message)
 		
-		# Write message to the actual display, if we are running on a Raspberry Pi
-		if config.raspberry:
-			# Handle weir display quirk, where one line in the code only refers to half a line on the actual
-			# display. Ie.: to fill a 16x1 display, you have to do 12345678\n90123456
-			if self.oneDisplayLineIsTwoLines:
-				stripCarriages = message.replace("\r", "")
-				lines = stripCarriages.split("\n")
-				message = ""
+		# Write message to the actual display
+		# Handle weir display quirk, where one line in the code only refers to half a line on the actual
+		# display. Ie.: to fill a 16x1 display, you have to do 12345678\n90123456
+		if self.oneDisplayLineIsTwoLines:
+			stripCarriages = message.replace("\r", "")
+			lines = stripCarriages.split("\n")
+			message = ""
 
-				for line in lines:
-					# Double / always returns a floored result (int, not float). 8 / 2 = 4.0, 8 // 2 = 4...
-					message = message + line[0:self.displayWidth // 2] + "\n\r" + line[self.displayWidth // 2:self.displayWidth]
+			for line in lines:
+				# Double / always returns a floored result (int, not float). 8 / 2 = 4.0, 8 // 2 = 4...
+				message = message + line[0:self.displayWidth // 2] + "\n\r" + line[self.displayWidth // 2:self.displayWidth]
 
-			message = self.replaceCustomCharacters(message)
+		message = self.replaceCustomCharacters(message)
 
-			self.lcd.write_string(message)
+		self.lcd.write_string(message)
 
 	def replaceCustomCharacters(self, message):
 		message = message.replace("æ", "\x00")

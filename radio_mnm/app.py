@@ -18,8 +18,6 @@ import components.powerSwitch as powerSwitch
 import components.navigationButton as navigationButton
 import components.volumeRotary as volumeRotary
 
-# config.config["components"]["displays"][0]["width"]
-
 radio = radio.Radio()
 
 # Consider moving this logic into the radio module
@@ -27,7 +25,6 @@ radio.display = display.Display(radio, config["components"]["displays"][0])
 radio.powerSwitch = powerSwitch.PowerSwitch(radio, 17)
 radio.navigationButton = navigationButton.NavigationButton(radio, 8)
 radio.volumeRotary = volumeRotary.VolumeRotary(radio, 20, 12)
-# rotary = switches.rotaryMechanic.Rotary(20, 12, 16)
 
 # Couldn't figure out how to put the error handling into the radio class.
 # The problem was getting self into the logCallback function which is decorated

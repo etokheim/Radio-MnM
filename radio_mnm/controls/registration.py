@@ -8,14 +8,12 @@ import time
 import requests
 import os
 from tinydb import TinyDB, Query
-from config import config
+from config.config import config
 import gettext
 import threading
 import sys
 
-_ = config.nno.gettext
-
-from config import config
+_ = config["getLanguage"].gettext
 
 class Registration():
 	def __init__(self, radio):
@@ -25,9 +23,9 @@ class Registration():
 		self.checkIfRegisteredLoop = None
 
 	def checkIfRegistered(self):
-		isRegistered = requests.post(config.apiServer + "/api/1/isRegistered", data = {
+		isRegistered = requests.post(config["apiServer"] + "/api/1/isRegistered", data = {
 			"code": self.response["code"]
-		}, verify=config.verifyCertificate)
+		}, verify=config["verifyCertificate"])
 		isRegistered = isRegistered.json()
 		return isRegistered
 
@@ -44,7 +42,7 @@ class Registration():
 		else:
 			logger.debug("Radio isn't registered! Starting registration.")
 
-			self.response = requests.get(config.apiServer + "/api/1/getRegisterCode", verify=config.verifyCertificate)
+			self.response = requests.get(config["apiServer"] + "/api/1/getRegisterCode", verify=config["verifyCertificate"])
 			self.response = self.response.json()
 
 			# If the code doesn't fit on the screen, start over

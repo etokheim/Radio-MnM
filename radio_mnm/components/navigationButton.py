@@ -2,11 +2,11 @@ import os
 import time
 import handlers.button
 import threading
-from config import config
+from config.config import config
 import logging
 logger = logging.getLogger("Radio_mnm")
 
-_ = config.nno.gettext
+_ = config["getLanguage"].gettext
 
 class NavigationButton():
 	def __init__(self, radio, gpioPin):
@@ -42,7 +42,7 @@ class NavigationButton():
 		# If it's less than longPressThreshold + 500 since you turned on the radio,
 		# run update script.
 		# Else switch to last channel
-		if int(round(time.time() * 1000)) - self.radio.turnOnTime < config.longPressThreshold + 500:
+		if int(round(time.time() * 1000)) - self.radio.turnOnTime < config["longPressThreshold"] + 500:
 			self.radio.updating = {
 				"code": "updating",
 				"text": _("Updating, don't pull the plug!")
