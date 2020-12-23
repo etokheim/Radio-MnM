@@ -25,19 +25,19 @@ class NavigationButton():
 	# Event is set to the the event which calls it. In this function's case it should be
 	# set to "click".
 	def buttonClickHandler(self, event):
-		logger.debug("buttonClickHandler %r" % event)
+		logger.debug("navigationButtonClickHandler (" + str(self.gpioPin) + ") %r" % event)
 		self.radio.bump()
 
 	def buttonDownHandler(self, event):
-		logger.debug("buttonDownHandler %r" % event)
+		logger.debug("navigationButtonDownHandler (" + str(self.gpioPin) + ") %r" % event)
 		self.downStart = int(round(time.time() * 1000))
 
 	def buttonUpHandler(self, event):
-		logger.debug("buttonUpHandler %r" % event)
+		logger.debug("navigationButtonUpHandler (" + str(self.gpioPin) + ") %r" % event)
 		self.downStart = 0
 
 	def buttonLongPressHandler(self, event):
-		logger.debug("buttonLongPressHandler %r" % event)
+		logger.debug("navigationButtonLongPressHandler (" + str(self.gpioPin) + ") %r" % event)
 		
 		# If it's less than longPressThreshold + 500 since you turned on the radio,
 		# run update script.

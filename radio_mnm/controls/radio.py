@@ -178,6 +178,18 @@ class Radio():
 
 		self.state = self.preBufferState
 
+	def togglePower(self):
+		self.on = not self.on
+		logging.debug("---------")
+		logging.debug("Toggeled power state to: " + str(self.on))
+		logging.debug("---------")
+
+	def powerOff(self):
+		self.on = False
+
+	def powerOn(self):
+		self.on = True
+
 	def playChannel(self, channel):
 		# Channel should always be valid, so this clause shouldn't trigger, unless there is a bug.
 		if not channel:

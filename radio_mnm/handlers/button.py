@@ -22,13 +22,6 @@ from controls import radio
 _ = config["getLanguage"].gettext
 logger = logging.getLogger("Radio_mnm")
 
-
-pushing = False
-pushStart = 0
-downStart = 0
-
-GPIO.setmode(GPIO.BCM)
-
 class Button(threading.Thread):
 	def __init__(self, gpioPin):
 		threading.Thread.__init__(self)
