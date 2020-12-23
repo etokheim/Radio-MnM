@@ -13,7 +13,6 @@
 import logging
 import gettext
 import time
-import zope.event.classhandler
 import threading
 from config.config import config
 from RPi import GPIO
@@ -39,13 +38,38 @@ class Button(threading.Thread):
 		self.sentLongPressEvent = False
 		self.sentVeryLongPressEvent = False
 
-		self.listen = zope.event.classhandler.handler
+		self.press = []
+		self.release = []
+		self.click = []
+		self.longPress = []
+		self.longClick = []
+		self.veryLongPress = []
 
 		# Start listening
 		self.start()
 		self.pauseEvent.set()
 
 		GPIO.setup(gpioPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+	# Loops through the callbacks parameter (array) and executes them
+	def dispatch(self, callbacks):
+		for callback in callbacks:
+			if callback:
+				callback()
+
+	def addEventListener(self, type, callback):
+		if type == "down":
+			self.click.append(callback)
+		elif type == "press":
+			self.press.append(callback)
+		elif type == "click":
+			self.click.append(callback)
+		elif type == "longPress":
+			self.longPress.append(callback)
+		elif type == "longClick":
+			self.longClick.append(callback)
+		elif type == "veryLongPress":
+			self.veryLongPress.append(callback)
 
 	# Use Button.start(), not Button.run() to start thread
 	# run() would just start a blocking loop
@@ -74,18 +98,18 @@ class Button(threading.Thread):
 				now = int(round(time.time() * 1000))
 				holdTime = now - self.pushStart
 
-				zope.event.notify(self.down())
+				self.dispatch(self.press)
 				self.state = "down"
 
 			elif self.pushStart != 0 and self.pushing == False:
-				zope.event.notify(self.up())
+				self.dispatch(self.release)
 				self.state = "up"
 
 				if holdTime >= config["longPressThreshold"]:
-					zope.event.notify(self.longClick())
+					self.dispatch(self.longClick)
 				else:
 					if not self.sentLongPressEvent:
-						zope.event.notify(self.click())
+						self.dispatch(self.click)
 
 					# When done pushing, set sentLongPressEvent to False again
 					self.sentLongPressEvent = False
@@ -101,12 +125,12 @@ class Button(threading.Thread):
 			if holdTime >= config["longPressThreshold"]:
 				if self.sentLongPressEvent == False:
 					self.sentLongPressEvent = True
-					zope.event.notify(self.longPress())
+					self.dispatch(self.longPress)
 
 			if holdTime >= config["veryLongPressThreshold"]:
 				if self.sentVeryLongPressEvent == False:
 					self.sentVeryLongPressEvent = True
-					zope.event.notify(self.veryLongPress())
+					self.dispatch(self.veryLongPress)
 
 		print("Button is running " + str(self.running))
 
@@ -121,30 +145,3 @@ class Button(threading.Thread):
 	def resume(self):
 		self.pauseEvent.set()
 		logger.debug("Resumed listening to button with GPIO " + str(self.gpioPin))
-
-	class click(object):
-		def __repr__(self):
-			return self.__class__.__name__
-
-	class down(object):
-		def __repr__(self):
-			return self.__class__.__name__
-
-	class up(object):
-		def __repr__(self):
-			return self.__class__.__name__
-
-	# Fires when you release the button and you've pushed it longer than the long press threshold
-	class longClick(object):
-		def __repr__(self):
-			return self.__class__.__name__
-
-	# Fires at once when the long press threshold is reached
-	class longPress(object):
-		def __repr__(self):
-			return self.__class__.__name__
-
-	# Fires after 5 seconds of pressing
-	class veryLongPress(object):
-		def __repr__(self):
-			return self.__class__.__name__

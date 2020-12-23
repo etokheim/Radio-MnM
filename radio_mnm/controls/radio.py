@@ -179,16 +179,56 @@ class Radio():
 		self.state = self.preBufferState
 
 	def togglePower(self):
-		self.on = not self.on
+		if self.on:
+			self.powerOff()
+		else:
+			self.powerOn()
+		
 		logging.debug("---------")
 		logging.debug("Toggeled power state to: " + str(self.on))
 		logging.debug("---------")
 
 	def powerOff(self):
 		self.on = False
+		self.stop()
+		self.display.pause()
+
+		# Find a way to implement this into the buttons, if it helps with the standby mode compute.
+		# button.pause()
+		
+		self.handleSendState("suspended")
+
+		# I'm not quite sure I have to reset all of these values
+		self.display.currentlyDisplayingMessage = ""
+		self.display.notificationMessage = ""
+		self.display.lastDisplayedMessage = ""
+		self.display.lastDisplayedCroppedMessage = ""
 
 	def powerOn(self):
 		self.on = True
+		self.turnOnTime = int(round(time.time() * 1000))
+		self.display.resume()
+		
+		# Find a way to implement this into the buttons, if it helps with the standby mode compute.
+		# button.resume()
+
+		if not self.selectedChannel:
+			self.selectedChannel = self.channels[0]
+		
+		# Start playing
+		self.play()
+
+		# TODO: Maybe rename .start() methods that aren't threads, as it can be confusing.
+		# Starts the registration if the radio isn't registered
+		self.registration.start()
+
+		if self.lastPowerState != "off":
+			self.handleSendState("noPower")
+
+		self.handleSendState("on")
+
+		# if len(self.channels) > 0:
+		# 	self.play()
 
 	def playChannel(self, channel):
 		# Channel should always be valid, so this clause shouldn't trigger, unless there is a bug.

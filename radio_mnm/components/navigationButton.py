@@ -16,28 +16,28 @@ class NavigationButton():
 
 		self.button = handlers.button.Button(gpioPin)
 
-		self.button.listen(self.button.click, self.buttonClickHandler)
-		self.button.listen(self.button.down, self.buttonDownHandler)
-		self.button.listen(self.button.up, self.buttonUpHandler)
-		self.button.listen(self.button.longPress, self.buttonLongPressHandler)
-		self.button.listen(self.button.veryLongPress, self.buttonVeryLongPressHandler)
+		self.button.addEventListener("click", self.buttonClickHandler)
+		self.button.addEventListener("press", self.buttonDownHandler)
+		self.button.addEventListener("release", self.buttonUpHandler)
+		self.button.addEventListener("longPress", self.buttonLongPressHandler)
+		self.button.addEventListener("veryLongPress", self.buttonVeryLongPressHandler)
 
 	# Event is set to the the event which calls it. In this function's case it should be
 	# set to "click".
-	def buttonClickHandler(self, event):
-		logger.debug("navigationButtonClickHandler (" + str(self.gpioPin) + ") %r" % event)
+	def buttonClickHandler(self):
+		logger.debug("navigationButtonClickHandler (" + str(self.gpioPin) + ")")
 		self.radio.bump()
 
-	def buttonDownHandler(self, event):
-		logger.debug("navigationButtonDownHandler (" + str(self.gpioPin) + ") %r" % event)
+	def buttonDownHandler(self):
+		logger.debug("navigationButtonDownHandler (" + str(self.gpioPin) + ")")
 		self.downStart = int(round(time.time() * 1000))
 
-	def buttonUpHandler(self, event):
-		logger.debug("navigationButtonUpHandler (" + str(self.gpioPin) + ") %r" % event)
+	def buttonUpHandler(self):
+		logger.debug("navigationButtonUpHandler (" + str(self.gpioPin) + ")")
 		self.downStart = 0
 
-	def buttonLongPressHandler(self, event):
-		logger.debug("navigationButtonLongPressHandler (" + str(self.gpioPin) + ") %r" % event)
+	def buttonLongPressHandler(self):
+		logger.debug("navigationButtonLongPressHandler (" + str(self.gpioPin) + ")")
 		
 		# If it's less than longPressThreshold + 500 since you turned on the radio,
 		# run update script.
@@ -88,8 +88,8 @@ class NavigationButton():
 					self.radio.registration.reset()
 					return
 
-	def buttonVeryLongPressHandler(self, event):
-		logger.debug("VerylongPressHandler %r" % event)
+	def buttonVeryLongPressHandler(self):
+		logger.debug("VerylongPressHandler")
 
 		resetCountdown = self.ResetCountdown(self.radio, self.button)
 		resetCountdown.start()
