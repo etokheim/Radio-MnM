@@ -58,10 +58,10 @@ class Button(threading.Thread):
 				callback()
 
 	def addEventListener(self, type, callback):
-		if type == "down":
-			self.click.append(callback)
-		elif type == "press":
+		if type == "press":
 			self.press.append(callback)
+		elif type == "release":
+			self.release.append(callback)
 		elif type == "click":
 			self.click.append(callback)
 		elif type == "longPress":

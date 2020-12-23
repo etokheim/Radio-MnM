@@ -183,10 +183,6 @@ class Radio():
 			self.powerOff()
 		else:
 			self.powerOn()
-		
-		logging.debug("---------")
-		logging.debug("Toggeled power state to: " + str(self.on))
-		logging.debug("---------")
 
 	def powerOff(self):
 		self.on = False
