@@ -64,6 +64,7 @@ class Display(threading.Thread):
 			self.actualDisplayHeight = setup["height"]
 
 		self.lcd = self.initializeLcd()
+		self.resume()
 
 		# Custom characters
 		self.ae = (
@@ -268,7 +269,8 @@ class Display(threading.Thread):
 				self.standardContent = _("No channels")
 		# The radio is off
 		else:
-			self.standardContent = "Temp: 10C\r\nHumidity: 46%"
+			if self.radio.temperatureAndHumidity:
+				self.standardContent = "Temp: " + str(self.radio.temperatureAndHumidity.temperature) + "C\r\nHumidity: " + str(self.radio.temperatureAndHumidity.temperature) + "%"
 
 		# Clear expired notifications
 		if int(round(time.time() * 1000)) >= self.notificationExpireTime and self.notificationExpireTime != False:
