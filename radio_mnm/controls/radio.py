@@ -23,6 +23,7 @@ class Radio():
 		self.registration = Registration(self)
 
 		self.on = False
+		self.offContent = False
 		self.channels = []
 		self.instance = vlc.Instance()
 		self.log = vlc.Log()
@@ -187,7 +188,12 @@ class Radio():
 	def powerOff(self):
 		self.on = False
 		self.stop()
-		# self.display.pause()
+
+		# Stop the display loop when off if we don't want to display content
+		if not self.offContent
+			lcd = None
+			lcd = self.initializeLcd()
+			self.display.pause()
 
 		# Find a way to implement this into the buttons, if it helps with the standby mode compute.
 		# button.pause()
@@ -203,7 +209,10 @@ class Radio():
 	def powerOn(self):
 		self.on = True
 		self.turnOnTime = int(round(time.time() * 1000))
-		self.display.resume()
+		
+		# Turn the display loop on again if it was off
+		if not self.offContent
+			self.display.resume()
 		
 		# Find a way to implement this into the buttons, if it helps with the standby mode compute.
 		# button.resume()

@@ -17,6 +17,7 @@ class TemperatureAndHumidity(threading.Thread):
 
 		self.running = True
 		self.start()
+		self.radio.offContent = True
 
 	def run(self):
 		logger.debug("Listening to DHT22 sensor at GPIO " + str(self.gpioPin))

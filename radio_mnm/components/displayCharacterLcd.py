@@ -175,8 +175,6 @@ class Display(threading.Thread):
 
 	def pause(self):
 		self.clear()
-		# lcd = None
-		# lcd = self.initializeLcd()
 		self.pauseEvent.clear()
 		logger.debug("Paused display handling loop")
 
