@@ -8,3 +8,4 @@ scripts/radio-mnm.service
 
 # The .env is specific to each environment and should therefor not be tracked.
 .env
+config.yml
