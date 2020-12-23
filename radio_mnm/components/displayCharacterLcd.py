@@ -160,11 +160,13 @@ class Display(threading.Thread):
 			# Wait, if the thread is set on hold
 			self.pauseEvent.wait()
 
-			# Set standard content if self.radio is on
-			if self.radio.on:
-				self.writeStandardContent()
+			# Set standard content
+			self.writeStandardContent()
 
-			time.sleep(self.displayScrollSpeed)
+			if self.radio.on:
+				time.sleep(self.displayScrollSpeed)
+			else:
+				time.sleep(2)
 
 	def stop(self):
 		self.clear()
@@ -173,15 +175,13 @@ class Display(threading.Thread):
 
 	def pause(self):
 		self.clear()
-		lcd = None
-		lcd = self.initializeLcd()
+		# lcd = None
+		# lcd = self.initializeLcd()
 		self.pauseEvent.clear()
 		logger.debug("Paused display handling loop")
 
 	def resume(self):
 		self.pauseEvent.set()
-		# \n for new line \r for moving to the beginning of current line
-		self.radio.display.notification(">- RADIO M&M  -<\n\r" + _("Got ") + str(len(self.radio.channels)) + _(" channels"), 3)
 		logger.debug("Resumed display handling loop")
 
 	def initializeLcd(self):
@@ -230,44 +230,47 @@ class Display(threading.Thread):
 		)
 
 	def writeStandardContent(self):
-		# Set standard content
-		# Selected channel can be None when the self.radio is on, only right after a reset.
-		if self.radio.selectedChannel is not None:
+		if self.radio.on:
+			# Set standard content
+			# Selected channel can be None when the self.radio is on, only right after a reset.
+			if self.radio.selectedChannel is not None:
+				# Format standard content based on screen size
+				# Set the second line's content:
+				if self.displayHeight >= 2:
+					# By default, display the meta (ie. [Song] - [Artist])
+					secondLine = self.radio.media.get_meta(12)
+					
+					# Get the self.radio's state
+					state = self.radio.state
 
-			# Format standard content based on screen size
-			# Set the second line's content:
-			if self.displayHeight >= 2:
-				# By default, display the meta (ie. [Song] - [Artist])
-				secondLine = self.radio.media.get_meta(12)
-				
-				# Get the self.radio's state
-				state = self.radio.state
+					# Display any errors
+					if self.radio.updating:
+						secondLine = self.radio.updating["text"]
 
-				# Display any errors
-				if self.radio.updating:
-					secondLine = self.radio.updating["text"]
+					# Display any errors
+					elif self.radio.error:
+						secondLine = self.radio.error["text"]
 
-				# Display any errors
-				elif self.radio.error:
-					secondLine = self.radio.error["text"]
+					# Display any channel errors
+					elif self.radio.channelError:
+						secondLine = self.radio.channelError["text"]
 
-				# Display any channel errors
-				elif self.radio.channelError:
-					secondLine = self.radio.channelError["text"]
+					# Display any special states
+					elif state["code"] != "playing":
+						secondLine = state["text"]
 
-				# Display any special states
-				elif state["code"] != "playing":
-					secondLine = state["text"]
+					# Meta can be None for a second after the channel starts playing (or if it's actually empty)
+					elif secondLine is None:
+						secondLine = ""
 
-				# Meta can be None for a second after the channel starts playing (or if it's actually empty)
-				elif secondLine is None:
-					secondLine = ""
-
-				self.standardContent = self.radio.selectedChannel["name"] + "\n\r" + str(secondLine)
-			else:
-				self.standardContent = self.radio.selectedChannel["name"]
-		elif self.standardContent == "":
-			self.standardContent = _("No channels")
+					self.standardContent = self.radio.selectedChannel["name"] + "\n\r" + str(secondLine)
+				else:
+					self.standardContent = self.radio.selectedChannel["name"]
+			elif self.standardContent == "":
+				self.standardContent = _("No channels")
+		# The radio is off
+		else:
+			self.standardContent = "Temp: 10C\r\nHumidity: 46%"
 
 		# Clear expired notifications
 		if int(round(time.time() * 1000)) >= self.notificationExpireTime and self.notificationExpireTime != False:

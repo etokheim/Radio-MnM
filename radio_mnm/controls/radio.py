@@ -187,7 +187,7 @@ class Radio():
 	def powerOff(self):
 		self.on = False
 		self.stop()
-		self.display.pause()
+		# self.display.pause()
 
 		# Find a way to implement this into the buttons, if it helps with the standby mode compute.
 		# button.pause()
@@ -207,6 +207,9 @@ class Radio():
 		
 		# Find a way to implement this into the buttons, if it helps with the standby mode compute.
 		# button.resume()
+
+		# \n for new line \r for moving to the beginning of current line
+		self.display.notification(">- RADIO M&M  -<\n\r" + _("Got ") + str(len(self.channels)) + _(" channels"), 3)
 
 		if not self.selectedChannel:
 			self.selectedChannel = self.channels[0]
