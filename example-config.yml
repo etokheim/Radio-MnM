@@ -54,6 +54,13 @@ veryLongPressThreshold: 5000
 # resources.
 channelSwitchDelay: 2
 
+# Seconds (int) - Walk me home lights.
+# For how long the display lights should stay on after the display
+# has been turned off. This is to let the user see temps and humidity after
+# the radio has been turned off.
+# Turns off instantly if 0
+powerOffDisplayLightsDuration: 3600 # 1 hour
+
 
 audio:
     # Bitrate (int)
@@ -83,10 +90,17 @@ components:
           GPIO:
               rs: 14
               en: 15
-              data4: 13
+              data4: 9
               data5: 7
               data6: 5
               data7: 11
+              # Optional backlight pin with PWM
+              backlight: 13
+          # (string) - active_high or active_low
+          # If you use an active high circuit instead of active low, you can change
+          # that behavior by setting the backlight_mode to either active_high or
+          # active_low
+          backlightMode: active_high
           lcdCompatibillityMode: true
           dotSize: 8
           lcdCharacterMap: A02

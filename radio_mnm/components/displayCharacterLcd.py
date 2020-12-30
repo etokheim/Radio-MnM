@@ -1,13 +1,13 @@
 import logging
 logger = logging.getLogger("Radio_mnm")
-from config import config
+from config.config import config
 import threading
 import time
 import gettext
 import sys
 from helpers import helpers
 
-_ = config.config["getLanguage"].gettext
+_ = config["getLanguage"].gettext
 
 from RPi import GPIO
 from RPLCD.gpio import CharLCD
@@ -64,6 +64,11 @@ class Display(threading.Thread):
 			self.actualDisplayHeight = setup["height"]
 
 		self.lcd = self.initializeLcd()
+
+		# Turn off backlight if the radio is off
+		if not self.radio.on:
+			self.lcd.backlight_enabled = False
+		
 		self.resume()
 
 		# Custom characters
@@ -167,7 +172,12 @@ class Display(threading.Thread):
 			if self.radio.on:
 				time.sleep(self.displayScrollSpeed)
 			else:
-				time.sleep(2)
+				# Turn off the display lights after the delay has elapsed
+				if self.lcd.backlight_enabled:
+					if int(round(time.time() * 1000)) - self.radio.turnOffTime > config["powerOffDisplayLightsDuration"] * 1000:
+						self.lcd.backlight_enabled = False
+				
+				time.sleep(1)
 
 	def stop(self):
 		self.clear()
@@ -226,6 +236,10 @@ class Display(threading.Thread):
 			
 			# (bool) – Whether the backlight is enabled initially. Default: True.
 			backlight_enabled = True,
+
+			pin_backlight = self.setup["GPIO"]["backlight"],
+
+			backlight_mode = self.setup["backlightMode"]
 		)
 
 	def writeStandardContent(self):
