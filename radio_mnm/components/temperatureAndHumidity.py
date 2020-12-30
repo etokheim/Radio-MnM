@@ -2,7 +2,7 @@ import logging
 logger = logging.getLogger("Radio_mnm")
 import adafruit_dht
 from RPi import GPIO
-# from board import D22
+from board import D22
 import time
 import threading
 
@@ -11,16 +11,13 @@ class TemperatureAndHumidity(threading.Thread):
 		threading.Thread.__init__(self)
 		self.gpioPin = gpioPin
 		self.radio = radio
-		GPIO.setup(gpioPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-		# sensorDht = adafruit_dht.DHT22(D22)
-		self.sensorDht = adafruit_dht.DHT22(GPIO.input(gpioPin))
+		self.sensorDht = adafruit_dht.DHT22(globals()["D" + str(gpioPin)])
 
 		self.running = True
 		self.start()
 		self.radio.offContent = True
-		self.temperature = 0
-		self.humidity = 0
+		self.temperature = 0.0
+		self.humidity = 0.0
 
 	def run(self):
 		logger.debug("Listening to DHT22 sensor at GPIO " + str(self.gpioPin))
