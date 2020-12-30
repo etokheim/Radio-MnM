@@ -18,11 +18,13 @@ class TemperatureAndHumidity(threading.Thread):
 		self.radio.offContent = True
 		self.temperature = 0.0
 		self.humidity = 0.0
+		self.lastUpdateTime = int(time.time() * 1000)
 
 	def run(self):
 		logger.debug("Listening to DHT22 sensor at GPIO " + str(self.gpioPin))
 
 		while self.running:
+			try:
 			temperature = self.sensorDht.temperature
 			humidity = self.sensorDht.humidity
 
@@ -30,6 +32,7 @@ class TemperatureAndHumidity(threading.Thread):
 				print("Temp={0:0.1f}*C  Humidity={1:0.1f}%".format(temperature, humidity))
 				self.temperature = temperature
 				self.humidity = humidity
+					self.lastUpdateTime = int(time.time() * 1000)
 			else:
 				print("Failed to retrieve data from humidity sensor")
 

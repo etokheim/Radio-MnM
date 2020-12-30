@@ -270,7 +270,10 @@ class Display(threading.Thread):
 		# The radio is off
 		else:
 			if self.radio.temperatureAndHumidity:
-				self.standardContent = "Temp: " + str(self.radio.temperatureAndHumidity.temperature) + "C\r\nHumidity: " + str(self.radio.temperatureAndHumidity.humidity) + "%"
+				if int(time.time() * 1000) - self.radio.temperatureAndHumidity.lastUpdateTime < 10000:
+					self.standardContent = "Temp: " + str(self.radio.temperatureAndHumidity.temperature) + "C\r\nHumidity: " + str(self.radio.temperatureAndHumidity.humidity) + "%"
+				else:
+					self.standardContent = _("Couldn't get\n\rtemperature")
 
 		# Clear expired notifications
 		if int(round(time.time() * 1000)) >= self.notificationExpireTime and self.notificationExpireTime != False:
