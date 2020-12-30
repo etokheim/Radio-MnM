@@ -17,6 +17,7 @@ import components.displayCharacterLcd as display
 import components.powerSwitch as powerSwitch
 import components.navigationButton as navigationButton
 import components.volumeRotary as volumeRotary
+import components.navigationRotary as navigationRotary
 import components.powerButton as powerButton
 import components.temperatureAndHumidity as temperatureAndHumidity
 
@@ -29,6 +30,7 @@ radio.display = display.Display(radio, config["components"]["displays"][0])
 radio.powerSwitch = powerSwitch.PowerSwitch(radio, 17)
 radio.navigationButton = navigationButton.NavigationButton(radio, 8)
 radio.volumeRotary = volumeRotary.VolumeRotary(radio, 20, 12)
+radio.navigationRotary = navigationRotary.NavigationRotary(radio, 26, 6)
 radio.powerButton = powerButton.PowerButton(radio, 16)
 radio.temperatureAndHumidity = temperatureAndHumidity.TemperatureAndHumidity(radio, 22)
 
