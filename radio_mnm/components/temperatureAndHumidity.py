@@ -25,18 +25,21 @@ class TemperatureAndHumidity(threading.Thread):
 
 		while self.running:
 			try:
-			temperature = self.sensorDht.temperature
-			humidity = self.sensorDht.humidity
+				temperature = self.sensorDht.temperature
+				humidity = self.sensorDht.humidity
 
-			if humidity is not None and temperature is not None:
-				print("Temp={0:0.1f}*C  Humidity={1:0.1f}%".format(temperature, humidity))
-				self.temperature = temperature
-				self.humidity = humidity
+				if humidity is not None and temperature is not None:
+					print("Temp={0:0.1f}*C  Humidity={1:0.1f}%".format(temperature, humidity))
+					self.temperature = temperature
+					self.humidity = humidity
 					self.lastUpdateTime = int(time.time() * 1000)
-			else:
-				print("Failed to retrieve data from humidity sensor")
+				else:
+					print("Failed to retrieve data from humidity sensor")
 
-			time.sleep(2)
+				time.sleep(2)
+			except RuntimeError as exception:
+				logger.warning("Failed to get data from sensor on GPIO " + str(self.gpioPin) + ":")
+				logger.warning(exception)
 
 	def stop(self):
 		self.running = False
