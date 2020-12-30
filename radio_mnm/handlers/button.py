@@ -70,7 +70,9 @@ class Button(threading.Thread):
 			self.longClick.append(callback)
 		elif type == "veryLongPress":
 			self.veryLongPress.append(callback)
-
+		else:
+			raise Exception("Event type " + str(callback) + "is not supported.")
+		
 	# Use Button.start(), not Button.run() to start thread
 	# run() would just start a blocking loop
 	def run(self):
