@@ -33,7 +33,7 @@ class TemperatureAndHumidity(threading.Thread):
 			else:
 				print("Failed to retrieve data from humidity sensor")
 
-			time.sleep(1)
+			time.sleep(2)
 
 	def stop(self):
 		self.running = False
