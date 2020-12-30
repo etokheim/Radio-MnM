@@ -10,14 +10,15 @@ class NavigationRotary():
 
 		self.rotary = rotaryMechanic.Rotary(self.clk, self.dt)
 
-		self.rotary.listen(self.rotary.left, self.rotaryLeftHandler)
-		self.rotary.listen(self.rotary.right, self.rotaryRightHandler)
+		
+		self.rotary.addEventListener("left", self.rotaryLeftHandler)
+		self.rotary.addEventListener("right", self.rotaryRightHandler)
 
-	def rotaryLeftHandler(self, event):
-		logger.debug("rotaryLeftHandler %r" % event)
+	def rotaryLeftHandler(self):
+		logger.debug("rotaryLeftHandler")
 		self.radio.bump(-1)
 
-	def rotaryRightHandler(self, event):
-		logger.debug("rotaryRightHandler %r" % event)
+	def rotaryRightHandler(self):
+		logger.debug("rotaryRightHandler")
 		
 		self.radio.bump(1)

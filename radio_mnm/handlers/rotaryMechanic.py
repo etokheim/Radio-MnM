@@ -1,7 +1,5 @@
 import logging
 logger = logging.getLogger("Radio_mnm")
-import zope.event
-import zope.event.classhandler
 import threading
 from RPi import GPIO
 	
@@ -16,7 +14,8 @@ class Rotary(threading.Thread):
 		# When paused is set, the thread will run, when it's not set, the thread will wait
 		self.pauseEvent = threading.Event()
 
-		self.listen = zope.event.classhandler.handler
+		self.left = []
+		self.right = []
 
 		# Set up GPIO pins
 		GPIO.setup(clk, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -25,18 +24,24 @@ class Rotary(threading.Thread):
 		# Listen for events on the CLK pin
 		GPIO.add_event_detect(clk, GPIO.FALLING, callback=self.rotationHandler, bouncetime=50)
 
+	# Loops through the callbacks parameter (array) and executes them
+	def dispatch(self, callbacks):
+		for callback in callbacks:
+			if callback:
+				callback()
+
+	def addEventListener(self, type, callback):
+		if type == "left":
+			self.left.append(callback)
+		elif type == "right":
+			self.right.append(callback)
+		else:
+			raise Exception("Event type " + str(callback) + "is not supported.")
+
 	def rotationHandler(self, channel):
 		if GPIO.input(self.dt) == 1:
-			zope.event.notify(self.right())
+			self.dispatch(self.right)
 			logger.debug("Rotary right")
 		else:
-			zope.event.notify(self.left())
+			self.dispatch(self.left)
 			logger.debug("Rotary left")
-
-	class left(object):
-		def __repr__(self):
-			return self.__class__.__name__
-
-	class right(object):
-		def __repr__(self):
-			return self.__class__.__name__
