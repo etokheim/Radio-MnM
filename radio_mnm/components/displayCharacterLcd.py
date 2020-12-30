@@ -311,7 +311,7 @@ class Display(threading.Thread):
 			self.scrollOffset = 0 - self.displayScrollingStartPauseSteps
 			
 			# Only do this if displaying channel info
-			if messageType == "channelInfo" and self.displayHeight >= 2:
+			if messageType == "channelInfo" and self.displayHeight >= 2 and self.radio.on:
 				# When the text changes, "clear the second line" for å brief moment, so the user
 				# more easily can understand that a new text was inserted.
 				# Crap, this only works for channels, but notifications are also parsed through here...
