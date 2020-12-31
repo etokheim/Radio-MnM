@@ -1,18 +1,11 @@
 import logging
 logger = logging.getLogger("Radio_mnm")
-import threading
 from RPi import GPIO
 	
-class Rotary(threading.Thread):
+class Rotary():
 	def __init__(self, clk, dt):
-		threading.Thread.__init__(self)
-		
 		self.clk = clk
 		self.dt = dt
-
-		self.running = True
-		# When paused is set, the thread will run, when it's not set, the thread will wait
-		self.pauseEvent = threading.Event()
 
 		self.left = []
 		self.right = []
@@ -22,7 +15,7 @@ class Rotary(threading.Thread):
 		GPIO.setup(dt, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 		# Listen for events on the CLK pin
-		GPIO.add_event_detect(clk, GPIO.FALLING, callback=self.rotationHandler, bouncetime=50)
+		GPIO.add_event_detect(clk, GPIO.FALLING, callback=self.rotationHandler, bouncetime=80)
 
 	# Loops through the callbacks parameter (array) and executes them
 	def dispatch(self, callbacks):
