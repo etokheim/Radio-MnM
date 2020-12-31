@@ -31,7 +31,9 @@ radio.powerSwitch = powerSwitch.PowerSwitch(radio, 17)
 radio.navigationButton = navigationButton.NavigationButton(radio, 8)
 radio.volumeRotary = volumeRotary.VolumeRotary(radio, 20, 12)
 radio.navigationRotary = navigationRotary.NavigationRotary(radio, 26, 6)
-radio.powerButton = powerButton.PowerButton(radio, 16)
+# Left rotary
+# radio.powerButton = powerButton.PowerButton(radio, 16)
+radio.powerButton = powerButton.PowerButton(radio, 10)
 radio.temperatureAndHumidity = temperatureAndHumidity.TemperatureAndHumidity(radio, 22)
 
 # Couldn't figure out how to put the error handling into the radio class.
