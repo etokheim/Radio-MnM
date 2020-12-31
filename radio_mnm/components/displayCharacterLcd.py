@@ -174,7 +174,7 @@ class Display(threading.Thread):
 			else:
 				# Turn off the display lights after the delay has elapsed
 				if self.lcd.backlight_enabled:
-					if int(round(time.time() * 1000)) - self.radio.turnOffTime > config["powerOffDisplayLightsDuration"] * 1000:
+					if int(round(time.time() * 1000)) - self.radio.powerOffTime > config["powerOffDisplayLightsDuration"] * 1000:
 						self.lcd.backlight_enabled = False
 				
 				time.sleep(1)

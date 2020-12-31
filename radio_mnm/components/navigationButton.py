@@ -42,7 +42,7 @@ class NavigationButton():
 		# If it's less than longPressThreshold + 500 since you turned on the radio,
 		# run update script.
 		# Else switch to last channel
-		if int(round(time.time() * 1000)) - self.radio.turnOnTime < config["longPressThreshold"] + 500:
+		if int(round(time.time() * 1000)) - self.radio.powerOnTime < config["longPressThreshold"] + 500:
 			self.radio.updating = {
 				"code": "updating",
 				"text": _("Updating, don't pull the plug!")

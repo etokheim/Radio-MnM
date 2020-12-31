@@ -37,8 +37,8 @@ class Radio():
 		self.lastPowerState = None
 		self.volume = config["audio"]["volume"]
 		self.setVolume(self.volume)
-		self.turnOnTime = None
-		self.turnOffTime = int(round(time.time() * 1000))
+		self.powerOnTime = None
+		self.powerOffTime = int(round(time.time() * 1000))
 		self.channelSwitchDelay = config["channelSwitchDelay"]
 
 		# A variable to hold the buffer timer.
@@ -188,7 +188,7 @@ class Radio():
 
 	def powerOff(self):
 		self.on = False
-		self.turnOffTime = int(round(time.time() * 1000))
+		self.powerOffTime = int(round(time.time() * 1000))
 		
 		if not config["powerOffDisplayLightsDuration"]:
 			self.display.lcd.backlight_enabled = False
@@ -214,7 +214,7 @@ class Radio():
 
 	def powerOn(self):
 		self.on = True
-		self.turnOnTime = int(round(time.time() * 1000))
+		self.powerOnTime = int(round(time.time() * 1000))
 		self.display.lcd.backlight_enabled = True
 		
 		# Turn the display loop on again if it was off
