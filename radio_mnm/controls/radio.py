@@ -434,11 +434,9 @@ class Radio():
 		
 		for i in range(volumeBarWidth):
 			if i < numberOfBars:
-				print("Volume bar no " + str(i) + "/" + str(numberOfBars))
 				volumeBar = volumeBar + progressBarStyle
 			else:
 				volumeBar = volumeBar + " "
-			print(volumeBar)
 		
 		if self.display.displayHeight == 1:
 			self.display.notification("Vol " + volumeBar)
