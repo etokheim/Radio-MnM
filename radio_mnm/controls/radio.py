@@ -417,9 +417,30 @@ class Radio():
 			subprocess.call(["amixer", "-D", "pulse", "sset", "Master", str(volume) + "%"])
 			self.volume = volume
 			return True
-		
 		except ValueError:
 			pass
+
+
+	def displayVolumeLevel(self):
+		# Display volume level
+		progressBarStyle = "*"
+
+		volumeBarWidth = self.display.displayWidth
+		volumeBar = ""
+		numberOfBars = round(volumeBarWidth / 100 * self.volume)
+		
+		if self.display.displayHeight == 1:
+			self.display.notification(progressBarStyle + confirmText[len(progressBarStyle) : confirmTextLength])
+		else: 
+			for i in range(volumeBarWidth):
+				if i < numberOfBars:
+					print("Volume bar no " + str(i) + "/" + str(numberOfBars))
+					volumeBar = volumeBar + progressBarStyle
+				else:
+					volumeBar = volumeBar + " "
+				print(volumeBar)
+				
+			self.display.notification("Volume\n\r" + volumeBar)
 
 
 	def getBestBitRateMatch(self, streams):
