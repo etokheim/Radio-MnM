@@ -194,11 +194,13 @@ class Radio():
 			self.display.lcd.backlight_enabled = False
 		
 		self.stop()
+			
+		# Reinit the display to battle the corrupted display issue
+		self.display.lcd = None
+		self.display.lcd = self.display.initializeLcd()
 
 		# Stop the display loop when off if we don't want to display content
 		if not self.offContent:
-			lcd = None
-			lcd = self.initializeLcd()
 			self.display.pause()
 
 		# Find a way to implement this into the buttons, if it helps with the standby mode compute.
