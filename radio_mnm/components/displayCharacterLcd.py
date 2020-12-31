@@ -172,12 +172,16 @@ class Display(threading.Thread):
 			if self.radio.on:
 				time.sleep(self.displayScrollSpeed)
 			else:
-				# Turn off the display lights after the delay has elapsed
-				if self.lcd.backlight_enabled:
-					if int(round(time.time() * 1000)) - self.radio.powerOffTime > config["powerOffDisplayLightsDuration"] * 1000:
-						self.lcd.backlight_enabled = False
-				
-				time.sleep(1)
+				# LCD can be undefined if checked while reinitializing
+				# We reinit it on powerOff to counter the corrupted
+				# display issue
+				if self.lcd:
+					# Turn off the display lights after the delay has elapsed
+					if self.lcd.backlight_enabled:
+						if int(round(time.time() * 1000)) - self.radio.powerOffTime > config["powerOffDisplayLightsDuration"] * 1000:
+							self.lcd.backlight_enabled = False
+					
+					time.sleep(1)
 
 	def stop(self):
 		self.clear()
