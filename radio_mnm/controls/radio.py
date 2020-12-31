@@ -248,6 +248,10 @@ class Radio():
 		self.display.notification(">- RADIO M&M  -<\n\r" + _("Got ") + str(len(self.channels)) + _(" channels"), 3)
 
 	def playChannel(self, channel):
+		if not self.on:
+			logger.debug("Can't start channel while radio is off")
+			return
+			
 		# Channel should always be valid, so this clause shouldn't trigger, unless there is a bug.
 		if not channel:
 			logger.error("Channel parameter is not a valid channel. Can't start player.")
