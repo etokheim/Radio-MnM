@@ -1,17 +1,9 @@
 import logging
-logger = logging.getLogger("Radio_mnm")
 from config.config import config
 from RPi import GPIO
-import datetime
-import time
 from datetime import datetime
-import zope.event
-import zope.event.classhandler
-import threading
-import gettext
-import os
 
-import handlers.rotaryMechanic
+# Local imports
 from controls import radio
 import components.displayCharacterLcd as display
 import components.powerSwitch as powerSwitch
@@ -21,6 +13,7 @@ import components.navigationRotary as navigationRotary
 import components.powerButton as powerButton
 import components.temperatureAndHumidity as temperatureAndHumidity
 
+logger = logging.getLogger("Radio_mnm")
 GPIO.setmode(GPIO.BCM)
 
 radio = radio.Radio()
