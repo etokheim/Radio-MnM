@@ -346,6 +346,11 @@ class Radio():
 
 	# Bumps the channel n times. Loops around if bumping past the last channel.
 	def bump(self, bumps = 1):
+		# Don't allow channel switching if radio is off
+		if not self.on:
+			logger.debug("Can't switch channels when radio is off")
+			return
+
 		if not self.channels:
 			logger.debug("Can't bump channel when there are none available.")
 			return
