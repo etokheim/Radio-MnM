@@ -1,4 +1,4 @@
-from handlers import rotaryMechanic
+from handlers import rotaryPolling
 import logging
 logger = logging.getLogger("Radio_mnm")
 
@@ -8,7 +8,7 @@ class NavigationRotary():
 		self.clk = clk
 		self.dt = dt
 
-		self.rotary = rotaryMechanic.Rotary(self.clk, self.dt)
+		self.rotary = rotaryPolling.Rotary(self.clk, self.dt)
 
 		
 		self.rotary.addEventListener("left", self.rotaryLeftHandler)
