@@ -14,10 +14,10 @@ class VolumeRotary():
 		self.rotary.addEventListener("right", self.rotaryRightHandler)
 
 	def rotaryLeftHandler(self):
-		logger.debug("rotaryLeftHandler")
+		logger.debug("Volume rotaryLeftHandler")
 		self.radio.setVolume(self.radio.volume - 10)
 
 	def rotaryRightHandler(self):
-		logger.debug("rotaryRightHandler")
+		logger.debug("Volume rotaryRightHandler")
 		self.radio.setVolume(self.radio.volume + 10)
 		

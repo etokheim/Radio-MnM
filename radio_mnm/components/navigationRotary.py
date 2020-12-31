@@ -15,10 +15,9 @@ class NavigationRotary():
 		self.rotary.addEventListener("right", self.rotaryRightHandler)
 
 	def rotaryLeftHandler(self):
-		logger.debug("rotaryLeftHandler")
+		logger.debug("Navigation rotaryLeftHandler")
 		self.radio.bump(-1)
 
 	def rotaryRightHandler(self):
-		logger.debug("rotaryRightHandler")
-		
+		logger.debug("Navigation rotaryRightHandler")
 		self.radio.bump(1)

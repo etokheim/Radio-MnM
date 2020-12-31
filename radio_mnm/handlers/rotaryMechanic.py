@@ -40,8 +40,8 @@ class Rotary(threading.Thread):
 
 	def rotationHandler(self, channel):
 		if GPIO.input(self.dt) == 1:
+			logger.debug("Rotary right (GPIO " + str(self.clk) + " and " + str(self.dt) + ")")
 			self.dispatch(self.right)
-			logger.debug("Rotary right")
 		else:
+			logger.debug("Rotary left (GPIO " + str(self.clk) + " and " + str(self.dt) + ")")
 			self.dispatch(self.left)
-			logger.debug("Rotary left")

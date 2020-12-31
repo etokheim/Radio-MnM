@@ -30,7 +30,7 @@ class Button(threading.Thread):
 		# When paused is set, the thread will run, when it's not set, the thread will wait
 		self.pauseEvent = threading.Event()
 
-		self.state = "up"
+		self.state = "released"
 
 		self.pushing = False
 		self.pushStart = 0
@@ -72,7 +72,7 @@ class Button(threading.Thread):
 			self.veryLongPress.append(callback)
 		else:
 			raise Exception("Event type " + str(callback) + "is not supported.")
-		
+
 	# Use Button.start(), not Button.run() to start thread
 	# run() would just start a blocking loop
 	def run(self):
@@ -101,17 +101,21 @@ class Button(threading.Thread):
 				holdTime = now - self.pushStart
 
 				self.dispatch(self.press)
+				logger.debug("Button press (GPIO " + str(self.gpioPin) + ")")
 				self.state = "down"
 
 			elif self.pushStart != 0 and self.pushing == False:
 				self.dispatch(self.release)
-				self.state = "up"
+				logger.debug("Button release (GPIO " + str(self.gpioPin) + ")")
+				self.state = "released"
 
 				if holdTime >= config["longPressThreshold"]:
 					self.dispatch(self.longClick)
+					logger.debug("Button long click (GPIO " + str(self.gpioPin) + ")")
 				else:
 					if not self.sentLongPressEvent:
 						self.dispatch(self.click)
+						logger.debug("Button click (GPIO " + str(self.gpioPin) + ")")
 
 					# When done pushing, set sentLongPressEvent to False again
 					self.sentLongPressEvent = False
@@ -128,11 +132,13 @@ class Button(threading.Thread):
 				if self.sentLongPressEvent == False:
 					self.sentLongPressEvent = True
 					self.dispatch(self.longPress)
+					logger.debug("Button long press (GPIO " + str(self.gpioPin) + ")")
 
 			if holdTime >= config["veryLongPressThreshold"]:
 				if self.sentVeryLongPressEvent == False:
 					self.sentVeryLongPressEvent = True
 					self.dispatch(self.veryLongPress)
+					logger.debug("Button very long press (GPIO " + str(self.gpioPin) + ")")
 
 		print("Button is running " + str(self.running))
 
