@@ -15,9 +15,13 @@ class VolumeRotary():
 
 	def rotaryLeftHandler(self):
 		logger.debug("Volume rotaryLeftHandler")
-		self.radio.setVolume(self.radio.volume - 10)
+		
+		if self.radio.on:
+			self.radio.setVolume(self.radio.volume - 10)
 
 	def rotaryRightHandler(self):
 		logger.debug("Volume rotaryRightHandler")
-		self.radio.setVolume(self.radio.volume + 10)
+		
+		if self.radio.on:
+			self.radio.setVolume(self.radio.volume + 10)
 		
