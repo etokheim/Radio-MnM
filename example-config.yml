@@ -74,8 +74,9 @@ audio:
     bitrate: 128
 
     # Volume (int, 0 - 100)
-    # This value shouldn't be too high, as the built in sound card isn't the best.
-    volume: 85
+    # If you have a separate amp, this value shouldn't be too high. The built in
+    # sound card isn't the best.
+    volume: 40
 
 
 # Setup your components.
