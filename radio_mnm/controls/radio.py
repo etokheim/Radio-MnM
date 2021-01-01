@@ -420,7 +420,7 @@ class Radio():
 			volume = 100
 
 		try:
-			subprocess.call(["amixer", "-D", "pulse", "sset", "Master", str(volume) + "%"])
+			output = subprocess.check_output(["amixer", "-D", "pulse", "sset", "Master", str(volume) + "%"])
 			self.volume = volume
 			return True
 		except ValueError:
