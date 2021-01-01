@@ -427,6 +427,11 @@ class Display(threading.Thread):
 
 
 	def write(self, message):
+		# The display can be None if it's in the middle of a reinitialization
+		if not self.lcd:
+			logger.error("Couldn't write to the display as the lcd was None")
+			return
+
 		# Check whether the display is ready for new text. If not, we'll add the message to the write queue.
 		if int(time.time() * 1000) - self.lastWriteTime < self.writeDelay:
 			self.writeQueue.append(message)
