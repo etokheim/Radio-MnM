@@ -28,6 +28,10 @@ class Display(threading.Thread):
 		# When paused is set, the thread will run, when it's not set, the thread will wait
 		self.pauseEvent = threading.Event()
 		self.currentlyDisplayingMessage = ""
+		self.lastWriteTime = 0
+		self.writeQueue = []
+		self.writeQueueTimer = None
+		self.writeDelay = setup["writeDelay"]
 
 		# For how many steps we should pause when displaying the start of the line (1 step = displayScrollSpeed)
 		self.displayScrollingStartPauseSteps = 12
@@ -423,28 +427,53 @@ class Display(threading.Thread):
 
 
 	def write(self, message):
-		self.clear()
+		# Check whether the display is ready for new text. If not, we'll add the message to the write queue.
+		if int(time.time() * 1000) - self.lastWriteTime < self.writeDelay:
+			self.writeQueue.append(message)
+			logger.debug("The display was not ready to write. The message was delayed")
 
-		# Simulate a display in the terminal, if we are running in debug mode
-		# Do not directly use this function to write to the display. Use notification()
-		if self.virtualDisplay:
-			self.writeToSimulatedScreen(message)
-		
-		# Write message to the actual display
-		# Handle weir display quirk, where one line in the code only refers to half a line on the actual
-		# display. Ie.: to fill a 16x1 display, you have to do 12345678\n90123456
-		if self.oneDisplayLineIsTwoLines:
-			stripCarriages = message.replace("\r", "")
-			lines = stripCarriages.split("\n")
-			message = ""
+		# Else the display is ready, and we can write
+		else:
+			self.lastWriteTime = int(time.time() * 1000)
+			self.clear()
 
-			for line in lines:
-				# Double / always returns a floored result (int, not float). 8 / 2 = 4.0, 8 // 2 = 4...
-				message = message + line[0:self.displayWidth // 2] + "\n\r" + line[self.displayWidth // 2:self.displayWidth]
+			# Simulate a display in the terminal, if we are running in debug mode
+			# Do not directly use this function to write to the display. Use notification()
+			if self.virtualDisplay:
+				self.writeToSimulatedScreen(message)
+			
+			# Write message to the actual display
+			# Handle weir display quirk, where one line in the code only refers to half a line on the actual
+			# display. Ie.: to fill a 16x1 display, you have to do 12345678\n90123456
+			if self.oneDisplayLineIsTwoLines:
+				stripCarriages = message.replace("\r", "")
+				lines = stripCarriages.split("\n")
+				message = ""
 
-		message = self.replaceCustomCharacters(message)
+				for line in lines:
+					# Double / always returns a floored result (int, not float). 8 / 2 = 4.0, 8 // 2 = 4...
+					message = message + line[0:self.displayWidth // 2] + "\n\r" + line[self.displayWidth // 2:self.displayWidth]
 
-		self.lcd.write_string(message)
+			message = self.replaceCustomCharacters(message)
+
+			self.lcd.write_string(message)
+
+		# Check if there's anything in the write queue.
+		# If there is, start a timer to write it.
+		if len(self.writeQueue):
+			if not self.writeQueueTimer:
+				self.writeQueueTimer = threading.Timer(self.writeDelay / 1000, lambda: self.writeFromQueue())
+				self.writeQueueTimer.start()
+
+
+	def writeFromQueue(self):
+		self.writeQueueTimer.cancel()
+		self.writeQueueTimer = None
+
+		message = self.writeQueue[0]
+		self.writeQueue.pop(0)
+		self.write(message)
+
 
 	def replaceCustomCharacters(self, message):
 		message = message.replace("æ", "\x00")

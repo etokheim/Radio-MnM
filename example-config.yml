@@ -96,7 +96,8 @@ components:
               data7: 11
               # Optional backlight pin with PWM
               backlight: 13
-          # (string) - active_high or active_low
+          # Backlight mode (string)
+          # Values: active_high or active_low
           # If you use an active high circuit instead of active low, you can change
           # that behavior by setting the backlight_mode to either active_high or
           # active_low
@@ -105,6 +106,10 @@ components:
           dotSize: 8
           lcdCharacterMap: A02
           oneDisplayLineIsTwoLines: false
+          # (int) - Default 50 milliseconds
+          # Minimum milliseconds between two writes to the display. If the
+          # display is slow, this can combat the display becoming corrupted. 
+          writeDelay: 50
 
     # Array of power buttons. Clicking it will toggle the radio's on state.
     # powerButtons:
