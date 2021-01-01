@@ -208,12 +208,6 @@ class Radio():
 		
 		self.handleSendState("suspended")
 
-		# I'm not quite sure I have to reset all of these values
-		self.display.currentlyDisplayingMessage = ""
-		self.display.notificationMessage = ""
-		self.display.lastDisplayedMessage = ""
-		self.display.lastDisplayedCroppedMessage = ""
-
 	def powerOn(self):
 		self.on = True
 		self.powerOnTime = int(round(time.time() * 1000))
@@ -222,14 +216,16 @@ class Radio():
 		# Turn the display loop on again if it was off
 		if not self.offContent:
 			self.display.resume()
+
+		# \n for new line \r for moving to the beginning of current line
+		self.display.notification(">- RADIO M&M  -<\n\r" + _("Got ") + str(len(self.channels)) + _(" channels"), 3)
 		
 		# Find a way to implement this into the buttons, if it helps with the standby mode compute.
 		# button.resume()
 
+		# Start playing
 		if not self.selectedChannel:
 			self.selectedChannel = self.channels[0]
-		
-		# Start playing
 		self.play()
 
 		# TODO: Maybe rename .start() methods that aren't threads, as it can be confusing.
@@ -243,9 +239,6 @@ class Radio():
 
 		# if len(self.channels) > 0:
 		# 	self.play()
-
-		# \n for new line \r for moving to the beginning of current line
-		self.display.notification(">- RADIO M&M  -<\n\r" + _("Got ") + str(len(self.channels)) + _(" channels"), 3)
 
 	def playChannel(self, channel):
 		if not self.on:
@@ -327,8 +320,7 @@ class Radio():
 			logger.error("Got a connection error while fetching channels:")
 			logger.error(exception)
 
-			self.display.notification(_("Failed to get\n\rchannels!"))
-			time.sleep(2)
+			self.display.notification(_("Failed to get\n\rnew channels!"))
 
 			# If status_code is not set, the request failed before returning
 			if not status_code:
@@ -340,8 +332,6 @@ class Radio():
 				self.display.notification(_("Resetting radio\n\rin three seconds"))
 				self.registration.reset()
 				return
-
-			self.display.notification(_("No channels\n\ravailable!") + " (" + str(status_code) + ")")
 
 		# Only sets selectedChannel if it's not set and the radio has channels.
 		# If not, keep the None value
