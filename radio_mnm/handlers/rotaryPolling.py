@@ -57,7 +57,6 @@ class Rotary(threading.Thread):
 
 			# If pushing
 			if clkState == False and self.lastClkState:
-				print("clkStateChanged!")
 				self.rotationHandler()
 
 			self.lastClkState = clkState
