@@ -173,9 +173,7 @@ class Display(threading.Thread):
 			# Set standard content
 			self.writeStandardContent()
 
-			if self.radio.on:
-				time.sleep(self.displayScrollSpeed)
-			else:
+			if not self.radio.on:
 				# LCD can be undefined if checked while reinitializing
 				# We reinit it on powerOff to counter the corrupted
 				# display issue
@@ -185,7 +183,7 @@ class Display(threading.Thread):
 						if int(round(time.time() * 1000)) - self.radio.powerOffTime > config["powerOffDisplayLightsDuration"] * 1000:
 							self.lcd.backlight_enabled = False
 					
-					time.sleep(1)
+			time.sleep(self.displayScrollSpeed)
 
 	def stop(self):
 		self.clear()
