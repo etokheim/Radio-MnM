@@ -1,6 +1,5 @@
 import logging
 from config.config import config
-from RPi import GPIO
 from datetime import datetime
 
 # Local imports

@@ -18,6 +18,8 @@ from config.config import config
 from RPi import GPIO
 from controls import radio
 
+GPIO.setmode(GPIO.BCM)
+
 _ = config["getLanguage"].gettext
 logger = logging.getLogger("Radio_mnm")
 

@@ -6,10 +6,11 @@ import time
 import gettext
 import sys
 from helpers import helpers
+from RPi import GPIO
 
 _ = config["getLanguage"].gettext
+GPIO.setmode(GPIO.BCM)
 
-from RPi import GPIO
 from RPLCD.gpio import CharLCD
 
 class Display(threading.Thread):

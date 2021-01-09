@@ -3,10 +3,10 @@ logger = logging.getLogger("Radio_mnm")
 import time
 import zope.event.classhandler
 from threading import Thread
-
 from RPi import GPIO
-
 from controls import radio
+
+GPIO.setmode(GPIO.BCM)
 
 class Switch(Thread):
 	def __init__(self, gpioPin):

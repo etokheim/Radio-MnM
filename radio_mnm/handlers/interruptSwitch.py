@@ -4,6 +4,8 @@ import zope.event.classhandler
 import threading
 from RPi import GPIO
 
+GPIO.setmode(GPIO.BCM)
+
 class Switch():
 	def __init__(self, gpioPin):
 		self.lastGpioState = 0

@@ -1,6 +1,8 @@
 import logging
 logger = logging.getLogger("Radio_mnm")
 from RPi import GPIO
+
+GPIO.setmode(GPIO.BCM)
 	
 class Rotary():
 	def __init__(self, clk, dt):

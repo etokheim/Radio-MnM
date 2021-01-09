@@ -6,6 +6,8 @@ from board import D22
 import time
 import threading
 
+GPIO.setmode(GPIO.BCM)
+
 class TemperatureAndHumidity(threading.Thread):
 	def __init__(self, radio, gpioPin):
 		threading.Thread.__init__(self)

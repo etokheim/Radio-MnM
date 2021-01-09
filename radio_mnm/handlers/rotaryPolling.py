@@ -3,6 +3,8 @@ logger = logging.getLogger("Radio_mnm")
 import threading
 from RPi import GPIO
 import time
+
+GPIO.setmode(GPIO.BCM)
 	
 class Rotary(threading.Thread):
 	def __init__(self, clk, dt):
