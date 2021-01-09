@@ -16,6 +16,13 @@ _ = config["getLanguage"].gettext
 
 from controls.registration import Registration
 from helpers import helpers
+import components.displayCharacterLcd as display
+import components.powerSwitch as powerSwitch
+import components.navigationButton as navigationButton
+import components.volumeRotary as volumeRotary
+import components.navigationRotary as navigationRotary
+import components.powerButton as powerButton
+import components.temperatureAndHumidity as temperatureAndHumidity
 
 
 class Radio():
@@ -107,6 +114,17 @@ class Radio():
 			self.channels = channels
 
 		self.delayedBumpTimer = None
+
+		
+		
+		# Attach components
+		# TODO: Support multiple displays
+		displays = config["config"]["displays"]
+		for display in displays:
+			self.display = display.Display(radio, display)
+
+		if "navigationRotary" in config["components"]:
+			self.navigationRotary = navigationRotary.NavigationRotary(radio, config["components"]["navigationRotary"])
 
 	def errorEvent(self, event = None):
 		logger.error("errorEvent:, " + str(event))
