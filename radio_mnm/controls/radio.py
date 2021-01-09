@@ -15,15 +15,6 @@ import os
 _ = config["getLanguage"].gettext
 
 from controls.registration import Registration
-from helpers import helpers
-import components.displayCharacterLcd as display
-import components.powerSwitch as powerSwitch
-import components.navigationButton as navigationButton
-import components.volumeRotary as volumeRotary
-import components.navigationRotary as navigationRotary
-import components.powerButton as powerButton
-import components.temperatureAndHumidity as temperatureAndHumidity
-
 
 class Radio():
 	def __init__(self):
@@ -119,12 +110,42 @@ class Radio():
 		
 		# Attach components
 		# TODO: Support multiple displays
-		displays = config["config"]["displays"]
-		for display in displays:
-			self.display = display.Display(radio, display)
+		if "components" in config:
+			if "displays" in config["components"]:
+				displays = config["components"]["displays"]
 
-		if "navigationRotary" in config["components"]:
-			self.navigationRotary = navigationRotary.NavigationRotary(radio, config["components"]["navigationRotary"])
+				for display in displays:
+					import components.displayCharacterLcd as display
+					self.display = display.Display(radio, display)
+
+			if "navigationRotary" in config["components"]:
+				import components.navigationRotary as navigationRotary
+				self.navigationRotary = navigationRotary.NavigationRotary(radio, config["components"]["navigationRotary"])
+
+			if "navigationButton" in config["components"]:
+				import components.navigationButton as navigationButton
+				self.navigationButton = navigationButton.NavigationButton(radio, config["components"]["navigationButton"])
+
+			if "volumeRotary" in config["components"]:
+				import components.volumeRotary as volumeRotary
+				self.volumeRotary = volumeRotary.VolumeRotary(radio, config["components"]["volumeRotary"])
+
+			if "volumeButtons" in config["components"]:
+				import components.volumeButtons as volumeButtons
+				self.volumeButtons = volumeButtons.VolumeButtons(radio, config["components"]["volumeButtons"])
+
+			if "powerSwitch" in config["components"]:
+				import components.powerSwitch as powerSwitch
+				self.powerSwitch = powerSwitch.PowerSwitch(radio, config["components"]["powerSwitch"])
+
+			if "powerButton" in config["components"]:
+				import components.powerButton as powerButton
+				self.powerButton = powerButton.powerButton(radio, config["components"]["powerButton"])
+
+			if "dht22" in config["components"]:
+				import components.dht22 as dht22
+				self.dht22 = dht22.Dht22(radio, config["components"]["dht22"])
+
 
 	def errorEvent(self, event = None):
 		logger.error("errorEvent:, " + str(event))

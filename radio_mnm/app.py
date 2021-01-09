@@ -4,29 +4,10 @@ from datetime import datetime
 
 # Local imports
 from controls import radio
-import components.displayCharacterLcd as display
-import components.powerSwitch as powerSwitch
-import components.navigationButton as navigationButton
-import components.volumeRotary as volumeRotary
-import components.navigationRotary as navigationRotary
-import components.powerButton as powerButton
-import components.temperatureAndHumidity as temperatureAndHumidity
 
 logger = logging.getLogger("Radio_mnm")
-GPIO.setmode(GPIO.BCM)
 
 radio = radio.Radio()
-
-# Consider moving this logic into the radio module
-radio.display = display.Display(radio, config["components"]["displays"][0])
-radio.powerSwitch = powerSwitch.PowerSwitch(radio, 17)
-radio.navigationButton = navigationButton.NavigationButton(radio, 8)
-radio.volumeRotary = volumeRotary.VolumeRotary(radio, 20, 12)
-radio.navigationRotary = navigationRotary.NavigationRotary(radio, 26, 6)
-# Left rotary
-# radio.powerButton = powerButton.PowerButton(radio, 16)
-radio.powerButton = powerButton.PowerButton(radio, 10)
-radio.temperatureAndHumidity = temperatureAndHumidity.TemperatureAndHumidity(radio, 22)
 
 # Couldn't figure out how to put the error handling into the radio class.
 # The problem was getting self into the logCallback function which is decorated

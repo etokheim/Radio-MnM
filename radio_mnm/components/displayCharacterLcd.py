@@ -216,7 +216,7 @@ class Display(threading.Thread):
 			
 			numbering_mode=GPIO.BCM,
 			
-			compat_mode = self.setup["lcdCompatibillityMode"],
+			compat_mode = self.setup["lcdCompatibilityMode"],
 			
 			# (int) Some 1 line displays allow a font height of 10px. Allowed: 8 or 10.
 			dotsize = self.setup["dotSize"],

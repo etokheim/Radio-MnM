@@ -103,7 +103,7 @@ components:
           # that behavior by setting the backlight_mode to either active_high or
           # active_low
           backlightMode: active_high
-          lcdCompatibillityMode: true
+          lcdCompatibilityMode: true
           dotSize: 8
           lcdCharacterMap: A02
           oneDisplayLineIsTwoLines: false
@@ -112,47 +112,54 @@ components:
           # display is slow, this can combat the display becoming corrupted. 
           writeDelay: 50
 
-    # Array of power buttons. Clicking it will toggle the radio's on state.
-    # powerButtons:
-        # - GPIO: 12
+    # Object. Clicking it will toggle the radio's on state.
+    powerButton:
+        GPIO: 10
 
-    # Array of power switches. Not reccomended for radio's which will be
-    # turned on/off remotely.
-    # powerSwitches:
-        # - GPIO: 12
+    # Object. Not recommended for radio's which will be turned on/off remotely, as
+    # it will get out of sync with the radio's power state.
+    # powerSwitch:
+    #     GPIO: 17
 
-    navigationRotaries:
-        - GPIO:
-            clk: 12
-            data: 13
-          type: mechanic
+    # Object. Rotary for navigating left and right.
+    navigationRotary:
+        GPIO:
+            clk: 26
+            data: 6
+
+    # Object. Single button to do all navigation. Click goes to the next channel,
+    # long click goes to the previous channel, while extra long press resets the
+    # radio. Holding the button while starting up, will trigger a manual update
+    # of the radio's software.
+    # navigationButton:
+    #     GPIO:
+    #         data: 8
     
-    # Array. An alternative to the easier to use navigationRotary, where left
+    # Object. An alternative to the easier to use navigationRotary, where left
     # is equal to scrolling to the left.
     # navigationButtons:
-        # - GPIO:
+        # GPIO:
         #     left: 12
         #     right: 13
 
-    # Array. Rotaries for controlling the volume.
-    # volumeRotaries:
-        # - GPIO:
-        #     clk: 12
-        #     data: 13
-        #   type: mechanic
+    # Object. Rotary for controlling the volume.
+    volumeRotary:
+        GPIO:
+            clk: 20
+            data: 12
     
-    # Array. An alternative to the easier to use volumeRotaries, where down is
+    # Object. An alternative to the easier to use volumeRotaries, where down is
     # equal to rotating the volume rotary to the left.
-    volumeButtons:
-        - GPIO:
-            up: 12
-            down: 13
+    # volumeButtons:
+    #     GPIO:
+    #         up: 12
+    #         down: 13
 
-    # Array. A light which is turned on/off along with the radio to symbolise it's
+    # Object. A light which is turned on/off along with the radio to symbolize it's
     # current state.
-    powerLights:
-        - GPIO: 12
+    # powerLight:
+    #     GPIO: 12
 
-    # Array. Humidity/temperature sensors.
-    DHT22s:
-        - GPIO: 12
+    # Object. Humidity/temperature sensors.
+    DHT22:
+        GPIO: 22
