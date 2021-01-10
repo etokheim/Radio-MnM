@@ -1,7 +1,6 @@
 import logging
 logger = logging.getLogger("Radio_mnm")
 import time
-import zope.event.classhandler
 from threading import Thread
 from RPi import GPIO
 from controls import radio
@@ -16,11 +15,26 @@ class Switch(Thread):
 
 		self.pushing = False
 
-		self.listen = zope.event.classhandler.handler
+		self.on = []
+		self.off = []
 
 		GPIO.setup(self.gpioPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 		self.start()
+
+	# Loops through the callbacks parameter (array) and executes them
+	def dispatch(self, callbacks):
+		for callback in callbacks:
+			if callback:
+				callback()
+
+	def addEventListener(self, type, callback):
+		if type == "on":
+			self.on.append(callback)
+		elif type == "off":
+			self.off.append(callback)
+		else:
+			raise Exception("Event type " + str(callback) + "is not supported.")
 
 	# Use Switch.start(), not Switch.run() to start thread
 	# run() would just start a blocking loop
@@ -37,14 +51,14 @@ class Switch(Thread):
 				# Only send wake event if state changed
 				if self.pushing == False:
 					# Send wake event
-					zope.event.notify(self.on())
+					self.dispatch(self.on)
 
 				self.pushing = True
 
 			else:
 				if self.pushing == True:
 					# Send sleep event
-					zope.event.notify(self.off())
+					self.dispatch(self.off)
 
 					self.pushing = False
 

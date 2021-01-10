@@ -1,6 +1,5 @@
 import logging
 logger = logging.getLogger("Radio_mnm")
-import zope.event.classhandler
 import threading
 from RPi import GPIO
 
@@ -13,8 +12,8 @@ class Switch():
 		self.lastExecution = 0
 		self.gpioPin = gpioPin
 
-		# Add listen handler
-		self.listen = zope.event.classhandler.handler
+		self.on = []
+		self.off = []
 
 		# State (string)
 		# "on" || "off"
@@ -26,6 +25,20 @@ class Switch():
 
 		# Run the switch handler once, as the first state won't trigger an interrupt event
 		self.delayHandling(self.gpioPin)
+
+	# Loops through the callbacks parameter (array) and executes them
+	def dispatch(self, callbacks):
+		for callback in callbacks:
+			if callback:
+				callback()
+
+	def addEventListener(self, type, callback):
+		if type == "on":
+			self.on.append(callback)
+		elif type == "off":
+			self.off.append(callback)
+		else:
+			raise Exception("Event type " + str(callback) + "is not supported.")
 
 	# Delays the handling of the button state a little so we don't get the wrong reading
 	# due to the noise
@@ -43,22 +56,14 @@ class Switch():
 		# Switch turned on
 		if gpioState == 0 and self.state != "on":
 			self.state = "on"
-			zope.event.notify(self.on())
+			self.dispatch(self.on)
 			print(self.state)
 
 		# Switch turned off
 		elif gpioState == 1 and self.state != "off":
 			self.state = "off"
-			zope.event.notify(self.off())
+			self.dispatch(self.off)
 			print(self.state)
 
 		else:
 			logger.warning("Switch from and to same state...")
-
-	class off(object):
-		def __repr__(self):
-			return self.__class__.__name__
-
-	class on(object):
-		def __repr__(self):
-			return self.__class__.__name__

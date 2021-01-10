@@ -15,8 +15,8 @@ class PowerSwitch():
 		# Create a new switch
 		self.powerSwitch = pollingSwitch.Switch(gpioPin)
 
-		self.powerSwitch.listen(self.powerSwitch.on, self.onHandler)
-		self.powerSwitch.listen(self.powerSwitch.off, self.offHandler)
+		self.powerSwitch.addEventListener("on", self.onHandler)
+		self.powerSwitch.addEventListener("off", self.offHandler)
 
 	def offHandler(self, event):
 		logger.debug("offHandler %r" % event)

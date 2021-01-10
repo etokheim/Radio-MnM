@@ -9,7 +9,6 @@
 		"rplcd",
 		"sset",
 		"tinydb",
-		"uname",
-		"zope"
+		"uname"
 	]
 }
