@@ -1,4 +1,5 @@
 from config.config import config
+from handlers import pollingSwitch
 from handlers import rotaryPolling
 import handlers.button
 
@@ -56,12 +57,23 @@ class CharacterDisplay():
 				pass
 
 			if "powerSwitch" in config["components"]:
-				import components.powerSwitch as powerSwitch
-				self.powerSwitch = powerSwitch.PowerSwitch(radio, config["components"]["powerSwitch"])
-
+				gpioPin = config["components"]["powerSwitch"]["GPIO"]
+				
+				# Create a new switch
+				self.powerSwitch = pollingSwitch.pollingSwitch(radio, gpioPin)
+		
+				# Attach event listeners
+				self.powerSwitch.addEventListener("on", radio.powerOn)
+				self.powerSwitch.addEventListener("off", radio.powerOff)
+		
 			if "powerButton" in config["components"]:
-				import components.powerButton as powerButton
-				self.powerButton = powerButton.powerButton(radio, config["components"]["powerButton"])
+				gpioPin = config["components"]["powerSwitch"]["GPIO"]
+
+				# Create the button	
+				self.powerButton = handlers.button(gpioPin)
+
+				# Attach event listener
+				self.powerButton.addEventListener("click", radio.togglePower)
 
 			if "dht22" in config["components"]:
 				import components.dht22 as dht22
