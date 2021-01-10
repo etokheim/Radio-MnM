@@ -5,6 +5,8 @@ import handlers.button
 
 class CharacterDisplay():
 	def __init__(self, radio):
+		self.radio = radio
+		
 		# Attach components
 		# TODO: Support multiple displays
 		if "components" in config:
