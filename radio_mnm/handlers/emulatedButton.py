@@ -1,0 +1,171 @@
+# A button is a button which has the same state before as after you pushed it.
+# A switch on the other hand permanently changes state when pushed. A button
+# just temporarily changes state while being pushed.
+#
+# This means a button can have several events:
+# - Down
+# - Up
+# - Click
+# - LongPress
+# - VeryLongPress
+# - etc.
+
+import logging
+import gettext
+import time
+import threading
+from config.config import config
+from controls import radio
+import tkinter as tk
+
+_ = config["getLanguage"].gettext
+logger = logging.getLogger("Radio_mnm")
+
+class Button(threading.Thread):
+	def __init__(self):
+		threading.Thread.__init__(self)
+
+		self.running = True
+		# When paused is set, the thread will run, when it's not set, the thread will wait
+		self.pauseEvent = threading.Event()
+
+		self.state = "released"
+
+		self.pushing = False
+		self.pushStart = 0
+		self.downStart = 0
+		self.sentLongPressEvent = False
+		self.sentVeryLongPressEvent = False
+
+		self.press = []
+		self.release = []
+		self.click = []
+		self.longPress = []
+		self.longClick = []
+		self.veryLongPress = []
+
+		# Start listening
+		self.start()
+		self.pauseEvent.set()
+
+		self.createUi()
+
+	# Loops through the callbacks parameter (array) and executes them
+	def dispatch(self, callbacks):
+		for callback in callbacks:
+			if callback:
+				callback()
+
+	def addEventListener(self, type, callback):
+		if type == "press":
+			self.press.append(callback)
+		elif type == "release":
+			self.release.append(callback)
+		elif type == "click":
+			self.click.append(callback)
+		elif type == "longPress":
+			self.longPress.append(callback)
+		elif type == "longClick":
+			self.longClick.append(callback)
+		elif type == "veryLongPress":
+			self.veryLongPress.append(callback)
+		else:
+			raise Exception("Event type " + str(callback) + "is not supported.")
+
+	def createUi(self):
+		window=tk.Tk()
+		
+		button = tk.Button(window, text="Navigation button")
+		button.bind("<ButtonPress>", self.handlePress)
+		button.bind("<ButtonRelease>", self.handleRelease)
+
+		window.title('Hello Python')
+		window.geometry("300x200+10+20")
+		window.mainloop()
+
+	def handlePress(self):
+		pass
+
+	def handleRelease(self):
+		pass
+
+	# Use Button.start(), not Button.run() to start thread
+	# run() would just start a blocking loop
+	def run(self):
+		while self.running:
+			# Wait, if the thread is set on hold
+			self.pauseEvent.wait()
+			
+			time.sleep(0.01)
+
+			button1State = GPIO.input(self.gpioPin)
+			holdTime = 0
+
+			if button1State == True and self.pushing == True:
+				self.pushing = False
+
+			# If pushing (only executed when state changes)
+			if button1State == False and self.pushStart == 0:
+				self.pushStart = int(round(time.time() * 1000))
+				self.pushing = True
+				
+				# The holdTime is defined twice because it has to be defined before self.pushStart
+				# (as the hold time = now - self.pushStart)
+				# TODO: Clean up by defining holdTime once. Just set it to:
+				# holdTime = now - self.pushStart == 0 ? now : self.pushStart
+				now = int(round(time.time() * 1000))
+				holdTime = now - self.pushStart
+
+				self.dispatch(self.press)
+				logger.debug("Button press (GPIO " + str(self.gpioPin) + ")")
+				self.state = "down"
+
+			elif self.pushStart != 0 and self.pushing == False:
+				self.dispatch(self.release)
+				logger.debug("Button release (GPIO " + str(self.gpioPin) + ")")
+				self.state = "released"
+
+				if holdTime >= config["longPressThreshold"]:
+					self.dispatch(self.longClick)
+					logger.debug("Button long click (GPIO " + str(self.gpioPin) + ")")
+				else:
+					if not self.sentLongPressEvent:
+						self.dispatch(self.click)
+						logger.debug("Button click (GPIO " + str(self.gpioPin) + ")")
+
+					# When done pushing, set sentLongPressEvent to False again
+					self.sentLongPressEvent = False
+					self.sentVeryLongPressEvent = False
+
+				self.pushStart = 0
+			
+			# If pushing (Executed all the time)
+			if button1State == False:
+				now = int(round(time.time() * 1000))
+				holdTime = now - self.pushStart
+
+			if holdTime >= config["longPressThreshold"]:
+				if self.sentLongPressEvent == False:
+					self.sentLongPressEvent = True
+					self.dispatch(self.longPress)
+					logger.debug("Button long press (GPIO " + str(self.gpioPin) + ")")
+
+			if holdTime >= config["veryLongPressThreshold"]:
+				if self.sentVeryLongPressEvent == False:
+					self.sentVeryLongPressEvent = True
+					self.dispatch(self.veryLongPress)
+					logger.debug("Button very long press (GPIO " + str(self.gpioPin) + ")")
+
+		print("Button is running " + str(self.running))
+
+	def stop(self):
+		self.running = False
+		logger.warning("Stopped listening to button with GPIO " + str(self.gpioPin))
+
+	def pause(self):
+		self.pauseEvent.clear()
+		logger.debug("Paused listening to button with GPIO " + str(self.gpioPin))
+
+	def resume(self):
+		self.pauseEvent.set()
+		logger.debug("Resumed listening to button with GPIO " + str(self.gpioPin))

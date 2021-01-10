@@ -150,6 +150,10 @@ class Radio():
 				import components.dht22 as dht22
 				self.dht22 = dht22.Dht22(radio, config["components"]["dht22"])
 
+			if "emulatedNavigationButton" in config["components"]:
+				import components.emulatedNavigationButton as emulatedNavigationButton
+				self.emulatedNavigationButton = emulatedNavigationButton.EmulatedNavigationButton(radio)
+
 
 	def errorEvent(self, event = None):
 		logger.error("errorEvent:, " + str(event))
@@ -453,7 +457,9 @@ class Radio():
 			volume = 100
 
 		try:
-			output = subprocess.check_output(["amixer", "-D", "pulse", "sset", "Master", str(volume) + "%"])
+			if not config["audio"]["emulatedVolume"]:
+				output = subprocess.check_output(["amixer", "-D", "pulse", "sset", "Master", str(volume) + "%"])
+
 			self.volume = volume
 			return True
 		except ValueError:
