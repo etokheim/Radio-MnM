@@ -22,26 +22,33 @@ class CharacterDisplay():
 				assert type(props["GPIO"]["clk"]) == int, "NavigationRotary's clk pin is not an int. Check your config.yml"
 				assert type(props["GPIO"]["data"]) == int, "NavigationRotary's data pin is not an int. Check your config.yml"
 		
-				self.rotary = rotaryPolling.Rotary(props["GPIO"]["clk"], props["GPIO"]["data"])
-				self.rotary.addEventListener("left", radio.bump(-1))
-				self.rotary.addEventListener("right", radio.bump())
+				self.navigationRotary = rotaryPolling.Rotary(props["GPIO"]["clk"], props["GPIO"]["data"])
+				self.navigationRotary.addEventListener("left", radio.bump(-1))
+				self.navigationRotary.addEventListener("right", radio.bump())
 
 			if "navigationButton" in config["components"]:
-				self.button = handlers.button.Button(gpioPin)
+				self.navigationButton = handlers.button.Button(gpioPin)
 
-				self.button.addEventListener("click", radio.bump())
-				# self.button.addEventListener("press", self.buttonDownHandler)
-				# self.button.addEventListener("release", self.buttonUpHandler)
-				self.button.addEventListener("longPress", radio.bump(-1))
-				# self.button.addEventListener("veryLongPress", self.buttonVeryLongPressHandler)
+				self.navigationButton.addEventListener("click", radio.bump())
+				# self.navigationButton.addEventListener("press", self.buttonDownHandler)
+				# self.navigationButton.addEventListener("release", self.buttonUpHandler)
+				self.navigationButton.addEventListener("longPress", radio.bump(-1))
+				# self.navigationButton.addEventListener("veryLongPress", self.buttonVeryLongPressHandler)
 	
 			if "volumeRotary" in config["components"]:
-				import components.volumeRotary as volumeRotary
-				self.volumeRotary = volumeRotary.VolumeRotary(radio, config["components"]["volumeRotary"])
+				# Get the props
+				props = config["components"]["volumeRotary"]	
+					
+				# Check the props
+				assert type(props["GPIO"]["clk"]) == int, "VolumeRotary's clk pin is not an int. Check your config.yml"
+				assert type(props["GPIO"]["data"]) == int, "VolumeRotary's data pin is not an int. Check your config.yml"
+		
+				self.volumeRotary = rotaryPolling.Rotary(props["GPIO"]["clk"], props["GPIO"]["data"])
+				self.volumeRotary.addEventListener("left", self.volumeDownHandler)
+				self.volumeRotary.addEventListener("right", self.volumeUpHandler)
 
 			if "volumeButtons" in config["components"]:
-				import components.volumeButtons as volumeButtons
-				self.volumeButtons = volumeButtons.VolumeButtons(radio, config["components"]["volumeButtons"])
+				pass
 
 			if "powerSwitch" in config["components"]:
 				import components.powerSwitch as powerSwitch
@@ -58,3 +65,18 @@ class CharacterDisplay():
 			if "emulatedNavigationButton" in config["components"]:
 				import components.emulatedNavigationButton as emulatedNavigationButton
 				self.emulatedNavigationButton = emulatedNavigationButton.EmulatedNavigationButton(radio)
+
+
+	def volumeDownHandler(self):
+		logger.debug("Volume rotaryLeftHandler")
+		
+		if self.radio.on:
+			self.radio.setVolume(self.radio.volume - 10)
+			self.radio.displayVolumeLevel()
+
+	def volumeUpHandler(self):
+		logger.debug("Volume rotaryRightHandler")
+		
+		if self.radio.on:
+			self.radio.setVolume(self.radio.volume + 10)
+			self.radio.displayVolumeLevel()
