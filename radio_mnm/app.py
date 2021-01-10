@@ -1,6 +1,7 @@
 import logging
 from config.config import config
 from datetime import datetime
+import os
 
 # Local imports
 from controls import radio
@@ -16,7 +17,12 @@ radio = radio.Radio()
 import vlc
 import ctypes
 
-libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library('c'))
+# Load the Windows ctypes library if Windows
+if os.name == "nt":
+	libc = ctypes.cdll.msvcrt
+else:
+	libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library('c'))
+
 vsnprintf = libc.vsnprintf
 
 vsnprintf.restype = ctypes.c_int

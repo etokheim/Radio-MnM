@@ -1,7 +1,7 @@
 import logging
 logger = logging.getLogger("Radio_mnm")
 from config.config import config
-import vlc
+import os
 import requests
 from tinydb import TinyDB, Query
 import sys
@@ -10,11 +10,15 @@ import gettext
 import socket
 import subprocess
 import threading
-import os
+
+if os.name == "nt":
+	os.add_dll_directory("C:\Program Files\VideoLAN\VLC")
+	import vlc
 
 _ = config["getLanguage"].gettext
 
 from controls.registration import Registration
+
 
 class Radio():
 	def __init__(self):
