@@ -27,6 +27,11 @@ class CharacterDisplay():
 				self.navigationRotary.addEventListener("right", radio.bump())
 
 			if "navigationButton" in config["components"]:
+				# Get pin and validate it
+				gpioPin = config["components"]["navigationButton"]["GPIO"]
+				assert type(gpioPin) == int, "NavigationButton's pin is not an int. Check your config.yml"
+
+				# Create the button		
 				self.navigationButton = handlers.button.Button(gpioPin)
 
 				self.navigationButton.addEventListener("click", radio.bump())
