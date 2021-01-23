@@ -110,50 +110,33 @@ class Radio():
 
 		self.delayedBumpTimer = None
 
-		
+		self.events = {
+			"unregister": [],
+			"on": [],
+			"off": []
+		}
 		
 		# Attach frontend
 		if "frontend" in config:
 			if config["frontend"] == "emulatedFrontend":
 				import front_ends.emulatedFrontend
-				self.frontend = front_ends.emulatedFrontend.EmulatedFrontend(radio)
+				self.frontend = front_ends.emulatedFrontend.EmulatedFrontend(self)
 
-				for display in displays:
-					import components.displayCharacterLcd as display
-					self.display = display.Display(radio, display)
+	# Loops through the callbacks parameter (array) and executes them
+	def dispatch(self, callbacks):
+		for callback in callbacks:
+			if callback:
+				callback()
 
-			if "navigationRotary" in config["components"]:
-				import components.navigationRotary as navigationRotary
-				self.navigationRotary = navigationRotary.NavigationRotary(radio, config["components"]["navigationRotary"])
-
-			if "navigationButton" in config["components"]:
-				import components.navigationButton as navigationButton
-				self.navigationButton = navigationButton.NavigationButton(radio, config["components"]["navigationButton"])
-
-			if "volumeRotary" in config["components"]:
-				import components.volumeRotary as volumeRotary
-				self.volumeRotary = volumeRotary.VolumeRotary(radio, config["components"]["volumeRotary"])
-
-			if "volumeButtons" in config["components"]:
-				import components.volumeButtons as volumeButtons
-				self.volumeButtons = volumeButtons.VolumeButtons(radio, config["components"]["volumeButtons"])
-
-			if "powerSwitch" in config["components"]:
-				import components.powerSwitch as powerSwitch
-				self.powerSwitch = powerSwitch.PowerSwitch(radio, config["components"]["powerSwitch"])
-
-			if "powerButton" in config["components"]:
-				import components.powerButton as powerButton
-				self.powerButton = powerButton.powerButton(radio, config["components"]["powerButton"])
-
-			if "dht22" in config["components"]:
-				import components.dht22 as dht22
-				self.dht22 = dht22.Dht22(radio, config["components"]["dht22"])
-
-			if "emulatedNavigationButton" in config["components"]:
-				import components.emulatedNavigationButton as emulatedNavigationButton
-				self.emulatedNavigationButton = emulatedNavigationButton.EmulatedNavigationButton(radio)
-
+	def addEventListener(self, type, callback):
+		if type == "unregister":
+			self.events["unregister"].append(callback)
+		elif type == "on":
+			self.events["on"].append(callback)
+		elif type == "off":
+			self.events["off"].append(callback)
+		else:
+			raise Exception("Event type " + str(callback) + "is not supported.")
 
 	def errorEvent(self, event = None):
 		logger.error("errorEvent:, " + str(event))
@@ -236,39 +219,15 @@ class Radio():
 	def powerOff(self):
 		self.on = False
 		self.powerOffTime = int(round(time.time() * 1000))
-		
-		if not config["powerOffDisplayLightsDuration"]:
-			self.display.lcd.backlight_enabled = False
-		
 		self.stop()
-			
-		# Reinit the display to battle the corrupted display issue
-		self.display.lcd = None
-		self.display.lcd = self.display.initializeLcd()
-
-		# Stop the display loop when off if we don't want to display content
-		if not self.offContent:
-			self.display.pause()
-
-		# Find a way to implement this into the buttons, if it helps with the standby mode compute.
-		# button.pause()
-		
+		self.dispatch("off")
 		self.handleSendState("suspended")
 
 	def powerOn(self):
 		self.on = True
 		self.powerOnTime = int(round(time.time() * 1000))
-		self.display.lcd.backlight_enabled = True
-		
-		# Turn the display loop on again if it was off
-		if not self.offContent:
-			self.display.resume()
-
-		# \n for new line \r for moving to the beginning of current line
-		self.display.notification(">- RADIO M&M  -<\n\r" + _("Got ") + str(len(self.channels)) + _(" channels"), 3)
-		
-		# Find a way to implement this into the buttons, if it helps with the standby mode compute.
-		# button.resume()
+	
+		self.dispatch("on")
 
 		# Start playing
 		if not self.selectedChannel:
