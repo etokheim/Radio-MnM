@@ -163,6 +163,8 @@ class Display(threading.Thread):
 		self.lcd.create_char(5, self.AA)
 		self.lcd.create_char(6, self.g)
 
+		self.start()
+
 	def run(self):
 		# Wait, if the thread is set on hold
 		self.pauseEvent.wait()

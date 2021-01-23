@@ -67,7 +67,3 @@ def logCallback(data, level, ctx, fmt, args):
 		logger.info(log)
 
 radio.instance.log_set(logCallback, None)
-
-# Called from __main__
-def run():
-	radio.display.start()

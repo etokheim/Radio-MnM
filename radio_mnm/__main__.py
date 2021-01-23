@@ -59,7 +59,8 @@ import app
 
 def main():
 	logger.info("Starting up")
-	app.run()
+	# TODO: Maybe it would be an advantage to be able to start and stop the radio from here?
+	# app.run()
 
 if __name__ == "__main__":
 	main()
