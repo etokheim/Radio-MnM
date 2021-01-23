@@ -112,11 +112,11 @@ class Radio():
 
 		
 		
-		# Attach components
-		# TODO: Support multiple displays
-		if "components" in config:
-			if "displays" in config["components"]:
-				displays = config["components"]["displays"]
+		# Attach frontend
+		if "frontend" in config:
+			if config["frontend"] == "emulatedFrontend":
+				import front_ends.emulatedFrontend
+				self.frontend = front_ends.emulatedFrontend.EmulatedFrontend(radio)
 
 				for display in displays:
 					import components.displayCharacterLcd as display
