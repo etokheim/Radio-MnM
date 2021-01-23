@@ -13,7 +13,7 @@ radio = radio.Radio()
 # Couldn't figure out how to put the error handling into the radio class.
 # The problem was getting self into the logCallback function which is decorated
 # by vlc. We need the radio object to get the instance and the handleError function.
-# Temporarly put it here. TODO: Fix that.
+# Temporary put it here. TODO: Fix that.
 import vlc
 import ctypes
 

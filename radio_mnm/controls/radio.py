@@ -12,7 +12,7 @@ import subprocess
 import threading
 
 if os.name == "nt":
-	os.add_dll_directory("C:\Program Files\VideoLAN\VLC")
+	os.add_dll_directory(r"C:\Program Files\VideoLAN\VLC")
 	import vlc
 
 _ = config["getLanguage"].gettext
