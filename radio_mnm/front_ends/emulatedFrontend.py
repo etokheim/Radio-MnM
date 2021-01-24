@@ -22,7 +22,9 @@ class EmulatedFrontend():
 		radio.addEventListener("on", self.handleOn)
 		radio.addEventListener("off", self.handleOff)
 
-		self.emulatedButton.addEventListener("click", lambda: print("Clicked the button!"))
+		self.emulatedButton.addEventListener("click", lambda: print("Next channel"))
+		self.emulatedButton.addEventListener("longPress", lambda: print("Previous channel"))
+		self.emulatedButton.addEventListener("veryLongPress", lambda: print("Start reset sequence"))
 
 
 	def handleOn(self):

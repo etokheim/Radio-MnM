@@ -1,15 +1,3 @@
-# A button is a button which has the same state before as after you pushed it.
-# A switch on the other hand permanently changes state when pushed. A button
-# just temporarily changes state while being pushed.
-#
-# This means a button can have several events:
-# - Down
-# - Up
-# - Click
-# - LongPress
-# - VeryLongPress
-# - etc.
-
 import tkinter as tk
 import logging
 import gettext
@@ -81,6 +69,11 @@ class Button(threading.Thread):
 		# dispatch a longPress
 		self.longPressTimer = threading.Timer(config["longPressThreshold"] / 1000, lambda: self.handleLongPress())
 		self.longPressTimer.start()
+		
+		# Start a timer. If user is still pressing the button when the timer is finished,
+		# dispatch a veryLongPress
+		self.veryLongPressTimer = threading.Timer(config["veryLongPressThreshold"] / 1000, lambda: self.handleVeryLongPress())
+		self.veryLongPressTimer.start()
 
 	def handleRelease(self, arg):
 		self.dispatch(self.release)
@@ -89,7 +82,12 @@ class Button(threading.Thread):
 		if self.longPressTimer:
 			self.longPressTimer.cancel()
 			self.longPressTimer = None
-		
+	
+		# If the user released the button before the timer fired, cancel it
+		if self.veryLongPressTimer:
+			self.veryLongPressTimer.cancel()
+			self.veryLongPressTimer = None
+	
 		if int(time.time() * 1000) - self.pressedTime >= config["longClickThreshold"]:
 			self.dispatch(self.longClick)
 		else:
@@ -98,6 +96,10 @@ class Button(threading.Thread):
 	def handleLongPress(self):
 		self.longPressTimer = None
 		self.dispatch(self.longPress)
+
+	def handleVeryLongPress(self):
+		self.veryLongPressTimer = None
+		self.dispatch(self.veryLongPress)
 
 	def run(self):
 		self.root = tk.Tk()
