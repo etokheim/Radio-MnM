@@ -10,12 +10,20 @@ class EmulatedFrontend():
 		# Attach components
 		if "components" in config:
 			if "emulatedNavigationButton" in config["components"]:
-				import components.emulatedNavigationButton as emulatedNavigationButton
-				self.emulatedNavigationButton = emulatedNavigationButton.EmulatedNavigationButton(radio)
-				
+				if config["components"]["emulatedNavigationButton"]:
+					import components.emulatedNavigationButton as emulatedNavigationButton
+					self.emulatedNavigationButton = emulatedNavigationButton.EmulatedNavigationButton()
+			
+			if config["components"]["emulatedButton"]:
+				import handlers.emulatedButton as emulatedButton 
+				self.emulatedButton = emulatedButton.Button()
+
 		# Add event listeners
 		radio.addEventListener("on", self.handleOn)
 		radio.addEventListener("off", self.handleOff)
+
+		self.emulatedButton.addEventListener("click", lambda: print("Clicked the button!"))
+
 
 	def handleOn(self):
 		logger.debug("handleOn")
