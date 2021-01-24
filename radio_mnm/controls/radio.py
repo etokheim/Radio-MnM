@@ -220,14 +220,14 @@ class Radio():
 		self.on = False
 		self.powerOffTime = int(round(time.time() * 1000))
 		self.stop()
-		self.dispatch("off")
+		self.dispatch(self.events["off"])
 		self.handleSendState("suspended")
 
 	def powerOn(self):
 		self.on = True
 		self.powerOnTime = int(round(time.time() * 1000))
 	
-		self.dispatch("on")
+		self.dispatch(self.events["on"])
 
 		# Start playing
 		if not self.selectedChannel:
