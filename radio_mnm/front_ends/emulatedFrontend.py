@@ -2,23 +2,30 @@ from config.config import config
 import threading
 import time
 import logging
+import tkinter as tk
+import os
+import ctypes
 logger = logging.getLogger("Radio_mnm")
 _ = config["getLanguage"].gettext
 
-class EmulatedFrontend():
+class EmulatedFrontend(threading.Thread):
 	def __init__(self, radio):
+		threading.Thread.__init__(self)
 		self.radio = radio
+
+		self.root = None
+		self.start()
 
 		# Attach components
 		if "components" in config:
 			if "emulatedNavigationButton" in config["components"]:
 				if config["components"]["emulatedNavigationButton"]:
 					import handlers.emulatedButton as emulatedButton
-					self.emulatedNavigationButton = emulatedButton.Button("Navigation Button")
+					self.emulatedNavigationButton = emulatedButton.Button(self.root, "Navigation Button")
 			if "emulatedPowerButton" in config["components"]:
 				if config["components"]["emulatedPowerButton"]:
 					import handlers.emulatedButton as emulatedButton
-					self.emulatedPowerButton = emulatedButton.Button("Power Button")
+					self.emulatedPowerButton = emulatedButton.Button(self.root, "Power Button")
 		
 		# Add event listeners
 		radio.addEventListener("on", self.handleOn)
@@ -29,6 +36,31 @@ class EmulatedFrontend():
 		self.emulatedNavigationButton.addEventListener("veryLongPress", lambda: print("Start reset sequence"))
 
 		self.emulatedPowerButton.addEventListener("click", radio.togglePower)
+
+		# Handle high DPI displays
+		if os.name == "nt":
+			import ctypes
+			ctypes.windll.shcore.SetProcessDpiAwareness(1)
+
+	def run(self):
+		self.root = tk.Tk()
+		root = self.root
+		screenWidth = root.winfo_screenwidth()
+		screenHeight = root.winfo_screenheight()
+		root.wm_title("Radio M&M")
+		root.protocol("WM_DELETE_WINDOW", self.closeWindow)
+		windowWidth = 600
+		windowHeight = 400
+		root.geometry(str(windowWidth) + "x" + str(windowHeight) + "+" + str(round(screenWidth/2)) + "+" + str(round(screenHeight/2)))
+
+		self.testFrame = tk.Frame()
+		self.testFrame.pack()
+
+		self.root.mainloop()
+
+	def closeWindow(self):
+		print("Closing window")
+		self.root.quit()
 
 	def handleOn(self):
 		logger.debug("handleOn")

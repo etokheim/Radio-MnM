@@ -5,15 +5,13 @@ import time
 import threading
 from config.config import config
 from controls import radio
-import os
 
 _ = config["getLanguage"].gettext
 logger = logging.getLogger("Radio_mnm")
 
-class Button(threading.Thread):
-	def __init__(self, buttonName):
-		threading.Thread.__init__(self)
-
+class Button():
+	def __init__(self, root, buttonName):
+		self.root = root # The tk object
 		self.buttonName = buttonName
 		self.state = "released"
 
@@ -33,13 +31,13 @@ class Button(threading.Thread):
 		# Timer fireing after starting press. If button's still pressed, it triggers a longPress event
 		self.longPressTimer = None
 
-		# Handle high DPI displays
-		if os.name == "nt":
-			import ctypes
-			ctypes.windll.shcore.SetProcessDpiAwareness(1)
 		
-		self.start()
-			
+		# Add button to the UI
+		button = tk.Button(self.root, text=self.buttonName)
+		button.bind("<ButtonPress>", self.handlePress)
+		button.bind("<ButtonRelease>", self.handleRelease)
+		button.pack()
+		
 	# Loops through the callbacks parameter (array) and executes them
 	def dispatch(self, callbacks):
 		for callback in callbacks:
@@ -101,34 +99,3 @@ class Button(threading.Thread):
 	def handleVeryLongPress(self):
 		self.veryLongPressTimer = None
 		self.dispatch(self.veryLongPress)
-
-	def run(self):
-		self.root = tk.Tk()
-		self.root.wm_title("Emulated button")
-		self.root.protocol("WM_DELETE_WINDOW", self.closeWindow)
-
-		button = tk.Button(self.root, text=self.buttonName)
-		button.bind("<ButtonPress>", self.handlePress)
-		button.bind("<ButtonRelease>", self.handleRelease)
-		button.pack(side = tk.TOP, pady = 10)
-
-		self.root.geometry("300x48+100+100")
-	   
-		self.root.mainloop()
-
-
-	def closeWindow(self):
-		print("Closing window")
-		self.root.quit()
-
-	def stop(self):
-		self.running = False
-		logger.warning("Stopped listening to button with GPIO " + str(self.gpioPin))
-
-	def pause(self):
-		self.pauseEvent.clear()
-		logger.debug("Paused listening to button with GPIO " + str(self.gpioPin))
-
-	def resume(self):
-		self.pauseEvent.set()
-		logger.debug("Resumed listening to button with GPIO " + str(self.gpioPin))
