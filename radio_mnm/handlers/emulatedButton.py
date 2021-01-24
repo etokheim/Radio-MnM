@@ -11,9 +11,10 @@ _ = config["getLanguage"].gettext
 logger = logging.getLogger("Radio_mnm")
 
 class Button(threading.Thread):
-	def __init__(self):
+	def __init__(self, buttonName):
 		threading.Thread.__init__(self)
 
+		self.buttonName = buttonName
 		self.state = "released"
 
 		self.pushing = False
@@ -106,15 +107,12 @@ class Button(threading.Thread):
 		self.root.wm_title("Emulated button")
 		self.root.protocol("WM_DELETE_WINDOW", self.closeWindow)
 
-		button = tk.Button(self.root, text="Navigation button")
+		button = tk.Button(self.root, text=self.buttonName)
 		button.bind("<ButtonPress>", self.handlePress)
 		button.bind("<ButtonRelease>", self.handleRelease)
 		button.pack(side = tk.TOP, pady = 10)
 
-		label = tk.Label(self.root, text ="Click button to navigate") 
-		label.pack(side = tk.TOP, pady = 10)
-
-		self.root.geometry("300x200+100+100")
+		self.root.geometry("300x48+100+100")
 	   
 		self.root.mainloop()
 

@@ -14,11 +14,11 @@ class EmulatedFrontend():
 			if "emulatedNavigationButton" in config["components"]:
 				if config["components"]["emulatedNavigationButton"]:
 					import handlers.emulatedButton as emulatedButton
-					self.emulatedNavigationButton = emulatedButton.Button()
+					self.emulatedNavigationButton = emulatedButton.Button("Navigation Button")
 			if "emulatedPowerButton" in config["components"]:
 				if config["components"]["emulatedPowerButton"]:
 					import handlers.emulatedButton as emulatedButton
-					self.emulatedPowerButton = emulatedButton.Button()		
+					self.emulatedPowerButton = emulatedButton.Button("Power Button")
 		
 		# Add event listeners
 		radio.addEventListener("on", self.handleOn)
