@@ -22,11 +22,12 @@ class EmulatedFrontend(threading.Thread):
 				if config["components"]["emulatedNavigationButton"]:
 					import handlers.emulatedButton as emulatedButton
 					self.emulatedNavigationButton = emulatedButton.Button(self.root, "Navigation Button")
+			
 			if "emulatedPowerButton" in config["components"]:
 				if config["components"]["emulatedPowerButton"]:
 					import handlers.emulatedButton as emulatedButton
 					self.emulatedPowerButton = emulatedButton.Button(self.root, "Power Button")
-		
+			
 		# Add event listeners
 		radio.addEventListener("on", self.handleOn)
 		radio.addEventListener("off", self.handleOff)
@@ -53,8 +54,10 @@ class EmulatedFrontend(threading.Thread):
 		windowHeight = 400
 		root.geometry(str(windowWidth) + "x" + str(windowHeight) + "+" + str(round(screenWidth/2)) + "+" + str(round(screenHeight/2)))
 
-		self.testFrame = tk.Frame()
-		self.testFrame.pack()
+		self.infoText = tk.StringVar()
+		self.label = tk.Label(root, textvariable=self.infoText)
+		self.label.pack()
+		self.writeInfo()
 
 		self.root.mainloop()
 
@@ -66,7 +69,7 @@ class EmulatedFrontend(threading.Thread):
 		logger.debug("handleOn")
 
 		# \n for new line \r for moving to the beginning of current line
-		self.display.notification(">- RADIO M&M  -<\n\r" + _("Got ") + str(len(self.radio.channels)) + _(" channels"), 3)
+		# self.display.notification(">- RADIO M&M  -<\n\r" + _("Got ") + str(len(self.radio.channels)) + _(" channels"), 3)
 		
 		# Find a way to implement this into the buttons, if it helps with the standby mode compute.
 		# button.resume()
@@ -74,6 +77,28 @@ class EmulatedFrontend(threading.Thread):
 	def handleOff(self):
 		logger.debug("handleOff")
 		pass
+
+	def writeInfo(self):
+		radio = self.radio
+
+		self.writeTimer = threading.Timer(1, lambda: self.writeInfo())
+		self.writeTimer.start()
+		self.infoText.set(
+			str(time.time()) +
+			"\non: " + str(radio.on) +
+			"\nchannels: " + str(radio.channels) +
+			"\nhoveredChannel: " + str(radio.hoveredChannel) +
+			"\nlastPowerState: " + str(radio.lastPowerState) +
+			"\nvolume: " + str(radio.volume) +
+			"\npowerOnTime: " + str(radio.powerOnTime) +
+			"\npowerOffTime: " + str(radio.powerOffTime) +
+			"\nError: " + str(radio.error) +
+			"\nstate: " + str(radio.state["text"]) +
+			"\nchannelError: " + str(radio.channelError) +
+			"\nstartedListeningTime: " + str(radio.startedListeningTime) +
+			"\nsaveListeningHistory: " + str(radio.saveListeningHistory) +
+			"\nshouldSendState: " + str(radio.shouldSendState)
+		)
 
 	class ResetCountdown(threading.Thread):
 		def __init__(self, radio, button):
