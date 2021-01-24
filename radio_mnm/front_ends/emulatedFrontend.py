@@ -15,7 +15,11 @@ class EmulatedFrontend():
 				if config["components"]["emulatedNavigationButton"]:
 					import handlers.emulatedButton as emulatedButton
 					self.emulatedNavigationButton = emulatedButton.Button()
-			
+			if "emulatedPowerButton" in config["components"]:
+				if config["components"]["emulatedPowerButton"]:
+					import handlers.emulatedButton as emulatedButton
+					self.emulatedPowerButton = emulatedButton.Button()		
+		
 		# Add event listeners
 		radio.addEventListener("on", self.handleOn)
 		radio.addEventListener("off", self.handleOff)
@@ -23,6 +27,8 @@ class EmulatedFrontend():
 		self.emulatedNavigationButton.addEventListener("click", lambda: print("Next channel"))
 		self.emulatedNavigationButton.addEventListener("longPress", lambda: print("Previous channel"))
 		self.emulatedNavigationButton.addEventListener("veryLongPress", lambda: print("Start reset sequence"))
+
+		self.emulatedPowerButton.addEventListener("click", radio.togglePower)
 
 	def handleOn(self):
 		logger.debug("handleOn")
