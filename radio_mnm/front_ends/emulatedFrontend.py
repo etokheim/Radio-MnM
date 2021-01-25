@@ -16,6 +16,14 @@ class EmulatedFrontend(threading.Thread):
 		self.root = None
 		self.start()
 
+		self.channelSwitchDelay = config["channelSwitchDelay"]
+		# There is a delay before the browsed to channel is played. This variable holds the
+		# "hovered" channel.
+		self.hoveredChannel = None
+
+		# Object containing the timer which delays bumps
+		self.delayedBumpTimer = None
+		
 		# Attach components
 		if "components" in config:
 			if "emulatedNavigationButton" in config["components"]:
@@ -88,7 +96,7 @@ class EmulatedFrontend(threading.Thread):
 			str(time.time()) +
 			"\non: " + str(radio.on) +
 			"\nchannels: " + str(radio.channels) +
-			"\nhoveredChannel: " + str(radio.hoveredChannel) +
+			"\nhoveredChannel: " + str(self.hoveredChannel) +
 			"\nlastPowerState: " + str(radio.lastPowerState) +
 			"\nvolume: " + str(radio.volume) +
 			"\npowerOnTime: " + str(radio.powerOnTime) +
@@ -100,6 +108,40 @@ class EmulatedFrontend(threading.Thread):
 			"\nsaveListeningHistory: " + str(radio.saveListeningHistory) +
 			"\nshouldSendState: " + str(radio.shouldSendState)
 		)
+
+	def delayBump(self, bumps):
+		# self.display.notification(self.hoveredChannel["name"], self.channelSwitchDelay)
+
+		self.hoveredChannel = self.getHoveredChannelByOffset(bumps)
+
+		if self.delayedBumpTimer:
+			self.delayedBumpTimer.cancel()
+
+		self.delayedBumpTimer = threading.Timer(self.channelSwitchDelay, self.radio.playChannel, args=[self.hoveredChannel])
+		self.delayedBumpTimer.start()
+	
+	def getHoveredChannelByOffset(self, offset):
+		# Number of channels to skip which remains after removing overflow.
+		# (Overflow: if you are playing channel 3 of 10 and is instructed to skip 202 channels ahead,
+		# you would end up on channel 205. The overflow is 200, and we should return channel 5 (3 + 2))
+		remaining = (len(self.radio.channels) + offset) % len(self.radio.channels)
+		if not self.hoveredChannel:
+			self.hoveredChannel = self.radio.selectedChannel
+		hoveredChannelIndex = self.radio.channels.index(self.hoveredChannel)
+		bumpTo = 0
+
+		if hoveredChannelIndex + remaining > len(self.radio.channels) - 1:
+			bumpTo = hoveredChannelIndex - len(self.radio.channels) + remaining
+
+		elif hoveredChannelIndex + remaining < 0:
+			bumpTo = len(self.radio.channels) + hoveredChannelIndex + remaining
+
+		else:
+			bumpTo = hoveredChannelIndex + remaining
+
+		logger.debug("offset " + str(offset) + ", bumping to: " + str(bumpTo))
+		return self.radio.channels[bumpTo]
+
 
 	class ResetCountdown(threading.Thread):
 		def __init__(self, radio, button):

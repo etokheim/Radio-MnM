@@ -33,15 +33,11 @@ class Radio():
 		self.events = self.player.event_manager()
 		self.media = self.instance.media_new("")
 		self.selectedChannel = None
-		# There is a delay before the browsed to channel is played. This variable holds the
-		# "hovered" channel.
-		self.hoveredChannel = None
 		self.lastPowerState = None
 		self.volume = config["audio"]["volume"]
 		self.setVolume(self.volume)
 		self.powerOnTime = None
 		self.powerOffTime = int(round(time.time() * 1000))
-		self.channelSwitchDelay = config["channelSwitchDelay"]
 
 		# A variable to hold the buffer timer.
 		# Removes buffer from the state if there hasn't been sent another buffer event
@@ -107,8 +103,6 @@ class Radio():
 		channels = radio["channels"]
 		if channels:
 			self.channels = channels
-
-		self.delayedBumpTimer = None
 
 		self.events = {
 			"unregister": [],
@@ -357,37 +351,8 @@ class Radio():
 			logger.debug("Can't bump channel when there are none available.")
 			return
 		
-		self.hoveredChannel = self.getHoveredChannelByOffset(bumps)
-
-		if self.delayedBumpTimer:
-			self.delayedBumpTimer.cancel()
-
-		self.display.notification(self.hoveredChannel["name"], self.channelSwitchDelay)
-		self.delayedBumpTimer = threading.Timer(self.channelSwitchDelay, self.playChannel, args=[self.hoveredChannel])
-		self.delayedBumpTimer.start()
-		
-	def getHoveredChannelByOffset(self, offset):
-		# Number of channels to skip which remains after removing overflow.
-		# (Overflow: if you are playing channel 3 of 10 and is instructed to skip 202 channels ahead,
-		# you would end up on channel 205. The overflow is 200, and we should return channel 5 (3 + 2))
-		remaining = (len(self.channels) + offset) % len(self.channels)
-		if not self.hoveredChannel:
-			self.hoveredChannel = self.selectedChannel
-		hoveredChannelIndex = self.channels.index(self.hoveredChannel)
-		bumpTo = 0
-
-		if hoveredChannelIndex + remaining > len(self.channels) - 1:
-			bumpTo = hoveredChannelIndex - len(self.channels) + remaining
-
-		elif hoveredChannelIndex + remaining < 0:
-			bumpTo = len(self.channels) + hoveredChannelIndex + remaining
-
-		else:
-			bumpTo = hoveredChannelIndex + remaining
-
-		logger.debug("offset " + str(offset) + ", bumping to: " + str(bumpTo))
-		return self.channels[bumpTo]
-
+		self.playChannel(self.getChannelByOffset(bumps))
+	
 	def getChannelByOffset(self, offset):
 		# Number of channels to skip which remains after removing overflow.
 		# (Overflow: if you are playing channel 3 of 10 and is instructed to skip 202 channels ahead,
