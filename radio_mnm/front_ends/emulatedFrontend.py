@@ -22,21 +22,22 @@ class EmulatedFrontend(threading.Thread):
 				if config["components"]["emulatedNavigationButton"]:
 					import handlers.emulatedButton as emulatedButton
 					self.emulatedNavigationButton = emulatedButton.Button(self.root, "Navigation Button")
+
+					# Listen to the button
+					self.emulatedNavigationButton.addEventListener("click", lambda: self.radio.bump())
+					self.emulatedNavigationButton.addEventListener("longPress", lambda: self.radio.bump(-1))
+					self.emulatedNavigationButton.addEventListener("veryLongPress", lambda: print("Start reset sequence"))
 			
 			if "emulatedPowerButton" in config["components"]:
 				if config["components"]["emulatedPowerButton"]:
 					import handlers.emulatedButton as emulatedButton
 					self.emulatedPowerButton = emulatedButton.Button(self.root, "Power Button")
+
+					self.emulatedPowerButton.addEventListener("click", radio.togglePower)
 			
 		# Add event listeners
 		radio.addEventListener("on", self.handleOn)
 		radio.addEventListener("off", self.handleOff)
-
-		self.emulatedNavigationButton.addEventListener("click", lambda: print("Next channel"))
-		self.emulatedNavigationButton.addEventListener("longPress", lambda: print("Previous channel"))
-		self.emulatedNavigationButton.addEventListener("veryLongPress", lambda: print("Start reset sequence"))
-
-		self.emulatedPowerButton.addEventListener("click", radio.togglePower)
 
 		# Handle high DPI displays
 		if os.name == "nt":
