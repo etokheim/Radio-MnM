@@ -7,6 +7,7 @@ sys.path.append("radio_mnm/")
 import logging
 from logging.handlers import RotatingFileHandler
 from config.config import config
+import asyncio
 
 # Set log level
 level = config["productionLogLevel"]
@@ -55,12 +56,14 @@ else:
 	
 	logger.addHandler(rotateHandler)
 
-import app
 
-def main():
+async def main():
 	logger.info("Starting up")
+	import app
+
 	# TODO: Maybe it would be an advantage to be able to start and stop the radio from here?
 	# app.run()
-
+	
 if __name__ == "__main__":
-	main()
+	loop = asyncio.get_event_loop()
+	loop.run_until_complete(main())

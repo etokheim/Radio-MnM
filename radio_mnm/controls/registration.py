@@ -38,7 +38,9 @@ class Registration():
 			logger.debug("Radio is registered.")
 			
 			# Update channels
-			self.radio.fetchChannels()
+			self.radio.loop.create_task(
+				self.radio.fetchChannels()
+			)
 		else:
 			logger.debug("Radio isn't registered! Starting registration.")
 
@@ -85,7 +87,7 @@ class Registration():
 				isRegistered = self.parent.checkIfRegistered()
 
 				# If the radio is turned off, stop checking if it's been registered.
-				if not self.radio.on:
+				if not self.parent.radio.on:
 					self.stop()
 					return
 
@@ -100,17 +102,17 @@ class Registration():
 			radioTable = db.table("Radio_mnm")
 
 			if isRegistered["status"] == False:
-				if self.radio.display.displayHeight == 1:
-					self.radio.display.notification(_("Getting new code"))
+				if self.parent.radio.display.displayHeight == 1:
+					self.parent.radio.display.notification(_("Getting new code"))
 				else:
-					self.radio.display.notification(_("Code expired, \n\rfetching new one"))
+					self.parent.radio.display.notification(_("Code expired, \n\rfetching new one"))
 					
 				# Give user time to read the message
 				time.sleep(1)
 				self.start()
 				return
 			
-			self.radio.display.notification(_("Registered! :D"))
+			self.parent.radio.display.notification(_("Registered! :D"))
 			logger.info("Device successfully registered!")
 
 			radioTable.insert({
@@ -124,11 +126,13 @@ class Registration():
 			})
 			
 			# Then fetch channels
-			self.radio.fetchChannels()
+			self.parent.radio.loop.create_task(
+				self.parent.radio.fetchChannels()
+			)
 			
 			# And finally start playing
-			if len(self.radio.channels) > 0:
-				self.radio.play()
+			if len(self.parent.radio.channels) > 0:
+				self.parent.radio.play()
 		
 		def stop(self):
 			self.running = False

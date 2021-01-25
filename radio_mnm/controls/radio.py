@@ -10,6 +10,7 @@ import gettext
 import socket
 import subprocess
 import threading
+import asyncio
 
 if os.name == "nt":
 	os.add_dll_directory(r"C:\Program Files\VideoLAN\VLC")
@@ -23,6 +24,7 @@ from controls.registration import Registration
 class Radio():
 	def __init__(self):
 		self.registration = Registration(self)
+		self.loop = asyncio.get_event_loop()
 
 		self.on = False
 		self.offContent = False
@@ -215,7 +217,7 @@ class Radio():
 		self.powerOffTime = int(round(time.time() * 1000))
 		self.stop()
 		self.dispatch(self.events["off"])
-		self.handleSendState("suspended")
+		self.loop.create_task(self.sendState("suspended"))
 
 	def powerOn(self):
 		self.on = True
@@ -233,9 +235,9 @@ class Radio():
 		self.registration.start()
 
 		if self.lastPowerState != "off":
-			self.handleSendState("noPower")
+			self.loop.create_task(self.sendState("noPower"))
 
-		self.handleSendState("on")
+		self.loop.create_task(self.sendState("on"))
 
 		# if len(self.channels) > 0:
 		# 	self.play()
@@ -267,7 +269,9 @@ class Radio():
 		self.player.play()
 		
 		# Add the previous listen to the history
-		self.addToListeningHistory(self.startedListeningTime, playedChannel, self.selectedChannel)
+		self.loop.create_task(
+			self.addToListeningHistory(self.startedListeningTime, playedChannel, self.selectedChannel)
+		)
 
 		# Note when we started listening
 		self.startedListeningTime = int(round(time.time() * 1000))
@@ -281,15 +285,11 @@ class Radio():
 		if self.selectedChannel:
 			self.media = self.instance.media_new("")
 			self.player.stop()
-			self.addToListeningHistory(self.startedListeningTime, self.selectedChannel)
+			self.loop.create_task(
+				self.addToListeningHistory(self.startedListeningTime, self.selectedChannel)
+			)
 
-	def fetchChannels(self):
-			t = threading.Thread(target=self.asyncFetchChannels, name='Fetching channels')
-			# Daemonize it so we don't have to manually kill the thread
-			t.daemon = True
-			t.start()
-
-	def asyncFetchChannels(self):
+	async def fetchChannels(self):
 		db = TinyDB('./db/db.json')
 		radioTable = db.table("Radio_mnm")
 		radio = radioTable.get(doc_id=1)
@@ -424,8 +424,7 @@ class Radio():
 		
 		return bestMatchIndex
 
-	# TODO: Make async, so we don't have to wait for request to be sent before switching channels
-	def addToListeningHistory(self, startedListening, playedChannel, playingChannel = None):
+	async def addToListeningHistory(self, startedListening, playedChannel, playingChannel = None):
 		# Don't send requests if the server is (was) down
 		if not self.serverUp:
 			return False
@@ -467,7 +466,7 @@ class Radio():
 			logger.error("Got a connection error while adding to listening history:")
 			logger.error(exception)
 
-	def handleSendState(self, state):
+	async def sendState(self, state):
 		# Don't send requests if the server is (was) down
 		if not self.serverUp:
 			return False
@@ -475,11 +474,6 @@ class Radio():
 		if not self.shouldSendState:
 			return False
 
-		# Quick and dirty way to make async
-		# TODO: Revisit this
-		threading.Timer(0, lambda: self.sendState(state)).start()
-
-	def sendState(self, state):
 		db = TinyDB('./db/db.json')
 		radioTable = db.table("Radio_mnm")
 		radio = radioTable.get(doc_id=1)

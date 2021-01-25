@@ -4,3 +4,4 @@ requests
 RPi.GPIO
 tinydb
 pyyaml
+asyncio
