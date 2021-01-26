@@ -268,11 +268,11 @@ class Display(threading.Thread):
 	def stopScrolling(self):
 		self.clear()
 		self.pauseEvent.clear()
-		logger.debug("Paused display handling loop")
+		logger.debug("Stopped scrolling loop")
 
 	def resumeScrolling(self):
 		self.pauseEvent.set()
-		logger.debug("Resumed display handling loop")
+		logger.debug("Resumed scrolling loop")
 
 	def initializeLcd(self):
 		return CharLCD(

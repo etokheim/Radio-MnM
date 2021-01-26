@@ -75,10 +75,10 @@ class CharacterDisplay():
 				self.powerSwitch.addEventListener("off", radio.powerOff)
 		
 			if "powerButton" in config["components"]:
-				gpioPin = config["components"]["powerSwitch"]["GPIO"]
+				gpioPin = config["components"]["powerButton"]["GPIO"]
 
-				# Create the button	
-				self.powerButton = handlers.button(gpioPin)
+				import handlers.button as button	
+				self.powerButton = button.Button(gpioPin)
 
 				# Attach event listener
 				self.powerButton.addEventListener("click", radio.togglePower)
@@ -195,8 +195,8 @@ class CharacterDisplay():
 			self.delayTurningOffBacklight = None
 
 		# Turn the display loop on again if it was off
-		if not self.radio.offContent:
-			self.display.resume()
+		# if not self.radio.offContent:
+			# self.display.resume()
 
 		# \n for new line \r for moving to the beginning of current line
 		self.display.notification(">- RADIO M&M  -<\n\r" + _("Got ") + str(len(self.radio.channels)) + _(" channels"), 3)
@@ -215,8 +215,8 @@ class CharacterDisplay():
 		self.display.lcd = self.display.initializeLcd()
 
 		# Stop the display loop when off if we don't want to display content
-		if not self.radio.offContent:
-			self.display.pause()
+		# if not self.radio.offContent:
+		# 	self.display.pause()
 
 		# Find a way to implement this into the buttons, if it helps with the standby mode compute.
 		# button.pause()
