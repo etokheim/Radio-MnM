@@ -4,12 +4,14 @@ from config.config import config
 from handlers import pollingSwitch
 from handlers import rotaryPolling
 import handlers.button
+import threading
 
 _ = config["getLanguage"].gettext
 
 class CharacterDisplay():
 	def __init__(self, radio):
 		self.radio = radio
+		self.delayTurningOffBacklight = None
 		
 		# Attach components
 		# TODO: Support multiple displays
@@ -94,6 +96,11 @@ class CharacterDisplay():
 		logger.debug("handleOn")
 		self.display.lcd.backlight_enabled = True
 
+		# Cancel the timer which would turn off the backlight if it is running
+		if self.delayTurningOffBacklight:
+			self.delayTurningOffBacklight.cancel()
+			self.delayTurningOffBacklight = None
+
 		# Turn the display loop on again if it was off
 		if not self.radio.offContent:
 			self.display.resume()
@@ -120,6 +127,10 @@ class CharacterDisplay():
 
 		# Find a way to implement this into the buttons, if it helps with the standby mode compute.
 		# button.pause()
+
+		# Turn off the backlight after a delay
+		self.delayTurningOffBacklight = threading.Timer(config["powerOffDisplayLightsDuration"], self.display.turnOffBacklight)
+		self.delayTurningOffBacklight.start()
 	
 	def volumeDownHandler(self):
 		logger.debug("Volume rotaryLeftHandler")

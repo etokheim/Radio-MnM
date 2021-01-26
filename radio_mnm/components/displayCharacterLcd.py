@@ -169,18 +169,8 @@ class Display(threading.Thread):
 			# Wait, if the thread is set on hold
 			self.pauseEvent.wait()
 
-			# Set standard content
+			# Write standard content
 			self.writeStandardContent()
-
-			if not self.radio.on:
-				# LCD can be undefined if checked while reinitializing
-				# We reinit it on powerOff to counter the corrupted
-				# display issue
-				if self.lcd:
-					# Turn off the display lights after the delay has elapsed
-					if self.lcd.backlight_enabled:
-						if int(round(time.time() * 1000)) - self.radio.powerOffTime > config["powerOffDisplayLightsDuration"] * 1000:
-							self.lcd.backlight_enabled = False
 					
 			time.sleep(self.displayScrollSpeed)
 
