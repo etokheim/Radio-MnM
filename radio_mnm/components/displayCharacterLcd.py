@@ -70,9 +70,8 @@ class Display(threading.Thread):
 
 		self.lcd = self.initializeLcd()
 
-		# Turn off backlight if the radio is off
-		if not self.radio.on:
-			self.lcd.backlight_enabled = False
+		# Turn off the backlight
+		self.lcd.backlight_enabled = False
 		
 		self.resume()
 
@@ -166,9 +165,6 @@ class Display(threading.Thread):
 		self.start()
 
 	def run(self):
-		# Wait, if the thread is set on hold
-		self.pauseEvent.wait()
-		
 		while self.running:
 			# Wait, if the thread is set on hold
 			self.pauseEvent.wait()
@@ -550,3 +546,6 @@ class Display(threading.Thread):
 			bottom
 		)
 		return
+
+	def turnOffBacklight(self):
+		self.lcd.backlight_enabled = False
