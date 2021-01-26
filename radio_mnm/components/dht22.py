@@ -21,6 +21,8 @@ class Dht22(threading.Thread):
 		self.temperature = 0.0
 		self.humidity = 0.0
 		self.lastUpdateTime = int(time.time() * 1000)
+		self.update = []
+		self.error = []
 
 	def run(self):
 		logger.debug("Listening to DHT22 sensor at GPIO " + str(self.gpioPin))
@@ -35,8 +37,20 @@ class Dht22(threading.Thread):
 					self.temperature = temperature
 					self.humidity = humidity
 					self.lastUpdateTime = int(time.time() * 1000)
+					
+					self.dispatch(self.update, {
+						"temperature": temperature,
+						"humidity": humidity,
+						"timestamp": self.lastUpdateTime
+					})
 				else:
 					print("Failed to retrieve data from humidity sensor")
+
+				if int(time.time() * 1000) - self.lastUpdateTime > 60000:
+					self.dispatch(self.error, {
+						"error": 500,
+						"message": "Sensor stopped sending data. Temperature and humidity is outdated."
+					})
 
 				time.sleep(2)
 			except RuntimeError as exception:
@@ -46,3 +60,17 @@ class Dht22(threading.Thread):
 	def stop(self):
 		self.running = False
 		logger.warning("Stopped listening to the DHT22 sensor at GPIO " + str(self.gpioPin))
+
+	# Loops through the callbacks parameter (array) and executes them
+	def dispatch(self, callbacks, event):
+		for callback in callbacks:
+			if callback:
+				callback()
+
+	def addEventListener(self, type, callback):
+		if type == "update":
+			self.update.append(callback)
+		elif type == "error":
+			self.error.append(callback)
+		else:
+			raise Exception("Event type " + str(callback) + "is not supported.")
