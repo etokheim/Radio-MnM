@@ -23,6 +23,7 @@ class Display(threading.Thread):
 			raise Exception("Invalid display type: " + setup["type"] + ". Check your config.yml")
 
 		self.notificationMessage = ""
+		self.clearNotificationTimer = None
 		self.standardContent = ""
 		self.notificationExpireTime = False
 		self.running = True
@@ -324,9 +325,19 @@ class Display(threading.Thread):
 
 	# Writes standard content to the display. If it overflows, it also starts the scrolling thread, which
 	# makes the content scroll automatically.
-	def writeStandardContent(self, standardContent):
+	def writeStandardContent(self, standardContent = None):
+		# Set default value to standardContent (can't refer to self while setting default values)
+		if standardContent is None:
+			standardContent = self.standardContent
+
+		# Put the standard content into a variable accessible from the scrolling thread
+		self.standardContent = standardContent
+
+		self.writeAndScrollIfOverflowing(standardContent)
+
+	def writeAndScrollIfOverflowing(self, content):
 		# Check if content will overflow
-		stripCarriages = self.currentlyDisplayingMessage.replace("\r", "")
+		stripCarriages = content.replace("\r", "")
 		lines = stripCarriages.split("\n")
 		overflowingContent = False
 
@@ -334,12 +345,9 @@ class Display(threading.Thread):
 			if len(line) > self.displayWidth:
 				overflowingContent = True
 
-		# Put the standard content into a variable accessible from the scrolling thread
-		self.standardContent = standardContent
-
 		# Write content to the screen at once (as the scrolling thread can be in the middle of a sleep. Also
 		# if the content doesn't overflow, we have to write it manually).
-		self.write(standardContent)
+		self.write(content)
 
 		# If overflowing content, start the scroller thread
 		if overflowingContent:
@@ -347,31 +355,27 @@ class Display(threading.Thread):
 		else:
 			self.stopScrolling()
 
-
 	# A notification has a limited lifespan. It is displayed for a set duration in seconds (defaults to 2).
 	# When a notification expires, the standard content is displayed. Standard content is what's playing etc.
 	def notification(self, message, duration = 2):
-
-
-		# Clear expired notifications
-		# TODO: Use a timer instead
-		if int(round(time.time() * 1000)) >= self.notificationExpireTime and self.notificationExpireTime != False:
-			self.notificationMessage = ""
-			self.notificationExpireTime = False
-
-		# TODO: Maybe it's better now to send the message as a parameter instead of setting
-		# it to "currentlyDisplayingMessage"?
-		if self.notificationMessage:
-			self.currentlyDisplayingMessage = self.notificationMessage
-			self.displayMessage()
-
-
-
-
 		self.notificationMessage = message
-		self.notificationExpireTime = int(round(time.time() * 1000)) + duration * 1000
+		self.writeAndScrollIfOverflowing(message)
 
-		self.displayMessage()
+		# Stop the timer for clearing notifications if it's already running
+		if self.clearNotificationTimer:
+			self.clearNotificationTimer.cancel()
+			self.clearNotificationTimer = None
+
+		# Start a timer to clear the notification after the duration has expired
+		self.clearNotificationTimer = threading.Timer(duration, self.clearNotification)
+		self.clearNotificationTimer.start()
+
+	def clearNotification(self):
+		self.notificationMessage = ""
+		self.clearNotificationTimer = None
+
+		# After clearing the notification, display the standard content immediately
+		self.writeStandardContent()
 
 	# Clears the display
 	def clear(self):
