@@ -66,7 +66,9 @@ class EmulatedFrontend(threading.Thread):
 		self.infoText = tk.StringVar()
 		self.label = tk.Label(root, textvariable=self.infoText)
 		self.label.pack()
-		self.writeInfo()
+		
+		self.updateUiInterval = threading.Thread(target = self.writeInfo, name = "Update UI Interval")
+		self.updateUiInterval.start()
 
 		self.root.mainloop()
 
@@ -88,36 +90,37 @@ class EmulatedFrontend(threading.Thread):
 		pass
 
 	def writeInfo(self):
-		radio = self.radio
+		while True:
+			radio = self.radio
 
-		selectedChannelName = "None"
-		if radio.selectedChannel:
-			selectedChannelName = radio.selectedChannel["name"]
-		
-		hoveredChannelName = "None"
-		if self.hoveredChannel:
-			hoveredChannelName = self.hoveredChannel["name"]
+			selectedChannelName = "None"
+			if radio.selectedChannel:
+				selectedChannelName = radio.selectedChannel["name"]
+			
+			hoveredChannelName = "None"
+			if self.hoveredChannel:
+				hoveredChannelName = self.hoveredChannel["name"]
 
-		self.writeTimer = threading.Timer(1, lambda: self.writeInfo())
-		self.writeTimer.start()
-		self.infoText.set(
-			str(time.time()) +
-			"\non: " + str(radio.on) +
-			"\nchannels: " + str(radio.channels) +
-			"\nlastPowerState: " + str(radio.lastPowerState) +
-			"\nvolume: " + str(radio.volume) +
-			"\npowerOnTime: " + str(radio.powerOnTime) +
-			"\npowerOffTime: " + str(radio.powerOffTime) +
-			"\nError: " + str(radio.error) +
-			"\nstate: " + str(radio.state["text"]) +
-			"\nchannelError: " + str(radio.channelError) +
-			"\nstartedListeningTime: " + str(radio.startedListeningTime) +
-			"\nsaveListeningHistory: " + str(radio.saveListeningHistory) +
-			"\nshouldSendState: " + str(radio.shouldSendState) +
-			"\nchannelSwitchDelay: " + str(self.channelSwitchDelay) +
-			"\nselectedChannel[name]: " + selectedChannelName +
-			"\nhoveredChannel: " + hoveredChannelName
-		)
+			self.infoText.set(
+				str(round(time.time())) +
+				"\non: " + str(radio.on) +
+				"\nchannels: " + str(radio.channels) +
+				"\nlastPowerState: " + str(radio.lastPowerState) +
+				"\nvolume: " + str(radio.volume) +
+				"\npowerOnTime: " + str(radio.powerOnTime) +
+				"\npowerOffTime: " + str(radio.powerOffTime) +
+				"\nError: " + str(radio.error) +
+				"\nstate: " + str(radio.state["text"]) +
+				"\nchannelError: " + str(radio.channelError) +
+				"\nstartedListeningTime: " + str(radio.startedListeningTime) +
+				"\nsaveListeningHistory: " + str(radio.saveListeningHistory) +
+				"\nshouldSendState: " + str(radio.shouldSendState) +
+				"\nchannelSwitchDelay: " + str(self.channelSwitchDelay) +
+				"\nselectedChannel[name]: " + selectedChannelName +
+				"\nhoveredChannel: " + hoveredChannelName
+			)
+
+			time.sleep(0.1)
 
 	def delayBump(self, bumps = 1):
 		# self.display.notification(self.hoveredChannel["name"], self.channelSwitchDelay)
@@ -153,7 +156,7 @@ class EmulatedFrontend(threading.Thread):
 		else:
 			bumpTo = hoveredChannelIndex + remaining
 
-		logger.debug("offset " + str(offset) + ", bumping to: " + str(bumpTo))
+		# logger.debug("offset " + str(offset) + ", bumping to: " + str(bumpTo))
 		return self.radio.channels[bumpTo]
 
 
