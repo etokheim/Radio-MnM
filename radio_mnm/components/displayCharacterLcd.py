@@ -72,8 +72,6 @@ class Display(threading.Thread):
 
 		# Turn off the backlight
 		self.lcd.backlight_enabled = False
-		
-		self.resume()
 
 		# Custom characters
 		self.ae = (
@@ -166,25 +164,112 @@ class Display(threading.Thread):
 
 	def run(self):
 		while self.running:
+			# Take a short nap between scrolls.
+			# It's better to sleep right before the pause event, so the content doesn't linger if the thread
+			# is paused.
+			time.sleep(self.displayScrollSpeed)
+
 			# Wait, if the thread is set on hold
 			self.pauseEvent.wait()
 
-			# Write standard content
-			self.writeStandardContent()
-					
-			time.sleep(self.displayScrollSpeed)
+			###################
+			# Make it scroll! #
+			###################
+			stripCarriages = self.currentlyDisplayingMessage.replace("\r", "")
+			lines = stripCarriages.split("\n")
 
-	def stop(self):
+			composedMessage = ""
+			croppedLines = []
+			longestLineLength = 0
+			displayWidth = self.displayWidth
+
+			loopTimes = len(lines)
+			if loopTimes > self.displayHeight:
+				loopTimes = self.displayHeight
+
+			for i in range(loopTimes):
+				line = lines[i]
+				lineLength = len(line)
+
+				# Assign the length as the longest line if it's longer than the last measured one
+				if lineLength > longestLineLength:
+					longestLineLength = lineLength
+
+				# If the line doesn't fit
+				if lineLength > displayWidth:
+
+					# Pause scrolling if scrollOffset is less than zero. This is how self.displayScrollingStartPauseSteps is implemented
+					if self.scrollOffset >= 0:
+
+						# If we are not showing the end of the line, scroll
+						if lineLength - self.scrollOffset > displayWidth:
+							croppedLines.append(
+								line[self.scrollOffset:self.scrollOffset + displayWidth]
+							)
+						
+						else:
+							# If we are showing the end of the line, stop scrolling
+							croppedLines.append(
+								line[lineLength - displayWidth:lineLength]
+							)
+
+					else:
+						# If self.scrollOffset is less than zero (pausing), then display the start of the message
+						# until it's zero or higher
+						croppedLines.append(line[0:displayWidth])
+
+				else:
+					# If line fits
+					croppedLines.append(line)
+
+				composedMessage = composedMessage + croppedLines[i]
+				
+				# If it's not the last line, add a newline
+				if i + 1 != loopTimes:
+					composedMessage = composedMessage + "\n\r"
+			
+			# Increase the scroll offset as long as we are not at the end of the line
+			# If we are at the end of the line, we keep scrolling however for N steps.
+			# Since scrolling further than the last line has no visual effect, this
+			# is used to make a pause to give the user time to finish reading.
+			# N (aka the pause) = self.displayScrollingStopPauseSteps
+			if self.scrollOffset + displayWidth - self.displayScrollingStopPauseSteps <= longestLineLength:
+				self.scrollOffset = self.scrollOffset + 1
+			else:
+				# Reset the scrollOffset
+				self.scrollOffset = 0 - self.displayScrollingStartPauseSteps
+
+			# TODO: Fix notifications displaying twice:
+			# If the displayed message was new, set the lastDisplayedMessages to
+			# currentlyDisplayingMessages. If we don't do this, all notifications
+			# will be displayed twice as lastDisplayedMessages never will be equal
+			# to currentlyDisplayedMessages
+			# if self.lastDisplayedMessage != self.currentlyDisplayingMessage:
+			# 	self.lastDisplayedMessage = self.currentlyDisplayingMessage
+			# 	self.lastDisplayedCroppedMessage = composedMessage
+
+			# Only write to the display if it's not the same as what's being displayed
+			if composedMessage != self.lastDisplayedCroppedMessage:
+				self.write(composedMessage)
+
+			self.lastDisplayedMessage = self.currentlyDisplayingMessage
+
+			# We need this variable in order not overwrite the display with the same
+			# message. We cannot use lastDisplayedMessage as that one is not cropped,
+			# and wouldn't work when the composedMessage is cropped.
+			self.lastDisplayedCroppedMessage = composedMessage
+
+	def stopScrollThread(self):
 		self.clear()
 		self.running = False
 		logger.warning("Stopped display")
 
-	def pause(self):
+	def stopScrolling(self):
 		self.clear()
 		self.pauseEvent.clear()
 		logger.debug("Paused display handling loop")
 
-	def resume(self):
+	def resumeScrolling(self):
 		self.pauseEvent.set()
 		logger.debug("Resumed display handling loop")
 
@@ -237,53 +322,36 @@ class Display(threading.Thread):
 			backlight_mode = self.setup["backlightMode"]
 		)
 
-	def writeStandardContent(self):
-		if self.radio.on:
-			# Set standard content
-			# Selected channel can be None when the radio is on, only right after a reset.
-			if self.radio.selectedChannel is not None:
-				# Format standard content based on screen size
-				# Set the second line's content:
-				if self.displayHeight >= 2:
-					# By default, display the meta (ie. [Song] - [Artist])
-					secondLine = self.radio.media.get_meta(12)
-					
-					# Get the self.radio's state
-					state = self.radio.state
+	# Writes standard content to the display. If it overflows, it also starts the scrolling thread, which
+	# makes the content scroll automatically.
+	def writeStandardContent(self, standardContent):
+		# Check if content will overflow
+		stripCarriages = self.currentlyDisplayingMessage.replace("\r", "")
+		lines = stripCarriages.split("\n")
+		overflowingContent = False
 
-					# Display any errors
-					if self.radio.updating:
-						secondLine = self.radio.updating["text"]
+		for line in lines:
+			if len(line) > self.displayWidth:
+				overflowingContent = True
 
-					# Display any errors
-					elif self.radio.error:
-						secondLine = self.radio.error["text"]
+		# Put the standard content into a variable accessible from the scrolling thread
+		self.standardContent = standardContent
 
-					# Display any channel errors
-					elif self.radio.channelError:
-						secondLine = self.radio.channelError["text"]
+		# Write content to the screen at once (as the scrolling thread can be in the middle of a sleep. Also
+		# if the content doesn't overflow, we have to write it manually).
+		self.write(standardContent)
 
-					# Display any special states
-					elif state["code"] != "playing":
-						secondLine = state["text"]
-
-					# Meta can be None for a second after the channel starts playing (or if it's actually empty)
-					elif secondLine is None:
-						secondLine = ""
-
-					self.standardContent = self.radio.selectedChannel["name"] + "\n\r" + str(secondLine)
-				else:
-					# TODO: One liner displays doesn't get error messages!
-					self.standardContent = self.radio.selectedChannel["name"]
-			elif self.standardContent == "":
-				self.standardContent = _("No channels")
-		# The radio is off
+		# If overflowing content, start the scroller thread
+		if overflowingContent:
+			self.resumeScrolling()
 		else:
-			if self.radio.temperatureAndHumidity:
-				if int(time.time() * 1000) - self.radio.temperatureAndHumidity.lastUpdateTime < 10000:
-					self.standardContent = "Temp: " + str(self.radio.temperatureAndHumidity.temperature) + "C\r\nHumidity: " + str(self.radio.temperatureAndHumidity.humidity) + "%"
-				else:
-					self.standardContent = _("Couldn't get\n\rtemperature")
+			self.stopScrolling()
+
+
+	# A notification has a limited lifespan. It is displayed for a set duration in seconds (defaults to 2).
+	# When a notification expires, the standard content is displayed. Standard content is what's playing etc.
+	def notification(self, message, duration = 2):
+
 
 		# Clear expired notifications
 		# TODO: Use a timer instead
@@ -296,13 +364,10 @@ class Display(threading.Thread):
 		if self.notificationMessage:
 			self.currentlyDisplayingMessage = self.notificationMessage
 			self.displayMessage()
-		else:
-			self.currentlyDisplayingMessage = self.standardContent
-			self.displayMessage("channelInfo")
 
-	# A notification has a limited lifespan. It is displayed for a set duration in seconds (defaults to 2).
-	# When a notification expires, the standard content is displayed. Standard content is what's playing etc.
-	def notification(self, message, duration = 2):
+
+
+
 		self.notificationMessage = message
 		self.notificationExpireTime = int(round(time.time() * 1000)) + duration * 1000
 
@@ -314,106 +379,6 @@ class Display(threading.Thread):
 			print("│ - -  Display cleared   - - │")
 		
 		self.lcd.clear()
-
-	def displayMessage(self, messageType="notification"):
-		stripCarriages = self.currentlyDisplayingMessage.replace("\r", "")
-		lines = stripCarriages.split("\n")
-
-		# If there is a new text to display
-		if self.lastDisplayedMessage != self.currentlyDisplayingMessage:
-			# Reset the text offset (scroll position)
-			self.scrollOffset = 0 - self.displayScrollingStartPauseSteps
-			
-			# Only do this if displaying channel info
-			if messageType == "channelInfo" and self.displayHeight >= 2 and self.radio.on:
-				# When the text changes, "clear the second line" for å brief moment, so the user
-				# more easily can understand that a new text was inserted.
-				# Crap, this only works for channels, but notifications are also parsed through here...
-				self.write(lines[0])
-
-			time.sleep(0.25)
-			
-		composedMessage = ""
-		croppedLines = []
-		longestLineLength = 0
-		displayWidth = self.displayWidth
-
-		loopTimes = len(lines)
-		if loopTimes > self.displayHeight:
-			loopTimes = self.displayHeight
-
-		for i in range(loopTimes):
-			line = lines[i]
-			lineLength = len(line)
-
-			# Assign the length as the longest line if it's longer than the last measured one
-			if lineLength > longestLineLength:
-				longestLineLength = lineLength
-
-			# If the line doesn't fit
-			if lineLength > displayWidth:
-
-				# Pause scrolling if scrollOffset is less than zero. This is how self.displayScrollingStartPauseSteps is implemented
-				if self.scrollOffset >= 0:
-
-					# If we are not showing the end of the line, scroll
-					if lineLength - self.scrollOffset > displayWidth:
-						croppedLines.append(
-							line[self.scrollOffset:self.scrollOffset + displayWidth]
-						)
-					
-					else:
-						# If we are showing the end of the line, stop scrolling
-						croppedLines.append(
-							line[lineLength - displayWidth:lineLength]
-						)
-
-				else:
-					# If self.scrollOffset is less than zero (pausing), then display the start of the message
-					# until it's zero or higher
-					croppedLines.append(line[0:displayWidth])
-
-			else:
-				# If line fits
-				croppedLines.append(line)
-
-			composedMessage = composedMessage + croppedLines[i]
-			
-			# If it's not the last line, add a newline
-			if i + 1 != loopTimes:
-				composedMessage = composedMessage + "\n\r"
-		
-		# Increase the scroll offset as long as we are not at the end of the line
-		# If we are at the end of the line, we keep scrolling however for N steps.
-		# Since scrolling further than the last line has no visual effect, this
-		# is used to make a pause to give the user time to finish reading.
-		# N (aka the pause) = self.displayScrollingStopPauseSteps
-		if self.scrollOffset + displayWidth - self.displayScrollingStopPauseSteps <= longestLineLength:
-			self.scrollOffset = self.scrollOffset + 1
-		else:
-			# Reset the scrollOffset
-			self.scrollOffset = 0 - self.displayScrollingStartPauseSteps
-
-		# TODO: Fix notifications displaying twice:
-		# If the displayed message was new, set the lastDisplayedMessages to
-		# currentlyDisplayingMessages. If we don't do this, all notifications
-		# will be displayed twice as lastDisplayedMessages never will be equal
-		# to currentlyDisplayedMessages
-		# if self.lastDisplayedMessage != self.currentlyDisplayingMessage:
-		# 	self.lastDisplayedMessage = self.currentlyDisplayingMessage
-		# 	self.lastDisplayedCroppedMessage = composedMessage
-
-		# Only write to the display if it's not the same as what's being displayed
-		if composedMessage != self.lastDisplayedCroppedMessage:
-			self.write(composedMessage)
-
-		self.lastDisplayedMessage = self.currentlyDisplayingMessage
-
-		# We need this variable in order not overwrite the display with the same
-		# message. We cannot use lastDisplayedMessage as that one is not cropped,
-		# and wouldn't work when the composedMessage is cropped.
-		self.lastDisplayedCroppedMessage = composedMessage
-
 
 	def write(self, message):
 		# The display can be None if it's in the middle of a reinitialization
