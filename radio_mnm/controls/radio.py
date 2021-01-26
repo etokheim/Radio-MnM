@@ -117,6 +117,10 @@ class Radio():
 			if config["frontend"] == "emulatedFrontend":
 				import front_ends.emulatedFrontend
 				self.frontend = front_ends.emulatedFrontend.EmulatedFrontend(self)
+			
+			if config["frontend"] == "characterDisplay":
+				import front_ends.characterDisplay
+				self.frontend = front_ends.characterDisplay.CharacterDisplay(self)
 
 	# Loops through the callbacks parameter (array) and executes them
 	def dispatch(self, callbacks):
