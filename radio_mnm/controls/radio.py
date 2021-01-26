@@ -31,7 +31,8 @@ class Radio():
 			"unregister": [],
 			"on": [],
 			"off": [],
-			"volumeChange": []
+			"volume": [],
+			"meta": []
 		}
 
 		self.on = False
@@ -48,6 +49,9 @@ class Radio():
 		self.setVolume(self.volume)
 		self.powerOnTime = None
 		self.powerOffTime = int(round(time.time() * 1000))
+		self.meta = {
+			"whatsPlaying": None
+		}
 
 		# A variable to hold the buffer timer.
 		# Removes buffer from the state if there hasn't been sent another buffer event
@@ -103,7 +107,8 @@ class Radio():
 		self.vlcEvents.event_attach(vlc.EventType.MediaPlayerEndReached, self.endReachedEvent)
 		self.vlcEvents.event_attach(vlc.EventType.MediaPlayerEncounteredError, self.errorEvent)
 
-		self.startStreamMonitor()
+		self.streamMonitor = self.StreamMonitor(self)
+		self.streamMonitor.start()
 
 		# Start with channels from DB
 		db = TinyDB('./db/db.json')
@@ -143,8 +148,10 @@ class Radio():
 			self.events["on"].append(callback)
 		elif type == "off":
 			self.events["off"].append(callback)
-		elif type == "volumeChange":
-			self.events["volumeChange"].append(callback)
+		elif type == "volume":
+			self.events["volume"].append(callback)
+		elif type == "meta":
+			self.events["meta"].append(callback)
 		else:
 			raise Exception("Event type " + str(callback) + "is not supported.")
 
@@ -401,7 +408,7 @@ class Radio():
 				output = subprocess.check_output(["amixer", "-D", "pulse", "sset", "Master", str(volume) + "%"])
 
 			self.volume = volume
-			self.dispatch(self.events["volumeChange"], { "volume": volume })
+			self.dispatch(self.events["volume"], { "volume": volume })
 			return True
 		except ValueError:
 			pass
@@ -530,7 +537,13 @@ class Radio():
 
 		def run(self):
 			while self.running:
-				time.sleep(1)
+				time.sleep(0.5)
+
+				whatsPlaying = self.parent.media.get_meta(12)
+				if self.parent.meta["whatsPlaying"] != whatsPlaying:
+					self.parent.meta["whatsPlaying"] = whatsPlaying
+					self.parent.dispatch(self.parent.events["meta"], self.parent.meta)
+
 
 				# If the radio is on and stopped on several checks, something is wrong
 				if self.parent.on and self.parent.state["code"] == "stopped":
@@ -559,6 +572,4 @@ class Radio():
 			self.running = False
 			print("Stopped the stream monitor loop")
 
-	def startStreamMonitor(self):
-		self.streamMonitor = self.StreamMonitor(self)
-		self.streamMonitor.start()
+		

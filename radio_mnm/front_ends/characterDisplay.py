@@ -94,7 +94,11 @@ class CharacterDisplay():
 		# Add event listeners
 		radio.addEventListener("on", self.handleOn)
 		radio.addEventListener("off", self.handleOff)
-		radio.addEventListener("volumeChange", self.displayVolumeLevel)
+		radio.addEventListener("volume", self.displayVolumeLevel)
+
+		# Only listen to meta events if the display height is more than one
+		if self.display.displayHeight > 1:
+			radio.addEventListener("meta", self.handleNewMeta)
 
 	def displayVolumeLevel(self, event):
 		volume = event["volume"]
@@ -122,25 +126,36 @@ class CharacterDisplay():
 
 	def handleDht22Update(self, event):
 		self.environmentData = event
-		self.display.writeStandardContent(generateStandardContent())
 
-	def handleNewPlayingInfo(self):
+		if self.radio.on:
+			self.display.writeStandardContent(self.generateStandardContent())
+
+	def handleNewMeta(self, event):
 		# Clear the second line just for a second to let the user see that there's new content, not
 		# just a scroll or a scroll reset.
 
-		# If there is a new text to display
-		if self.lastDisplayedMessage != self.currentlyDisplayingMessage:
-			# Reset the text offset (scroll position)
-			self.scrollOffset = 0 - self.displayScrollingStartPauseSteps
-			
-			# Only do this if displaying channel info
-			if messageType == "channelInfo" and self.displayHeight >= 2 and self.radio.on:
-				# When the text changes, "clear the second line" for å brief moment, so the user
-				# more easily can understand that a new text was inserted.
-				# Crap, this only works for channels, but notifications are also parsed through here...
-				self.write(lines[0])
+		# Display only the channel name
+		self.display.writeStandardContent(self.radio.selectedChannel["name"])
 
-			time.sleep(0.25)
+		standardContent = self.generateStandardContent()
+
+		# Then after a delay, display everything again
+		fullStandardContent = threading.Timer(0.25, self.display.writeStandardContent, args=[standardContent])
+		fullStandardContent.start()
+
+		# # If there is a new text to display
+		# if self.lastDisplayedMessage != self.currentlyDisplayingMessage:
+		# 	# Reset the text offset (scroll position)
+		# 	self.scrollOffset = 0 - self.displayScrollingStartPauseSteps
+			
+		# 	# Only do this if displaying channel info
+		# 	if messageType == "channelInfo" and self.displayHeight >= 2 and self.radio.on:
+		# 		# When the text changes, "clear the second line" for å brief moment, so the user
+		# 		# more easily can understand that a new text was inserted.
+		# 		# Crap, this only works for channels, but notifications are also parsed through here...
+		# 		self.write(lines[0])
+
+		# 	time.sleep(0.25)
 
 	def generateStandardContent(self):
 		standardContent = None
@@ -208,6 +223,8 @@ class CharacterDisplay():
 				# Display the time
 				else:
 					standardContent = "The time"
+		
+		return standardContent
 
 
 	def handleOn(self):
