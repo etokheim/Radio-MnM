@@ -65,7 +65,7 @@ class Dht22(threading.Thread):
 	def dispatch(self, callbacks, event):
 		for callback in callbacks:
 			if callback:
-				callback()
+				callback(event)
 
 	def addEventListener(self, type, callback):
 		if type == "update":
