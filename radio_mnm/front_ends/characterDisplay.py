@@ -87,10 +87,85 @@ class CharacterDisplay():
 				import components.dht22 as dht22
 				self.dht22 = dht22.Dht22(radio, config["components"]["dht22"])
 
+				self.dht22.addEventListener("update", self.handleDht22Update)
+				# self.dht22.addEventListener("error", self.handleDht22Update)
+
 		
 		# Add event listeners
 		radio.addEventListener("on", self.handleOn)
 		radio.addEventListener("off", self.handleOff)
+
+	def handleDht22Update(self, event):
+		self.environmentData = event
+		self.display.writeStandardContent()
+
+	def generateStandardContent(self):
+		standardContent = None
+
+		# Check if there's a prioritized message:
+		prioritizedMessage = None
+		state = self.radio.state
+
+		# 1. Are we updating?
+		if self.radio.updating:
+			prioritizedMessage = self.radio.updating["text"]
+
+		# 2. Any errors?
+		elif self.radio.error:
+			prioritizedMessage = self.radio.error["text"]
+
+		# 3. Any channel errors?
+		elif self.radio.channelError:
+			prioritizedMessage = self.radio.channelError["text"]
+
+		if self.display.displayHeight == 1:
+			# If there's a prioritized message, display that
+			if prioritizedMessage:
+				standardContent = prioritizedMessage
+			else:
+				# Else, if the radio is on, display the current channel's name
+				if self.radio.on:
+					standardContent = self.radio.selectedChannel["name"]
+				
+				# If the radio is off
+				else:
+					# Do we have environment data?
+					if self.environmentData:
+						# If we have both temps and humidity, display it
+						if self.environmentData["temperature"] != None and self.environmentData["humidity"] != None:
+							standardContent = "T: " + str(self.radio.temperatureAndHumidity.temperature) + "C, H: " + str(self.radio.temperatureAndHumidity.humidity) + "%"
+
+					# Display the time
+					else:
+						standardContent = "The time"
+		
+		# Display is taller than 1 line
+		else:
+			if self.radio.on:
+				firstLine = standardContent = self.radio.selectedChannel["name"]
+				
+				if prioritizedMessage:
+					secondLine = prioritizedMessage
+				elif state["code"] != "playing":
+					secondLine = state["text"]
+				else:
+					secondLine = self.radio.media.get_meta(12)
+				
+				standardContent = firstLine + "\r\n" + secondLine
+			
+			# If the radio is off
+			else:
+				# Do we have environment data?
+				if self.environmentData:
+					# If we have both temps and humidity, display it
+					if self.environmentData["temperature"] != None and self.environmentData["humidity"] != None:
+						standardContent = 	"Temp: " + str(self.radio.temperatureAndHumidity.temperature) + "C\r\n" +
+											"Humidity: " + str(self.radio.temperatureAndHumidity.humidity) + "%"
+
+				# Display the time
+				else:
+					standardContent = "The time"
+
 
 	def handleOn(self):
 		logger.debug("handleOn")
