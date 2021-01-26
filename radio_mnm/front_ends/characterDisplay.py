@@ -18,8 +18,8 @@ class CharacterDisplay():
 				displays = config["components"]["displays"]
 
 				for display in displays:
-					import components.displayCharacterLcd as display
-					self.display = display.Display(radio, display)
+					import components.displayCharacterLcd as displayCharacterLcd
+					self.display = displayCharacterLcd.Display(radio, display)
 
 			if "navigationRotary" in config["components"]:
 				# Get the props

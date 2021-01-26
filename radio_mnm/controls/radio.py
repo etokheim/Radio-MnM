@@ -14,7 +14,8 @@ import asyncio
 
 if os.name == "nt":
 	os.add_dll_directory(r"C:\Program Files\VideoLAN\VLC")
-	import vlc
+
+import vlc
 
 _ = config["getLanguage"].gettext
 
@@ -119,8 +120,11 @@ class Radio():
 				self.frontend = front_ends.emulatedFrontend.EmulatedFrontend(self)
 			
 			if config["frontend"] == "characterDisplay":
-				import front_ends.characterDisplay
-				self.frontend = front_ends.characterDisplay.CharacterDisplay(self)
+				import front_ends.characterDisplay as characterDisplay
+				self.frontend = characterDisplay.CharacterDisplay(self)
+
+		else:
+			raise Exception("Missing frontend. Please specify the frontend you want in the config.yml file.")
 
 	# Loops through the callbacks parameter (array) and executes them
 	def dispatch(self, callbacks):
@@ -385,7 +389,9 @@ class Radio():
 			volume = 100
 
 		try:
-			if not config["audio"]["emulatedVolume"]:
+			if "emulatedVolume" in config["audio"] and config["audio"]["emulatedVolume"]:
+				pass
+			else:
 				output = subprocess.check_output(["amixer", "-D", "pulse", "sset", "Master", str(volume) + "%"])
 
 			self.volume = volume
