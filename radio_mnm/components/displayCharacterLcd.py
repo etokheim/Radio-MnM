@@ -240,7 +240,7 @@ class Display(threading.Thread):
 	def writeStandardContent(self):
 		if self.radio.on:
 			# Set standard content
-			# Selected channel can be None when the self.radio is on, only right after a reset.
+			# Selected channel can be None when the radio is on, only right after a reset.
 			if self.radio.selectedChannel is not None:
 				# Format standard content based on screen size
 				# Set the second line's content:
@@ -273,6 +273,7 @@ class Display(threading.Thread):
 
 					self.standardContent = self.radio.selectedChannel["name"] + "\n\r" + str(secondLine)
 				else:
+					# TODO: One liner displays doesn't get error messages!
 					self.standardContent = self.radio.selectedChannel["name"]
 			elif self.standardContent == "":
 				self.standardContent = _("No channels")
@@ -285,6 +286,7 @@ class Display(threading.Thread):
 					self.standardContent = _("Couldn't get\n\rtemperature")
 
 		# Clear expired notifications
+		# TODO: Use a timer instead
 		if int(round(time.time() * 1000)) >= self.notificationExpireTime and self.notificationExpireTime != False:
 			self.notificationMessage = ""
 			self.notificationExpireTime = False
