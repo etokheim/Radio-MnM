@@ -353,7 +353,8 @@ class Display(threading.Thread):
 		if overflowingContent:
 			self.resumeScrolling()
 		else:
-			self.stopScrolling()
+			if self.pauseEvent.is_set():
+				self.stopScrolling()
 
 	# A notification has a limited lifespan. It is displayed for a set duration in seconds (defaults to 2).
 	# When a notification expires, the standard content is displayed. Standard content is what's playing etc.
