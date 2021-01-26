@@ -333,21 +333,34 @@ class Display(threading.Thread):
 		# Put the standard content into a variable accessible from the scrolling thread
 		self.standardContent = standardContent
 
-		self.writeAndScrollIfOverflowing(standardContent)
+		if not self.notificationMessage:
+			self.writeAndScrollIfOverflowing(standardContent)
 
 	def writeAndScrollIfOverflowing(self, content):
 		# Check if content will overflow
 		stripCarriages = content.replace("\r", "")
 		lines = stripCarriages.split("\n")
 		overflowingContent = False
+		croppedContent = ""
 
+		index = 0
 		for line in lines:
+			# Crop the lines, so we can write it directly
+			croppedContent = croppedContent + line[0:16]
+			print("croppedContent: " + croppedContent)
+			
+			if index != len(line) - 1:
+				croppedContent = croppedContent + "\r\n"
+
+			# Check if content will overflow
 			if len(line) > self.displayWidth:
 				overflowingContent = True
+			
+			index = index + 1
 
 		# Write content to the screen at once (as the scrolling thread can be in the middle of a sleep. Also
 		# if the content doesn't overflow, we have to write it manually).
-		self.write(content)
+		self.write(croppedContent)
 
 		# If overflowing content, start the scroller thread
 		if overflowingContent:
@@ -372,7 +385,7 @@ class Display(threading.Thread):
 		self.clearNotificationTimer.start()
 
 	def clearNotification(self):
-		self.notificationMessage = ""
+		self.notificationMessage = None
 		self.clearNotificationTimer = None
 
 		# After clearing the notification, display the standard content immediately
