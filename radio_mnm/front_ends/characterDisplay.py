@@ -177,7 +177,7 @@ class CharacterDisplay():
 				if self.environmentData:
 					# If we have both temps and humidity, display it
 					if self.environmentData["temperature"] != None and self.environmentData["humidity"] != None:
-						standardContent = 	"Temp: " + str(self.radio.temperatureAndHumidity.temperature) + "C\r\n" +
+						standardContent = 	"Temp: " + str(self.radio.temperatureAndHumidity.temperature) + "C\r\n" + \
 											"Humidity: " + str(self.radio.temperatureAndHumidity.humidity) + "%"
 
 				# Display the time
