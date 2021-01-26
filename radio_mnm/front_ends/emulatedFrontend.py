@@ -32,8 +32,8 @@ class EmulatedFrontend(threading.Thread):
 					self.emulatedNavigationButton = emulatedButton.Button(self.root, "Navigation Button")
 
 					# Listen to the button
-					self.emulatedNavigationButton.addEventListener("click", lambda: self.radio.bump())
-					self.emulatedNavigationButton.addEventListener("longPress", lambda: self.radio.bump(-1))
+					self.emulatedNavigationButton.addEventListener("click", lambda: self.delayBump())
+					self.emulatedNavigationButton.addEventListener("longPress", lambda: self.delayBump(-1))
 					self.emulatedNavigationButton.addEventListener("veryLongPress", lambda: print("Start reset sequence"))
 			
 			if "emulatedPowerButton" in config["components"]:
@@ -90,13 +90,20 @@ class EmulatedFrontend(threading.Thread):
 	def writeInfo(self):
 		radio = self.radio
 
+		selectedChannelName = "None"
+		if radio.selectedChannel:
+			selectedChannelName = radio.selectedChannel["name"]
+		
+		hoveredChannelName = "None"
+		if self.hoveredChannel:
+			hoveredChannelName = self.hoveredChannel["name"]
+
 		self.writeTimer = threading.Timer(1, lambda: self.writeInfo())
 		self.writeTimer.start()
 		self.infoText.set(
 			str(time.time()) +
 			"\non: " + str(radio.on) +
 			"\nchannels: " + str(radio.channels) +
-			"\nhoveredChannel: " + str(self.hoveredChannel) +
 			"\nlastPowerState: " + str(radio.lastPowerState) +
 			"\nvolume: " + str(radio.volume) +
 			"\npowerOnTime: " + str(radio.powerOnTime) +
@@ -106,10 +113,13 @@ class EmulatedFrontend(threading.Thread):
 			"\nchannelError: " + str(radio.channelError) +
 			"\nstartedListeningTime: " + str(radio.startedListeningTime) +
 			"\nsaveListeningHistory: " + str(radio.saveListeningHistory) +
-			"\nshouldSendState: " + str(radio.shouldSendState)
+			"\nshouldSendState: " + str(radio.shouldSendState) +
+			"\nchannelSwitchDelay: " + str(self.channelSwitchDelay) +
+			"\nselectedChannel[name]: " + selectedChannelName +
+			"\nhoveredChannel: " + hoveredChannelName
 		)
 
-	def delayBump(self, bumps):
+	def delayBump(self, bumps = 1):
 		# self.display.notification(self.hoveredChannel["name"], self.channelSwitchDelay)
 
 		self.hoveredChannel = self.getHoveredChannelByOffset(bumps)
@@ -117,9 +127,13 @@ class EmulatedFrontend(threading.Thread):
 		if self.delayedBumpTimer:
 			self.delayedBumpTimer.cancel()
 
-		self.delayedBumpTimer = threading.Timer(self.channelSwitchDelay, self.radio.playChannel, args=[self.hoveredChannel])
+		self.delayedBumpTimer = threading.Timer(self.channelSwitchDelay, self.playHoveredChannel, args=[self.hoveredChannel])
 		self.delayedBumpTimer.start()
 	
+	def playHoveredChannel(self, channel):
+		self.hoveredChannel = None
+		self.radio.playChannel(channel)
+
 	def getHoveredChannelByOffset(self, offset):
 		# Number of channels to skip which remains after removing overflow.
 		# (Overflow: if you are playing channel 3 of 10 and is instructed to skip 202 channels ahead,
