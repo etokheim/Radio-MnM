@@ -27,13 +27,20 @@ class Radio():
 		self.registration = Registration(self)
 		self.loop = asyncio.get_event_loop()
 
+		self.events = {
+			"unregister": [],
+			"on": [],
+			"off": [],
+			"volumeChange": []
+		}
+
 		self.on = False
 		self.offContent = False
 		self.channels = []
 		self.instance = vlc.Instance()
 		self.log = vlc.Log()
 		self.player = self.instance.media_player_new()
-		self.events = self.player.event_manager()
+		self.vlcEvents = self.player.event_manager()
 		self.media = self.instance.media_new("")
 		self.selectedChannel = None
 		self.lastPowerState = None
@@ -88,13 +95,13 @@ class Radio():
 		self.shouldSendState = config["sendState"]
 
 		# Listen for VLC events
-		self.events.event_attach(vlc.EventType.MediaPlayerOpening, self.openingEvent)
-		self.events.event_attach(vlc.EventType.MediaPlayerBuffering, self.bufferingEvent)
-		self.events.event_attach(vlc.EventType.MediaPlayerPlaying, self.playingEvent)
-		self.events.event_attach(vlc.EventType.MediaPlayerPaused, self.pausedEvent)
-		self.events.event_attach(vlc.EventType.MediaPlayerStopped, self.stoppedEvent)
-		self.events.event_attach(vlc.EventType.MediaPlayerEndReached, self.endReachedEvent)
-		self.events.event_attach(vlc.EventType.MediaPlayerEncounteredError, self.errorEvent)
+		self.vlcEvents.event_attach(vlc.EventType.MediaPlayerOpening, self.openingEvent)
+		self.vlcEvents.event_attach(vlc.EventType.MediaPlayerBuffering, self.bufferingEvent)
+		self.vlcEvents.event_attach(vlc.EventType.MediaPlayerPlaying, self.playingEvent)
+		self.vlcEvents.event_attach(vlc.EventType.MediaPlayerPaused, self.pausedEvent)
+		self.vlcEvents.event_attach(vlc.EventType.MediaPlayerStopped, self.stoppedEvent)
+		self.vlcEvents.event_attach(vlc.EventType.MediaPlayerEndReached, self.endReachedEvent)
+		self.vlcEvents.event_attach(vlc.EventType.MediaPlayerEncounteredError, self.errorEvent)
 
 		self.startStreamMonitor()
 
@@ -106,12 +113,6 @@ class Radio():
 		channels = radio["channels"]
 		if channels:
 			self.channels = channels
-
-		self.events = {
-			"unregister": [],
-			"on": [],
-			"off": []
-		}
 		
 		# Attach frontend
 		if "frontend" in config:
@@ -127,10 +128,13 @@ class Radio():
 			raise Exception("Missing frontend. Please specify the frontend you want in the config.yml file.")
 
 	# Loops through the callbacks parameter (array) and executes them
-	def dispatch(self, callbacks):
+	def dispatch(self, callbacks, event = None):
 		for callback in callbacks:
 			if callback:
-				callback()
+				if event:
+					callback(event)
+				else:
+					callback()
 
 	def addEventListener(self, type, callback):
 		if type == "unregister":
@@ -139,6 +143,8 @@ class Radio():
 			self.events["on"].append(callback)
 		elif type == "off":
 			self.events["off"].append(callback)
+		elif type == "volumeChange":
+			self.events["volumeChange"].append(callback)
 		else:
 			raise Exception("Event type " + str(callback) + "is not supported.")
 
@@ -395,33 +401,10 @@ class Radio():
 				output = subprocess.check_output(["amixer", "-D", "pulse", "sset", "Master", str(volume) + "%"])
 
 			self.volume = volume
+			self.dispatch(self.events["volumeChange"], { "volume": volume })
 			return True
 		except ValueError:
 			pass
-
-
-	def displayVolumeLevel(self):
-		# Display volume level
-		progressBarStyle = "*"
-
-		volumeBarWidth = self.display.displayWidth
-		if self.display.displayHeight == 1:
-			volumeBarWidth = self.display.displayWidth - 4
-
-		volumeBar = ""
-		numberOfBars = round(volumeBarWidth / 100 * self.volume)
-		
-		for i in range(volumeBarWidth):
-			if i < numberOfBars:
-				volumeBar = volumeBar + progressBarStyle
-			else:
-				volumeBar = volumeBar + " "
-		
-		if self.display.displayHeight == 1:
-			self.display.notification("Vol " + volumeBar)
-		else:
-			self.display.notification("Volume\n\r" + volumeBar)
-
 
 	def getBestBitRateMatch(self, streams):
 		bestMatchIndex = 0

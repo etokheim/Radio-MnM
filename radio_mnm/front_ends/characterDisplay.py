@@ -94,6 +94,31 @@ class CharacterDisplay():
 		# Add event listeners
 		radio.addEventListener("on", self.handleOn)
 		radio.addEventListener("off", self.handleOff)
+		radio.addEventListener("volumeChange", self.displayVolumeLevel)
+
+	def displayVolumeLevel(self, event):
+		volume = event["volume"]
+
+		# Display volume level
+		progressBarStyle = "*"
+
+		volumeBarWidth = self.display.displayWidth
+		if self.display.displayHeight == 1:
+			volumeBarWidth = self.display.displayWidth - 4
+
+		volumeBar = ""
+		numberOfBars = round(volumeBarWidth / 100 * volume)
+		
+		for i in range(volumeBarWidth):
+			if i < numberOfBars:
+				volumeBar = volumeBar + progressBarStyle
+			else:
+				volumeBar = volumeBar + " "
+		
+		if self.display.displayHeight == 1:
+			self.display.notification("Vol " + volumeBar)
+		else:
+			self.display.notification("Volume\n\r" + volumeBar)
 
 	def handleDht22Update(self, event):
 		self.environmentData = event
@@ -230,11 +255,9 @@ class CharacterDisplay():
 		
 		if self.radio.on:
 			self.radio.setVolume(self.radio.volume - 10)
-			self.radio.displayVolumeLevel()
 
 	def volumeUpHandler(self):
 		logger.debug("Volume rotaryRightHandler")
 		
 		if self.radio.on:
 			self.radio.setVolume(self.radio.volume + 10)
-			self.radio.displayVolumeLevel()
