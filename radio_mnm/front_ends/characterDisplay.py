@@ -15,6 +15,7 @@ class CharacterDisplay():
 		self.delayedBumpTimer = None
 		self.hoveredChannel = None
 		self.channelSwitchDelay = config["channelSwitchDelay"]
+		self.environmentData = None
 		
 		# Attach components
 		# TODO: Support multiple displays
@@ -203,7 +204,7 @@ class CharacterDisplay():
 		# Display is taller than 1 line
 		else:
 			if self.radio.on:
-				firstLine = standardContent = self.radio.selectedChannel["name"]
+				firstLine = self.radio.selectedChannel["name"]
 				
 				if prioritizedMessage:
 					secondLine = prioritizedMessage
@@ -245,6 +246,7 @@ class CharacterDisplay():
 
 		# \n for new line \r for moving to the beginning of current line
 		self.display.notification(">- RADIO M&M  -<\n\r" + _("Got ") + str(len(self.radio.channels)) + _(" channels"), 3)
+		self.display.writeStandardContent(self.generateStandardContent())
 		
 		# Find a way to implement this into the buttons, if it helps with the standby mode compute.
 		# button.resume()
@@ -254,6 +256,8 @@ class CharacterDisplay():
 
 		if not config["powerOffDisplayLightsDuration"]:
 			self.display.lcd.backlight_enabled = False
+
+		self.display.writeStandardContent(self.generateStandardContent())
 					
 		# Reinit the display to battle the corrupted display issue
 		self.display.lcd = None
@@ -284,7 +288,7 @@ class CharacterDisplay():
 
 	def delayBump(self, bumps = 1):
 		if not self.radio.on:
-			
+
 			return
 
 		self.hoveredChannel = self.getHoveredChannelByOffset(bumps)

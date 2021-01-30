@@ -243,12 +243,12 @@ class Radio():
 	def powerOn(self):
 		self.on = True
 		self.powerOnTime = int(round(time.time() * 1000))
-	
-		self.dispatch(self.events["on"])
 
 		# Start playing
 		if not self.selectedChannel:
 			self.selectedChannel = self.channels[0]
+	
+		self.dispatch(self.events["on"])
 		self.play()
 
 		# TODO: Maybe rename .start() methods that aren't threads, as it can be confusing.
