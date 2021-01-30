@@ -12,6 +12,9 @@ class CharacterDisplay():
 	def __init__(self, radio):
 		self.radio = radio
 		self.delayTurningOffBacklight = None
+		self.delayedBumpTimer = None
+		self.hoveredChannel = None
+		self.channelSwitchDelay = config["channelSwitchDelay"]
 		
 		# Attach components
 		# TODO: Support multiple displays
@@ -43,10 +46,10 @@ class CharacterDisplay():
 				# Create the button		
 				self.navigationButton = handlers.button.Button(gpioPin)
 
-				self.navigationButton.addEventListener("click", radio.bump())
+				self.navigationButton.addEventListener("click", self.delayBump())
 				# self.navigationButton.addEventListener("press", self.buttonDownHandler)
 				# self.navigationButton.addEventListener("release", self.buttonUpHandler)
-				self.navigationButton.addEventListener("longPress", radio.bump(-1))
+				self.navigationButton.addEventListener("longPress", self.delayBump, args=[-1])
 				# self.navigationButton.addEventListener("veryLongPress", self.buttonVeryLongPressHandler)
 	
 			if "volumeRotary" in config["components"]:
@@ -278,3 +281,40 @@ class CharacterDisplay():
 		
 		if self.radio.on:
 			self.radio.setVolume(self.radio.volume + 10)
+
+	def delayBump(self, bumps = 1):
+		self.hoveredChannel = self.getHoveredChannelByOffset(bumps)
+
+		self.display.notification(self.hoveredChannel["name"], self.channelSwitchDelay)
+
+		if self.delayedBumpTimer:
+			self.delayedBumpTimer.cancel()
+
+		self.delayedBumpTimer = threading.Timer(self.channelSwitchDelay, self.playHoveredChannel, args=[self.hoveredChannel])
+		self.delayedBumpTimer.start()
+	
+	def playHoveredChannel(self, channel):
+		self.hoveredChannel = None
+		self.radio.playChannel(channel)
+
+	def getHoveredChannelByOffset(self, offset):
+		# Number of channels to skip which remains after removing overflow.
+		# (Overflow: if you are playing channel 3 of 10 and is instructed to skip 202 channels ahead,
+		# you would end up on channel 205. The overflow is 200, and we should return channel 5 (3 + 2))
+		remaining = (len(self.radio.channels) + offset) % len(self.radio.channels)
+		if not self.hoveredChannel:
+			self.hoveredChannel = self.radio.selectedChannel
+		hoveredChannelIndex = self.radio.channels.index(self.hoveredChannel)
+		bumpTo = 0
+
+		if hoveredChannelIndex + remaining > len(self.radio.channels) - 1:
+			bumpTo = hoveredChannelIndex - len(self.radio.channels) + remaining
+
+		elif hoveredChannelIndex + remaining < 0:
+			bumpTo = len(self.radio.channels) + hoveredChannelIndex + remaining
+
+		else:
+			bumpTo = hoveredChannelIndex + remaining
+
+		# logger.debug("offset " + str(offset) + ", bumping to: " + str(bumpTo))
+		return self.radio.channels[bumpTo]
