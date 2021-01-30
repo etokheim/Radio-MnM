@@ -230,6 +230,11 @@ class Display(threading.Thread):
 			# If we are at the end of the line, we keep scrolling however for N steps.
 			# Since scrolling further than the last line has no visual effect, this
 			# is used to make a pause to give the user time to finish reading.
+			# 	This could have been done with a time.sleep(), but that would make the
+			# thread unresponsive for a second if the standard content was changed out.
+			# 	That argument is however a bit weak, as we shouldn't start scrolling
+			# immediatly after new content. But the pause could sometime become almost
+			# twice as long as intended...
 			# N (aka the pause) = self.displayScrollingStopPauseSteps
 			if self.scrollOffset + displayWidth - self.displayScrollingStopPauseSteps <= longestLineLength:
 				self.scrollOffset = self.scrollOffset + 1
