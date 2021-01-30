@@ -133,9 +133,9 @@ class CharacterDisplay():
 				volumeBar = volumeBar + " "
 		
 		if self.display.displayHeight == 1:
-			self.display.notification("Vol " + volumeBar)
+			self.display.notification("Vol " + volumeBar, 0.5)
 		else:
-			self.display.notification("Volume\n\r" + volumeBar)
+			self.display.notification("Volume\n\r" + volumeBar, 0.8)
 
 	def handleDht22Update(self, event):
 		self.environmentData = event
