@@ -48,9 +48,6 @@ class Display(threading.Thread):
 		self.lastDisplayedMessage = ""
 		self.lastDisplayedCroppedMessage = ""
 
-		# Render a virtual display in the console output
-		self.virtualDisplay = False
-
 		# Amount of characters, not pixels
 		self.displayWidth = setup["width"]
 		self.displayHeight = setup["height"]
@@ -393,9 +390,6 @@ class Display(threading.Thread):
 
 	# Clears the display
 	def clear(self):
-		if self.virtualDisplay:
-			print("│ - -  Display cleared   - - │")
-		
 		self.lcd.clear()
 
 	def write(self, message):
@@ -413,11 +407,6 @@ class Display(threading.Thread):
 		else:
 			self.lastWriteTime = int(time.time() * 1000)
 			self.clear()
-
-			# Simulate a display in the terminal, if we are running in debug mode
-			# Do not directly use this function to write to the display. Use notification()
-			if self.virtualDisplay:
-				self.writeToSimulatedScreen(message)
 			
 			# Write message to the actual display
 			# Handle weir display quirk, where one line in the code only refers to half a line on the actual
@@ -461,66 +450,6 @@ class Display(threading.Thread):
 		message = message.replace("Å", "\x05")
 		message = message.replace("g", "\x06")
 		return message
-
-	def writeToSimulatedScreen(self, message):
-		# Split message up into an array of lines
-		printMessage = message.replace("\r", "")
-		lines = printMessage.split("\n")
-		
-		# Add new lines until i matches the display's height
-		while True:
-			if len(lines) < self.displayHeight:
-				lines.append("")
-			else:
-				break
-
-		paddingSize = 6
-		borderYStyle = "│"
-		borderXStyle = "─"
-
-		# paddingLine is just a line like this:
-		# |                       |
-		paddingLine = borderYStyle
-		top = "┌"
-		bottom = "└"
-
-		# Left border + padding + displayWidth + padding + right border
-		for i in range(paddingSize + self.displayWidth + paddingSize):
-			top = top + borderXStyle
-			bottom = bottom + borderXStyle
-			paddingLine = paddingLine + " "
-
-		top = top + "┐"
-		bottom = bottom + "┘"
-		paddingLine = paddingLine + borderYStyle
-
-		# Make the left and right paddings
-		padding = ""
-		for i in range(paddingSize):
-			padding = padding + " "
-
-		content = ""
-		for i in range(len(lines)):
-			line = lines[i]
-			# Add n spaces to the end of the message, where n = the number of character spaces left on the
-			# simulated screen.
-			for j in range(self.displayWidth - len(line)):
-				line = line + " "
-			
-			content = 	content + \
-						borderYStyle + padding + line + padding + borderYStyle
-			
-			if i != len(lines) - 1:
-				content = content + "\n"
-
-		print(
-			top + "\n" +
-			paddingLine + "\n" +
-			content + "\n" +
-			paddingLine + "\n" +
-			bottom
-		)
-		return
 
 	def turnOffBacklight(self):
 		self.lcd.backlight_enabled = False
