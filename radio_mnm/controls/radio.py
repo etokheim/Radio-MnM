@@ -33,7 +33,8 @@ class Radio():
 			"off": [],
 			"volume": [],
 			"meta": [],
-			"newChannel": []
+			"newChannel": [],
+			"newState": []
 		}
 
 		self.on = False
@@ -134,11 +135,11 @@ class Radio():
 			raise Exception("Missing frontend. Please specify the frontend you want in the config.yml file.")
 
 	# Loops through the callbacks parameter (array) and executes them
-	def dispatch(self, callbacks, event = None):
+	def dispatch(self, callbacks, args = []):
 		for callback in callbacks:
 			if callback:
-				if event:
-					callback(event)
+				if args:
+					callback(*args)
 				else:
 					callback()
 
@@ -155,6 +156,8 @@ class Radio():
 			self.events["meta"].append(callback)
 		elif type == "newChannel":
 			self.events["newChannel"].append(callback)
+		elif type == "newState":
+			self.events["newState"].append(callback)
 		else:
 			raise Exception("Event type " + str(callback) + "is not supported.")
 
@@ -167,6 +170,8 @@ class Radio():
 			"code": "endReached",
 			"text": _("Stopped sending")
 		}
+
+		self.dispatch(self.events["newState"], args = [self.state])
 		
 		# Try to start stream again if it's "ended".
 		time.sleep(1)
@@ -179,12 +184,16 @@ class Radio():
 			"text": _("Stopped playing")
 		}
 
+		self.dispatch(self.events["newState"], args = [self.state])
+
 	def pausedEvent(self, event = None):
 		logger.debug("Paused")
 		self.state = {
 			"code": "paused",
 			"text": _("Paused playing")
 		}
+
+		self.dispatch(self.events["newState"], args = [self.state])
 
 	def playingEvent(self, event = None):
 		logger.debug("Playing")
@@ -193,12 +202,16 @@ class Radio():
 			"text": _("Playing")
 		}
 
+		self.dispatch(self.events["newState"], args = [self.state])
+
 	def openingEvent(self, event = None):
 		logger.debug("Opening")
 		self.state = {
 			"code": "opening",
 			"text": _("Opening channel")
 		}
+
+		self.dispatch(self.events["newState"], args = [self.state])
 
 	def bufferingEvent(self, event = None):
 		# The buffering event is sent very often while buffering, so let's limit setting state to once
@@ -211,6 +224,8 @@ class Radio():
 				"code": "buffering",
 				"text": _("Buffering...")
 			}
+
+			self.dispatch(self.events["newState"], args = [self.state])
 		
 		# Cancel timer for setting state back from "buffering" if it's been set
 		if self.bufferTimer:
@@ -229,6 +244,7 @@ class Radio():
 			logger.error("We don't support setting state to the registered preBufferState (" + self.preBufferState["code"] + ")")
 
 		self.state = self.preBufferState
+		self.dispatch(self.events["newState"], args = [self.state])
 
 	def togglePower(self):
 		if self.on:

@@ -102,10 +102,16 @@ class CharacterDisplay():
 		radio.addEventListener("off", self.handleOff)
 		radio.addEventListener("volume", self.displayVolumeLevel)
 		radio.addEventListener("newChannel", self.handleNewChannel)
+		radio.addEventListener("newState", self.handleNewState)
 
 		# Only listen to meta events if the display height is more than one
 		if self.display.displayHeight > 1:
 			radio.addEventListener("meta", self.handleNewMeta)
+
+	def handleNewState(self, state):
+		# The state changes so fast that it's unreadable if we print it immediately
+		# self.display.writeStandardContent(self.generateStandardContent())
+		pass
 
 	# We'll handle new channels by immediately writing to the display. This way we won't see the
 	# last channel's name for a brief second after switching channels (after the hover effect
@@ -213,14 +219,20 @@ class CharacterDisplay():
 		# Display is taller than 1 line
 		else:
 			if self.radio.on:
-				firstLine = self.radio.selectedChannel["name"]
+				firstLine = ""
+				if self.radio.selectedChannel["name"]:
+					firstLine = self.radio.selectedChannel["name"]
 				
+				secondLine = ""
 				if prioritizedMessage:
 					secondLine = prioritizedMessage
 				elif state["code"] != "playing":
 					secondLine = state["text"]
 				else:
-					secondLine = self.radio.media.get_meta(12)
+					meta = self.radio.media.get_meta(12)
+					if meta:
+						secondLine = meta
+						
 				
 				standardContent = firstLine + "\r\n" + secondLine
 			
