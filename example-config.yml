@@ -161,5 +161,5 @@ components:
     #     GPIO: 12
 
     # Object. Humidity/temperature sensors.
-    DHT22:
+    dht22:
         GPIO: 22

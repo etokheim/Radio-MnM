@@ -32,8 +32,8 @@ class CharacterDisplay():
 				props = config["components"]["navigationRotary"]	
 				
 				# Check the props
-				assert type(props["GPIO"]["clk"]) == int, "NavigationRotary's clk pin is not an int. Check your config.yml"
-				assert type(props["GPIO"]["data"]) == int, "NavigationRotary's data pin is not an int. Check your config.yml"
+				assert type(props["GPIO"]["clk"]) == int, "NavigationRotary's clk pin is not an int. Please check your config.yml"
+				assert type(props["GPIO"]["data"]) == int, "NavigationRotary's data pin is not an int. Please check your config.yml"
 		
 				self.navigationRotary = rotaryPolling.Rotary(props["GPIO"]["clk"], props["GPIO"]["data"])
 				self.navigationRotary.addEventListener("left", self.delayBump, args=[-1])
@@ -42,7 +42,7 @@ class CharacterDisplay():
 			if "navigationButton" in config["components"]:
 				# Get pin and validate it
 				gpioPin = config["components"]["navigationButton"]["GPIO"]
-				assert type(gpioPin) == int, "NavigationButton's pin is not an int. Check your config.yml"
+				assert type(gpioPin) == int, "NavigationButton's pin is not an int. Please check your config.yml"
 
 				# Create the button		
 				self.navigationButton = handlers.button.Button(gpioPin)
@@ -58,8 +58,8 @@ class CharacterDisplay():
 				props = config["components"]["volumeRotary"]	
 					
 				# Check the props
-				assert type(props["GPIO"]["clk"]) == int, "VolumeRotary's clk pin is not an int. Check your config.yml"
-				assert type(props["GPIO"]["data"]) == int, "VolumeRotary's data pin is not an int. Check your config.yml"
+				assert type(props["GPIO"]["clk"]) == int, "VolumeRotary's clk pin is not an int. Please check your config.yml"
+				assert type(props["GPIO"]["data"]) == int, "VolumeRotary's data pin is not an int. Please check your config.yml"
 		
 				self.volumeRotary = rotaryPolling.Rotary(props["GPIO"]["clk"], props["GPIO"]["data"])
 				self.volumeRotary.addEventListener("left", self.volumeDownHandler)
@@ -88,8 +88,10 @@ class CharacterDisplay():
 				self.powerButton.addEventListener("click", radio.togglePower)
 
 			if "dht22" in config["components"]:
+				props = config["components"]["dht22"]
+				assert type(props["GPIO"]) == int, "The DHT22's GPIO pin is not an int. Please check your config.yml"
 				import components.dht22 as dht22
-				self.dht22 = dht22.Dht22(radio, config["components"]["dht22"])
+				self.dht22 = dht22.Dht22(radio, config["components"]["dht22"]["GPIO"])
 
 				self.dht22.addEventListener("update", self.handleDht22Update)
 				# self.dht22.addEventListener("error", self.handleDht22Update)
@@ -131,7 +133,7 @@ class CharacterDisplay():
 	def handleDht22Update(self, event):
 		self.environmentData = event
 
-		if self.radio.on:
+		if not self.radio.on:
 			self.display.writeStandardContent(self.generateStandardContent())
 
 	def handleNewMeta(self, event):
@@ -221,8 +223,8 @@ class CharacterDisplay():
 				if self.environmentData:
 					# If we have both temps and humidity, display it
 					if self.environmentData["temperature"] != None and self.environmentData["humidity"] != None:
-						standardContent = 	"Temp: " + str(self.radio.temperatureAndHumidity.temperature) + "C\r\n" + \
-											"Humidity: " + str(self.radio.temperatureAndHumidity.humidity) + "%"
+						standardContent = 	"Temp: " + str(self.environmentData["temperature"]) + "C\r\n" + \
+											"Humidity: " + str(self.environmentData["humidity"]) + "%"
 
 				# Display the time
 				else:
