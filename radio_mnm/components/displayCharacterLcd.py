@@ -34,6 +34,7 @@ class Display(threading.Thread):
 		self.writeQueue = []
 		self.writeQueueTimer = None
 		self.writeDelay = setup["writeDelay"]
+		self.lastWrite = None # The text that was last written to the display
 
 		# For how many steps we should pause when displaying the start of the line (1 step = displayScrollSpeed)
 		self.displayScrollingStartPauseSteps = 12
@@ -398,9 +399,15 @@ class Display(threading.Thread):
 		self.lcd.clear()
 
 	def write(self, message):
+		# TODO: Catch these as errors instead
 		# The display can be None if it's in the middle of a reinitialization
 		if not self.lcd:
 			logger.error("Couldn't write to the display as the lcd was None")
+			return
+
+		# No need to write if the text's already there
+		# This also removes the flickering which happens when writing to the LCD
+		if message == self.lastWrite:
 			return
 
 		# Check whether the display is ready for new text. If not, we'll add the message to the write queue.
@@ -428,6 +435,7 @@ class Display(threading.Thread):
 			message = self.replaceCustomCharacters(message)
 
 			self.lcd.write_string(message)
+			self.lastWrite = message
 
 		# Check if there's anything in the write queue.
 		# If there is, start a timer to write it.
