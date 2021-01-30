@@ -347,7 +347,6 @@ class Display(threading.Thread):
 		for line in lines:
 			# Crop the lines, so we can write it directly
 			croppedContent = croppedContent + line[0:16]
-			print("croppedContent: " + croppedContent)
 			
 			if index != len(line) - 1:
 				croppedContent = croppedContent + "\r\n"
@@ -361,6 +360,7 @@ class Display(threading.Thread):
 		# Write content to the screen at once (as the scrolling thread can be in the middle of a sleep. Also
 		# if the content doesn't overflow, we have to write it manually).
 		self.write(croppedContent)
+		self.currentlyDisplayingMessage = content
 
 		# If overflowing content, start the scroller thread
 		if overflowingContent:
