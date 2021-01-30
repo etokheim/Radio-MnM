@@ -401,14 +401,20 @@ class Radio():
 		elif volume > 100:
 			volume = 100
 
+		self.volume = volume
+		self.dispatch(self.events["volume"], { "volume": volume })
+
+		# Setting the volume actually takes a sec, so we'll execute it asyncrhonously
+		self.loop.create_task(
+			self.communicateNewVolumeLevel(volume)
+		)
+	
+	async def communicateNewVolumeLevel(self, volume):
 		try:
 			if "emulatedVolume" in config["audio"] and config["audio"]["emulatedVolume"]:
 				pass
 			else:
 				output = subprocess.check_output(["amixer", "-D", "pulse", "sset", "Master", str(volume) + "%"])
-
-			self.volume = volume
-			self.dispatch(self.events["volume"], { "volume": volume })
 			return True
 		except ValueError:
 			pass
