@@ -32,8 +32,8 @@ class CharacterDisplay():
 				assert type(props["GPIO"]["data"]) == int, "NavigationRotary's data pin is not an int. Check your config.yml"
 		
 				self.navigationRotary = rotaryPolling.Rotary(props["GPIO"]["clk"], props["GPIO"]["data"])
-				self.navigationRotary.addEventListener("left", radio.bump(-1))
-				self.navigationRotary.addEventListener("right", radio.bump())
+				self.navigationRotary.addEventListener("left", self.delayBump, args=[-1])
+				self.navigationRotary.addEventListener("right", self.delayBump)
 
 			if "navigationButton" in config["components"]:
 				# Get pin and validate it

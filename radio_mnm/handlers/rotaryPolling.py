@@ -33,13 +33,17 @@ class Rotary(threading.Thread):
 	def dispatch(self, callbacks):
 		for callback in callbacks:
 			if callback:
-				callback()
+				if callback[1]:
+					args = callback[1]
+					callback[0](*args)
+				else:
+					callback[0]()
 
-	def addEventListener(self, type, callback):
+	def addEventListener(self, type, callback, args = []):
 		if type == "left":
-			self.left.append(callback)
+			self.left.append([callback, args])
 		elif type == "right":
-			self.right.append(callback)
+			self.right.append([callback, args])
 		else:
 			raise Exception("Event type " + str(callback) + "is not supported.")
 
