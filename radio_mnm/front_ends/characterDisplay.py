@@ -283,6 +283,10 @@ class CharacterDisplay():
 			self.radio.setVolume(self.radio.volume + 10)
 
 	def delayBump(self, bumps = 1):
+		if not self.radio.on:
+			
+			return
+
 		self.hoveredChannel = self.getHoveredChannelByOffset(bumps)
 
 		self.display.notification(self.hoveredChannel["name"], self.channelSwitchDelay)

@@ -264,10 +264,6 @@ class Radio():
 		# 	self.play()
 
 	def playChannel(self, channel):
-		if not self.on:
-			logger.debug("Can't start channel while radio is off")
-			return
-			
 		# Channel should always be valid, so this clause shouldn't trigger, unless there is a bug.
 		if not channel:
 			logger.error("Channel parameter is not a valid channel. Can't start player.")
@@ -363,11 +359,6 @@ class Radio():
 
 	# Bumps the channel n times. Loops around if bumping past the last channel.
 	def bump(self, bumps = 1):
-		# Don't allow channel switching if radio is off
-		if not self.on:
-			logger.debug("Can't switch channels when radio is off")
-			return
-
 		if not self.channels:
 			logger.debug("Can't bump channel when there are none available.")
 			return
