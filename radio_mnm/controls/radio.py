@@ -32,7 +32,8 @@ class Radio():
 			"on": [],
 			"off": [],
 			"volume": [],
-			"meta": []
+			"meta": [],
+			"newChannel": []
 		}
 
 		self.on = False
@@ -152,6 +153,8 @@ class Radio():
 			self.events["volume"].append(callback)
 		elif type == "meta":
 			self.events["meta"].append(callback)
+		elif type == "newChannel":
+			self.events["newChannel"].append(callback)
 		else:
 			raise Exception("Event type " + str(callback) + "is not supported.")
 
@@ -276,6 +279,7 @@ class Radio():
 		playedChannel = self.selectedChannel
 
 		self.selectedChannel = channel
+		self.dispatch(self.events["newChannel"])
 		bestBitrateMatch = self.getBestBitRateMatch(channel["streams"])
 		logger.debug("Playing " + channel["name"] + " with a bitrate of " + str(channel["streams"][bestBitrateMatch]["bitrate"]) + "kbps")
 

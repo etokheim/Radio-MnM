@@ -101,10 +101,17 @@ class CharacterDisplay():
 		radio.addEventListener("on", self.handleOn)
 		radio.addEventListener("off", self.handleOff)
 		radio.addEventListener("volume", self.displayVolumeLevel)
+		radio.addEventListener("newChannel", self.handleNewChannel)
 
 		# Only listen to meta events if the display height is more than one
 		if self.display.displayHeight > 1:
 			radio.addEventListener("meta", self.handleNewMeta)
+
+	# We'll handle new channels by immediately writing to the display. This way we won't see the
+	# last channel's name for a brief second after switching channels (after the hover effect
+	# disappears).
+	def handleNewChannel(self):
+		self.display.writeStandardContent(self.generateStandardContent())
 
 	def displayVolumeLevel(self, event):
 		volume = event["volume"]
@@ -295,7 +302,13 @@ class CharacterDisplay():
 
 		self.hoveredChannel = self.getHoveredChannelByOffset(bumps)
 
-		self.display.notification(self.hoveredChannel["name"], self.channelSwitchDelay)
+		if self.channelSwitchDelay != 0:
+			# As it takes about 50ms to actually display the change in channel, we'll add a 200ms grace period.
+			# This is to prevent the old channel from displaying for about 50ms before the new channel goes on.
+			notificationDuration = self.channelSwitchDelay + 0.2
+			self.display.notification(self.hoveredChannel["name"], notificationDuration)
+		else:
+			notificationDuration = 0
 
 		if self.delayedBumpTimer:
 			self.delayedBumpTimer.cancel()
