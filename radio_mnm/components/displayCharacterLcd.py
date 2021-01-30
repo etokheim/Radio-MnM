@@ -269,7 +269,6 @@ class Display(threading.Thread):
 		logger.warning("Stopped display")
 
 	def stopScrolling(self):
-		self.clear()
 		self.pauseEvent.clear()
 		logger.debug("Stopped scrolling loop")
 
