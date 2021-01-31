@@ -251,7 +251,7 @@ class CharacterDisplay():
 			# If the radio is off
 			else:
 				# Do we have environment data?
-				if False:
+				if self.environmentData:
 					# If we have both temps and humidity, display it
 					if self.environmentData["temperature"] != None and self.environmentData["humidity"] != None:
 						standardContent = 	"Temp: " + str(self.environmentData["temperature"]) + "C\r\n" + \
