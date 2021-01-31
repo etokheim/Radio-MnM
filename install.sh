@@ -92,6 +92,39 @@ fi
 
 ######################################
 #                                    #
+#        Configure pulseaudio        #
+#                                    #
+######################################
+# Kudos to Eli Billauer: http://billauer.co.il/blog/2014/01/pa-multiple-users/
+
+# Check if there is a pulse folder. If not, create it
+if [ ! -d "~/.pulse" ]; then
+	mkdir "~/.pulse"
+fi
+
+# Remove the custom Pulseaudio config file if it exists
+# TODO: write warnings into the readme
+if [ -f "~/.pulse/default.pa" ]; then
+	rm ~/.pulse/default.pa
+fi
+
+# Then copy a fresh template file
+cp /etc/pulse/default.pa ~/.pulse/
+
+# Then well enable tcp connections to Pulseaudio, but only from localhost
+echo "load-module module-native-protocol-tcp auth-ip-acl=127.0.0.1" >> ~/.pulse/default.pa
+
+# Check if radio-mnm has a pulse folder aswell. If not, create it
+if [ ! -d "/home/radio-mnm/.pulse" ]; then
+	mkdir "/home/radio-mnm/.pulse"
+fi
+
+# Finally we need to instruct the radio-mnm user to connect to Pulseaudio over tcp
+echo "default-server = 127.0.0.1" > /home/radio-mnm/.pulse/client.conf
+
+
+######################################
+#                                    #
 #    Fixing file permissions and     #
 # creating missing files and folders #
 #                                    #
