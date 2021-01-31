@@ -424,6 +424,10 @@ class Radio():
 		setVolumeTimer.start()
 		
 		# Setting the volume actually takes a sec, so we'll execute it asyncrhonously
+		# Method asyncio.create_subprocess_exec() works much the same way as Popen() but calling wait()
+		# and communicate() on the returned objects does not block the processor, so the Python
+		# interpreter can be used in other things while the external subprocess doesn't return.
+		# https://queirozf.com/entries/python-3-subprocess-examples
 		# self.loop.create_task(
 		# 	self.communicateNewVolumeLevel(volume)
 		# )
@@ -433,7 +437,7 @@ class Radio():
 			if "emulatedVolume" in config["audio"] and config["audio"]["emulatedVolume"]:
 				pass
 			else:
-				output = subprocess.check_output(["amixer", "-D", "pulse", "sset", "Master", str(volume) + "%"])
+				output = subprocess.run(["amixer", "-D", "pulse", "sset", "Master", str(volume) + "%"], universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			return True
 		except ValueError:
 			pass
