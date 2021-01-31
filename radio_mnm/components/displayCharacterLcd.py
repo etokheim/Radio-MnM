@@ -273,6 +273,7 @@ class Display(threading.Thread):
 		logger.debug("Stopped scrolling loop")
 
 	def resumeScrolling(self):
+		self.scrollOffset = -self.displayScrollingStartPauseSteps
 		self.pauseEvent.set()
 		logger.debug("Resumed scrolling loop")
 
