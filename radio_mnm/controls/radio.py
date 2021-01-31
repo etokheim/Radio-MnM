@@ -418,13 +418,17 @@ class Radio():
 
 		self.volume = volume
 		self.dispatch(self.events["volume"], [{ "volume": volume }])
-
+		
+		# TODO: Temporary fix as async functions doesn't seem to work yet...
+		setVolumeTimer = threading.Timer(0, self.communicateNewVolumeLevel, args=[volume]) 
+		setVolumeTimer.start()
+		
 		# Setting the volume actually takes a sec, so we'll execute it asyncrhonously
-		self.loop.create_task(
-			self.communicateNewVolumeLevel(volume)
-		)
+		# self.loop.create_task(
+		# 	self.communicateNewVolumeLevel(volume)
+		# )
 	
-	async def communicateNewVolumeLevel(self, volume):
+	def communicateNewVolumeLevel(self, volume):
 		try:
 			if "emulatedVolume" in config["audio"] and config["audio"]["emulatedVolume"]:
 				pass
