@@ -5,3 +5,4 @@ RPi.GPIO
 tinydb
 pyyaml
 asyncio
+adafruit_dht
