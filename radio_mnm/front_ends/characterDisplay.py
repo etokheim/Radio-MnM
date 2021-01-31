@@ -216,12 +216,7 @@ class CharacterDisplay():
 
 					# Display the time
 					else:
-						if not self.updateClockTimer:
-							# TODO: Make it update more accutaretly
-							standardContent = time.strftime('%H:%M:%S')
-							self.updateClockTimer = threading.Timer(60, self.updateClock)
-							self.updateClockTimer.start()
-							self.updateClockTimer = None
+						standardContent = self.getClockAndStartUpdater()
 		
 		# Display is taller than 1 line
 		else:
@@ -254,14 +249,23 @@ class CharacterDisplay():
 
 				# Display the time
 				else:
-					standardContent = time.strftime('%H:%M:%S')
-
-					if not self.updateClockTimer:
-						# TODO: Make it update more accutaretly
-						self.updateClockTimer = threading.Timer(60, self.updateClock)
-						self.updateClockTimer.start()
+					standardContent = self.getClockAndStartUpdater()
 
 		return standardContent
+
+	def getClockAndStartUpdater(self):
+		# Start a timer to update the clock every whole minute
+		if not self.updateClockTimer:
+			# Execute on whole minute:
+			timeTillNewMinute = 60 - int(time.time() % 60)
+			self.updateClockTimer = threading.Timer(timeTillNewMinute, self.updateClock)
+			self.updateClockTimer.start()
+
+		spaces = ""
+		for i in range(self.display.displayWidth // 2 - 3):
+			spaces = spaces + " "
+
+		return spaces + time.strftime('%H:%M')
 
 	def updateClock(self):
 		self.updateClockTimer = None
