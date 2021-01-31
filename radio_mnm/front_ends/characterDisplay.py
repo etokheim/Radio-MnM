@@ -5,6 +5,7 @@ from handlers import pollingSwitch
 from handlers import rotaryPolling
 import handlers.button
 import threading
+import time
 
 _ = config["getLanguage"].gettext
 
@@ -16,6 +17,7 @@ class CharacterDisplay():
 		self.hoveredChannel = None
 		self.channelSwitchDelay = config["channelSwitchDelay"]
 		self.environmentData = None
+		self.updateClockTimer = None
 		
 		# Attach components
 		# TODO: Support multiple displays
@@ -146,7 +148,7 @@ class CharacterDisplay():
 	def handleDht22Update(self, event):
 		self.environmentData = event
 
-		if not self.radio.on:
+		if not self.radio.on and self.environmentData:
 			self.display.writeStandardContent(self.generateStandardContent())
 
 	def handleNewMeta(self, event):
@@ -214,7 +216,12 @@ class CharacterDisplay():
 
 					# Display the time
 					else:
-						standardContent = "The time"
+						if not self.updateClockTimer:
+							# TODO: Make it update more accutaretly
+							standardContent = time.strftime('%H:%M:%S')
+							self.updateClockTimer = threading.Timer(60, self.updateClock)
+							self.updateClockTimer.start()
+							self.updateClockTimer = None
 		
 		# Display is taller than 1 line
 		else:
@@ -239,7 +246,7 @@ class CharacterDisplay():
 			# If the radio is off
 			else:
 				# Do we have environment data?
-				if self.environmentData:
+				if False:
 					# If we have both temps and humidity, display it
 					if self.environmentData["temperature"] != None and self.environmentData["humidity"] != None:
 						standardContent = 	"Temp: " + str(self.environmentData["temperature"]) + "C\r\n" + \
@@ -247,10 +254,18 @@ class CharacterDisplay():
 
 				# Display the time
 				else:
-					standardContent = "The time"
-		
+					standardContent = time.strftime('%H:%M:%S')
+
+					if not self.updateClockTimer:
+						# TODO: Make it update more accutaretly
+						self.updateClockTimer = threading.Timer(60, self.updateClock)
+						self.updateClockTimer.start()
+
 		return standardContent
 
+	def updateClock(self):
+		self.updateClockTimer = None
+		self.display.writeStandardContent(self.generateStandardContent())
 
 	def handleOn(self):
 		logger.debug("handleOn")
