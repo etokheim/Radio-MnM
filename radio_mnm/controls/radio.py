@@ -413,7 +413,7 @@ class Radio():
 			volume = 100
 
 		self.volume = volume
-		self.dispatch(self.events["volume"], { "volume": volume })
+		self.dispatch(self.events["volume"], [{ "volume": volume }])
 
 		# Setting the volume actually takes a sec, so we'll execute it asyncrhonously
 		self.loop.create_task(
