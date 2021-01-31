@@ -18,7 +18,12 @@ class CharacterDisplay():
 		self.channelSwitchDelay = config["channelSwitchDelay"]
 		self.environmentData = None
 		self.updateClockTimer = None
-		
+		self.delayWriteState = None
+		self.lastWriteStateTime = 0
+		self.channelSwitchTime = 0
+		self.clearLoadingStateTimer = None
+		self.channelLoadTime = 1000
+
 		# Attach components
 		# TODO: Support multiple displays
 		if "components" in config:
@@ -111,14 +116,24 @@ class CharacterDisplay():
 			radio.addEventListener("meta", self.handleNewMeta)
 
 	def handleNewState(self, state):
-		# The state changes so fast that it's unreadable if we print it immediately
-		# self.display.writeStandardContent(self.generateStandardContent())
-		pass
+		# The state changes so fast when switching channels that it's unreadable if we print it
+		# immediately. Therefor, we'll just display "Loading..." for a fixed time after changing
+		# channels.
+
+		# Ignore states that comes in up to a second after switching channels
+		if int(time.time() * 1000) - self.channelSwitchTime > self.channelLoadTime:
+			self.display.writeStandardContent(self.generateStandardContent())
 
 	# We'll handle new channels by immediately writing to the display. This way we won't see the
 	# last channel's name for a brief second after switching channels (after the hover effect
 	# disappears).
 	def handleNewChannel(self):
+		self.channelSwitchTime = int(time.time() * 1000)
+
+		if self.clearLoadingStateTimer:
+			self.clearLoadingStateTimer.cancel()
+			self.clearLoadingStateTimer = None
+
 		self.display.writeStandardContent(self.generateStandardContent())
 
 	def displayVolumeLevel(self, event):
@@ -152,31 +167,20 @@ class CharacterDisplay():
 			self.display.writeStandardContent(self.generateStandardContent())
 
 	def handleNewMeta(self, event):
-		# Clear the second line just for a second to let the user see that there's new content, not
-		# just a scroll or a scroll reset.
+		self.meta = event
 
-		# Display only the channel name
-		self.display.writeStandardContent(self.radio.selectedChannel["name"])
+		# Don't display new meta before the channel is finished loading
+		if int(time.time() * 1000) - self.channelSwitchTime > self.channelLoadTime:
+			# Clear the second line just for a second to let the user see that there's new content, not
+			# just a scroll or a scroll reset.
+			# Display only the channel name
+			self.display.writeStandardContent(self.radio.selectedChannel["name"])
 
-		standardContent = self.generateStandardContent()
+			standardContent = self.generateStandardContent()
 
-		# Then after a delay, display everything again
-		fullStandardContent = threading.Timer(0.25, self.display.writeStandardContent, args=[standardContent])
-		fullStandardContent.start()
-
-		# # If there is a new text to display
-		# if self.lastDisplayedMessage != self.currentlyDisplayingMessage:
-		# 	# Reset the text offset (scroll position)
-		# 	self.scrollOffset = 0 - self.displayScrollingStartPauseSteps
-			
-		# 	# Only do this if displaying channel info
-		# 	if messageType == "channelInfo" and self.displayHeight >= 2 and self.radio.on:
-		# 		# When the text changes, "clear the second line" for å brief moment, so the user
-		# 		# more easily can understand that a new text was inserted.
-		# 		# Crap, this only works for channels, but notifications are also parsed through here...
-		# 		self.write(lines[0])
-
-		# 	time.sleep(0.25)
+			# Then after a delay, display everything again
+			fullStandardContent = threading.Timer(0.25, self.display.writeStandardContent, args=[standardContent])
+			fullStandardContent.start()
 
 	def generateStandardContent(self):
 		standardContent = None
@@ -228,6 +232,12 @@ class CharacterDisplay():
 				secondLine = ""
 				if prioritizedMessage:
 					secondLine = prioritizedMessage
+				elif int(time.time() * 1000) - self.channelSwitchTime < self.channelLoadTime:
+					secondLine = _("Loading...")
+
+					if not self.clearLoadingStateTimer:
+						self.clearLoadingStateTimer = threading.Timer(self.channelLoadTime / 1000, self.clearLoadingState)
+						self.clearLoadingStateTimer.start()
 				elif state["code"] != "playing":
 					secondLine = state["text"]
 				else:
@@ -252,6 +262,10 @@ class CharacterDisplay():
 					standardContent = self.getClockAndStartUpdater()
 
 		return standardContent
+
+	def clearLoadingState(self):
+		self.clearLoadingStateTimer = None
+		self.display.writeStandardContent(self.generateStandardContent())
 
 	def getClockAndStartUpdater(self):
 		# Start a timer to update the clock every whole minute
