@@ -110,10 +110,14 @@ class CharacterDisplay():
 		radio.addEventListener("volume", self.displayVolumeLevel)
 		radio.addEventListener("newChannel", self.handleNewChannel)
 		radio.addEventListener("newState", self.handleNewState)
+		radio.addEventListener("notification", self.handleNotification)
 
 		# Only listen to meta events if the display height is more than one
 		if self.display.displayHeight > 1:
 			radio.addEventListener("meta", self.handleNewMeta)
+
+	def handleNotification(self, notification):
+		self.display.notification(notification)
 
 	def handleNewState(self, state):
 		# The state changes so fast when switching channels that it's unreadable if we print it

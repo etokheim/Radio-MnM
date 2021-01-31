@@ -34,7 +34,8 @@ class Radio():
 			"volume": [],
 			"meta": [],
 			"newChannel": [],
-			"newState": []
+			"newState": [],
+			"notification": []
 		}
 
 		self.on = False
@@ -158,6 +159,8 @@ class Radio():
 			self.events["newChannel"].append(callback)
 		elif type == "newState":
 			self.events["newState"].append(callback)
+		elif type == "notification":
+			self.events["notification"].append(callback)
 		else:
 			raise Exception("Event type " + str(callback) + "is not supported.")
 
@@ -357,16 +360,17 @@ class Radio():
 			logger.error("Got a connection error while fetching channels:")
 			logger.error(exception)
 
-			self.display.notification(_("Failed to get\n\rnew channels!"))
+			self.dispatch(self.events["notification"], args=[_("Failed to get\n\rnew channels!")])
 
 			# If status_code is not set, the request failed before returning
 			if not status_code:
 				logger.debug("Got no channels from the server (most likely a timeout). Is the server up?")
 				self.serverUp = False
 			elif status_code == 410:
-				self.display.notification(_("This radio was\n\runregistered!"))
+				self.dispatch(self.events["notification"], args=[_("This radio was\n\runregistered!")])
 				time.sleep(3)
-				self.display.notification(_("Resetting radio\n\rin three seconds"))
+				self.dispatch(self.events["notification"], args=[_("Resetting radio\n\rin three seconds")])
+				time.sleep(3)
 				self.registration.reset()
 				return
 
