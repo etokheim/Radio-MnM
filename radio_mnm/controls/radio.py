@@ -437,7 +437,8 @@ class Radio():
 			if "emulatedVolume" in config["audio"] and config["audio"]["emulatedVolume"]:
 				pass
 			else:
-				output = subprocess.run(["amixer", "-D", "pulse", "sset", "Master", str(volume) + "%"], universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+				self.player.audio_set_volume(volume)
+				# output = subprocess.run(["amixer", "-D", "pulse", "sset", "Master", str(volume) + "%"], universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			return True
 		except ValueError:
 			pass
