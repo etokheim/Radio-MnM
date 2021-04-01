@@ -88,7 +88,7 @@ class CharacterDisplay():
 			if "powerButton" in config["components"]:
 				gpioPin = config["components"]["powerButton"]["GPIO"]
 
-				import handlers.button as button	
+				import handlers.interruptButton as button	
 				self.powerButton = button.Button(gpioPin)
 
 				# Attach event listener
