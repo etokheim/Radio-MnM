@@ -16,6 +16,7 @@ class Dht22(threading.Thread):
 		self.sensorDht = adafruit_dht.DHT22(globals()["D" + str(gpioPin)])
 
 		self.running = True
+		self.name = "DHT22 loop"
 		self.start()
 		self.radio.offContent = True
 		self.temperature = 0.0
@@ -26,7 +27,7 @@ class Dht22(threading.Thread):
 
 	def run(self):
 		logger.debug("Listening to DHT22 sensor at GPIO " + str(self.gpioPin))
-
+		
 		while self.running:
 			try:
 				temperature = self.sensorDht.temperature

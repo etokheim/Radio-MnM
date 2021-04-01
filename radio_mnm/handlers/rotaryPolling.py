@@ -9,6 +9,8 @@ GPIO.setmode(GPIO.BCM)
 class Rotary(threading.Thread):
 	def __init__(self, clk, dt):
 		threading.Thread.__init__(self)
+
+		self.name = "Rotary loop (GPIO " + str(clk) + " and " + str(dt) + ")"
 		
 		self.clk = clk
 		self.dt = dt

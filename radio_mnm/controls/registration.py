@@ -72,6 +72,7 @@ class Registration():
 		def __init__(self, parent):
 			threading.Thread.__init__(self)
 
+			self.name = "Check if registered loop"
 			self.parent = parent
 			self.running = True
 

@@ -27,6 +27,7 @@ class Display(threading.Thread):
 		self.standardContent = ""
 		self.notificationExpireTime = False
 		self.running = True
+		self.name = "Display loop"
 		# When paused is set, the thread will run, when it's not set, the thread will wait
 		self.pauseEvent = threading.Event()
 		self.currentlyDisplayingMessage = ""

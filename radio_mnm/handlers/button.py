@@ -26,6 +26,7 @@ logger = logging.getLogger("Radio_mnm")
 class Button(threading.Thread):
 	def __init__(self, gpioPin):
 		threading.Thread.__init__(self)
+		self.name = "Button loop (GPIO " + str(gpioPin) + ")"
 		self.gpioPin = gpioPin
 
 		self.running = True

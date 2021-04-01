@@ -11,6 +11,7 @@ _ = config["getLanguage"].gettext
 class EmulatedFrontend(threading.Thread):
 	def __init__(self, radio):
 		threading.Thread.__init__(self)
+		self.name = "Emulated frontend loop"
 		self.radio = radio
 
 		self.root = None
