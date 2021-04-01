@@ -8,6 +8,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 from config.config import config
 import asyncio
+import signal
 
 # Set log level
 level = config["productionLogLevel"]
@@ -57,6 +58,27 @@ else:
 	logger.addHandler(rotateHandler)
 
 
+def handleException(loop, exception):
+	logger.error(exception)
+	logger.info("Shutting down due to exception")
+	asyncio.create_task(shutdown(loop))
+
+async def shutdown(loop, signal = None):
+	if signal:
+		logging.info(f"Received exit signal {signal.name}...")
+	
+	logging.info("Closing database connections")
+	logging.info("Nacking outstanding messages")
+	tasks = [t for t in asyncio.all_tasks() if t is not
+				asyncio.current_task()]
+
+	[task.cancel() for task in tasks]
+
+	logging.info(f"Cancelling {len(tasks)} outstanding tasks")
+	await asyncio.gather(*tasks, return_exceptions=True)
+	logging.info(f"Flushing metrics")
+	loop.stop()
+
 async def main():
 	logger.info("Starting up")
 	import app
@@ -66,4 +88,22 @@ async def main():
 	
 if __name__ == "__main__":
 	loop = asyncio.get_event_loop()
-	loop.run_until_complete(main())
+	# May want to catch other signals too
+	signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
+	for signal in signals:
+		loop.add_signal_handler(
+			signal, lambda signal=signal: asyncio.create_task(shutdown(loop, signal=signal)))
+	
+	loop.set_exception_handler(handleException)
+
+	try:
+		# 
+		loop.create_task(main())
+		loop.run_forever()
+	except Exception as exception:
+		# exception = sys.exc_info()[0]
+		print("-----------")
+		logger.error(exception)
+	finally:
+		loop.close()
+		logger.info("Successfully shut down the radio")
