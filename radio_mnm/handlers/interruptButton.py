@@ -13,10 +13,10 @@
 import logging
 import gettext
 import time
-import threading
 from config.config import config
 from RPi import GPIO
 from controls import radio
+import asyncio
 
 GPIO.setmode(GPIO.BCM)
 
@@ -25,11 +25,8 @@ logger = logging.getLogger("Radio_mnm")
 
 class Button():
 	def __init__(self, gpioPin):
-		threading.Thread.__init__(self)
 		self.gpioPin = gpioPin
-
-		# When paused is set, the thread will run, when it's not set, the thread will wait
-		self.pauseEvent = threading.Event()
+		self.loop = asyncio.get_event_loop()
 
 		self.state = "released"
 
@@ -50,7 +47,7 @@ class Button():
 		GPIO.add_event_detect(gpioPin, GPIO.BOTH, callback=self.handleInterrupt, bouncetime=50)
 
 	# Loops through the callbacks parameter (array) and executes them
-	def dispatch(self, callbacks):
+	async def dispatch(self, callbacks):
 		for callback in callbacks:
 			if callback:
 				callback()
@@ -75,18 +72,19 @@ class Button():
 		# If the button is pressed
 		if not GPIO.input(self.gpioPin) and not self.pushing:
 			self.pushStart = int(round(time.time() * 1000))
-			self.dispatch(self.press)
+			self.loop.create_task(self.dispatch(self.press))
 			self.pushing = True
 			logger.debug("Button press (GPIO " + str(self.gpioPin) + ")")
 
 		# The button is released
 		elif self.pushing:
-			self.dispatch(self.release)
+			self.loop.create_task(self.dispatch(self.release))
 			holdTime = int(round(time.time() * 1000)) - self.pushStart
 			logger.debug("Button release (GPIO " + str(self.gpioPin) + ")")
 			self.pushing = False
 
 			if holdTime > config["longPressThreshold"]:
-				self.dispatch(self.longClick)
+				logger.debug("Button longClick (GPIO " + str(self.gpioPin) + ")")
+				self.loop.create_task(self.dispatch(self.longClick))
 
 			# TODO: Add support for long press event (which fires while holding the button)
