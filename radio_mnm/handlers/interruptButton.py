@@ -72,19 +72,28 @@ class Button():
 		# If the button is pressed
 		if not GPIO.input(self.gpioPin) and not self.pushing:
 			self.pushStart = int(round(time.time() * 1000))
-			self.loop.create_task(self.dispatch(self.press))
+
+			# Execute callbacks on the Main Thread, so they can make use of asyncio
+			asyncio.run_coroutine_threadsafe(self.dispatch(self.press), self.loop)
+			
 			self.pushing = True
 			logger.debug("Button press (GPIO " + str(self.gpioPin) + ")")
 
 		# The button is released
 		elif self.pushing:
-			self.loop.create_task(self.dispatch(self.release))
+			asyncio.run_coroutine_threadsafe(self.dispatch(self.release), self.loop)
 			holdTime = int(round(time.time() * 1000)) - self.pushStart
 			logger.debug("Button release (GPIO " + str(self.gpioPin) + ")")
 			self.pushing = False
 
-			if holdTime > config["longPressThreshold"]:
-				logger.debug("Button longClick (GPIO " + str(self.gpioPin) + ")")
-				self.loop.create_task(self.dispatch(self.longClick))
+			# If short click
+			if holdTime < config["longPressThreshold"]:
+				logger.debug("Button click (GPIO " + str(self.gpioPin) + ")")
+				asyncio.run_coroutine_threadsafe(self.dispatch(self.click), self.loop)
 
+			# Long click
+			else:
+				logger.debug("Button longClick (GPIO " + str(self.gpioPin) + ")")
+				asyncio.run_coroutine_threadsafe(self.dispatch(self.longClick), self.loop)
+			
 			# TODO: Add support for long press event (which fires while holding the button)
