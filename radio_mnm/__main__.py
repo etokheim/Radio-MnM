@@ -9,6 +9,7 @@ from logging.handlers import RotatingFileHandler
 from config.config import config
 import asyncio
 import signal
+import aiohttp
 
 # Set log level
 level = config["productionLogLevel"]
@@ -57,6 +58,12 @@ else:
 	
 	logger.addHandler(rotateHandler)
 
+async def isLoopRunning():
+	print("Is the loop still running?")
+	loop = asyncio.get_event_loop()
+	print(str(loop))
+	await asyncio.sleep(5)
+	await isLoopRunning()
 
 def handleException(loop, exception):
 	logger.error(exception)
@@ -77,32 +84,38 @@ async def shutdown(loop, signal = None):
 	logging.info(f"Cancelling {len(tasks)} outstanding tasks")
 	await asyncio.gather(*tasks, return_exceptions=True)
 	logging.info(f"Flushing metrics")
+	session = aiohttp.ClientSession()
+	await session.close()
 	loop.stop()
 
 async def main():
 	logger.info("Starting up")
 	import app
 
+	# loop = asyncio.get_event_loop()
+	# loop.create_task(isLoopRunning())
+
 	# TODO: Maybe it would be an advantage to be able to start and stop the radio from here?
 	# app.run()
-	
+
 if __name__ == "__main__":
 	loop = asyncio.get_event_loop()
 	# May want to catch other signals too
-	signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
-	for signal in signals:
-		loop.add_signal_handler(
-			signal, lambda signal=signal: asyncio.create_task(shutdown(loop, signal=signal)))
+	# signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
+	# for signal in signals:
+	# 	loop.add_signal_handler(
+	# 		signal, lambda signal=signal: asyncio.create_task(shutdown(loop, signal=signal)))
 	
-	loop.set_exception_handler(handleException)
+	# loop.set_exception_handler(handleException)
 
 	try:
 		# 
 		loop.create_task(main())
 		loop.run_forever()
+		# asyncio.run(main())
 	except Exception as exception:
 		# exception = sys.exc_info()[0]
-		print("-----------")
+		print("-----------e")
 		logger.error(exception)
 	finally:
 		loop.close()

@@ -11,6 +11,7 @@ import socket
 import subprocess
 import threading
 import asyncio
+import aiohttp
 
 if os.name == "nt":
 	os.add_dll_directory(r"C:\Program Files\VideoLAN\VLC")
@@ -24,8 +25,8 @@ from controls.registration import Registration
 
 class Radio():
 	def __init__(self):
+		self.loop = asyncio.get_running_loop()
 		self.registration = Registration(self)
-		self.loop = asyncio.get_event_loop()
 
 		self.events = {
 			"unregister": [],
@@ -168,7 +169,7 @@ class Radio():
 		logger.error("errorEvent:, " + str(event))
 
 	def endReachedEvent(self, event = None):
-		logger.error("The player reacher the end... Weird... Did you lose the internet connection? Trying to restart the stream.")
+		logger.error("The player reached the end... Weird... Did you lose the internet connection? Trying to restart the stream.")
 		self.state = {
 			"code": "endReached",
 			"text": _("Stopped sending")
@@ -275,7 +276,7 @@ class Radio():
 
 		# TODO: Maybe rename .start() methods that aren't threads, as it can be confusing.
 		# Starts the registration if the radio isn't registered
-		self.registration.start()
+		self.loop.create_task(self.registration.start())
 
 		if self.lastPowerState != "off":
 			self.loop.create_task(self.sendState("noPower"))
@@ -335,44 +336,44 @@ class Radio():
 		radio = radioTable.get(doc_id=1)
 
 		try:
-			# Define status_code here, as if the request fails, we go straight
-			# to the exception block, which evaluates status_code
-			status_code = None
-
 			headers = { "apiKey": radio["apiKey"] }
-			response = requests.get(config["apiServer"] + "/radio/api/1/channels?homeId=" + radio["homeId"], headers=headers, verify=config["verifyCertificate"], timeout=3)
-			status_code = response.status_code
-			response = response.json()
 			
-			if status_code == 200:
-				logger.debug("Successfully fetched channels (" + str(status_code) + ")")
-				self.channels = response["channels"]
+			session = aiohttp.ClientSession(loop=self.loop)
+
+			async with session.get(config["apiServer"] + "/radio/api/1/channels?homeId=" + radio["homeId"], headers=headers, timeout = 3) as response:
+				print("Status:", response.status)
+				print("Content-type:", response.headers['content-type'])
+
+				json = await response.json()
+				print("Body:", json)
+
+				if response.status == 200:
+					logger.debug("Successfully fetched channels (" + str(response.status) + ")")
+					self.channels = json["channels"]
 
 				# Add channels to the database for use in case the server goes down
 				radioTable.update({ "channels": self.channels }, doc_ids=[1])
 				
 				self.serverUp = True
 			else:
-				logger.error("Failed to fetch channels with HTTP error code: " + str(status_code))
+					logger.error("Failed to fetch channels. HTTP error code: " + str(response.status))
 		
 		# Handle exceptions from failed requests
-		except requests.exceptions.ConnectionError as exception:
-			logger.error("Got a connection error while fetching channels:")
-			logger.error(exception)
+		except asyncio.TimeoutError as exception:
+			logger.error("Request timed out while fetching channels.")
 
 			self.dispatch(self.events["notification"], args=[_("Failed to get\n\rnew channels!")])
 
-			# If status_code is not set, the request failed before returning
-			if not status_code:
-				logger.debug("Got no channels from the server (most likely a timeout). Is the server up?")
 				self.serverUp = False
-			elif status_code == 410:
-				self.dispatch(self.events["notification"], args=[_("This radio was\n\runregistered!")])
-				time.sleep(3)
-				self.dispatch(self.events["notification"], args=[_("Resetting radio\n\rin three seconds")])
-				time.sleep(3)
-				self.registration.reset()
-				return
+
+			# TODO: Handle unregistered radios again
+			# elif status_code == 410:
+			# 	self.dispatch(self.events["notification"], args=[_("This radio was\n\runregistered!")])
+			# 	time.sleep(3)
+			# 	self.dispatch(self.events["notification"], args=[_("Resetting radio\n\rin three seconds")])
+			# 	time.sleep(3)
+			# 	self.registration.reset()
+			# 	return
 
 		# Only sets selectedChannel if it's not set and the radio has channels.
 		# If not, keep the None value

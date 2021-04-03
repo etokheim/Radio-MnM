@@ -12,6 +12,7 @@ from config.config import config
 import gettext
 import threading
 import sys
+import asyncio
 
 _ = config["getLanguage"].gettext
 
@@ -29,7 +30,8 @@ class Registration():
 		isRegistered = isRegistered.json()
 		return isRegistered
 
-	def start(self):
+	async def start(self):
+		loop = asyncio.get_event_loop()
 		db = TinyDB('./db/db.json')
 		radioTable = db.table("Radio_mnm")
 		radio = radioTable.get(doc_id=1)
@@ -38,13 +40,13 @@ class Registration():
 			logger.debug("Radio is registered.")
 			
 			# Update channels
-			self.radio.loop.create_task(
+			loop.create_task(
 				self.radio.fetchChannels()
 			)
 		else:
 			logger.debug("Radio isn't registered! Starting registration.")
 
-			self.response = requests.get(config["apiServer"] + "/api/1/getRegisterCode", verify=config["verifyCertificate"])
+			self.response = await requests.get(config["apiServer"] + "/api/1/getRegisterCode", verify=config["verifyCertificate"])
 			self.response = self.response.json()
 
 			# If the code doesn't fit on the screen, start over
@@ -68,10 +70,11 @@ class Registration():
 			self.checkIfRegisteredLoop = self.CheckIfRegisteredLoop(self)
 			self.checkIfRegisteredLoop.start()
 
+	# TODO: Switch the thread out with an async function
 	class CheckIfRegisteredLoop(threading.Thread):
 		def __init__(self, parent):
 			threading.Thread.__init__(self)
-
+			
 			self.name = "Check if registered loop"
 			self.parent = parent
 			self.running = True

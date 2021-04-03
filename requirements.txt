@@ -6,3 +6,4 @@ tinydb
 pyyaml
 asyncio
 adafruit_dht
+aiohttp[speedups]
