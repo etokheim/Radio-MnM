@@ -338,7 +338,7 @@ class Radio():
 		try:
 			headers = { "apiKey": radio["apiKey"] }
 			
-			session = aiohttp.ClientSession(loop=self.loop)
+			session = aiohttp.ClientSession()
 
 			async with session.get(config["apiServer"] + "/radio/api/1/channels?homeId=" + radio["homeId"], headers=headers, timeout = 3) as response:
 				print("Status:", response.status)
@@ -484,19 +484,22 @@ class Radio():
 		}
 
 		try:
-			response = requests.post(config["apiServer"] + "/radio/api/1/listeningHistory", data=data, verify=config["verifyCertificate"], timeout=5)
+			session = aiohttp.ClientSession()
 
-			status_code = response.status_code
-			response = response.json()
+			async with session.get(config["apiServer"] + "/radio/api/1/listeningHistory", data=data, timeout = 3) as response:
+				print("Status:", response.status)
+				print("Content-type:", response.headers['content-type'])
 			
-			if status_code == 200:
-				logger.debug("Successfully posted listening history (" + str(status_code) + ")")
+				json = await response.json()
+				print("Body:", json)
+
+				if response.status == 200:
+					logger.debug("Successfully posted listening history (" + str(response.status) + ")")
 			else:
-				logger.error("Couldn't post listening history: " + str(status_code))
+					logger.error("Couldn't post listening history: " + str(response.status))
 		
-		except requests.exceptions.ConnectionError as exception:
-			logger.error("Got a connection error while adding to listening history:")
-			logger.error(exception)
+		except asyncio.TimeoutError:
+			logger.error("Got a timeout error while adding to listening history.")
 
 	async def sendState(self, state):
 		# Don't send requests if the server is (was) down
@@ -523,19 +526,26 @@ class Radio():
 		}
 
 		try:
-			response = requests.post(config["apiServer"] + "/radio/api/1/state", data=data, verify=config["verifyCertificate"], timeout=5)
+			session = aiohttp.ClientSession()
 
-			status_code = response.status_code
-			response = response.json()
+			async with session.post(config["apiServer"] + "/radio/api/1/state", data=data, timeout = 5) as response:
+				print("Status:", response.status)
+				print("Content-type:", response.headers['content-type'])
+
+				json = await response.json()
+				print("Body:", json)
 			
-			if status_code == 200:
-				logger.debug("Successfully posted state " + state + " (" + str(status_code) + ")")
+				if response.state == 200:
+					logger.debug("Successfully posted state " + state + " (" + str(response.state) + ")")
 			else:
-				logger.error("Couldn't post state: " + str(status_code))
+					logger.error("Couldn't post state: " + str(response.state))
 		
-		except requests.exceptions.ConnectionError as exception:
+		except aiohttp.ClientError as exception:
 			logger.error("Got a connection error while sending state " + state + ":")
 			logger.error(exception)
+
+		except asyncio.TimeoutError:
+			logger.error("Got a timeout error while sending state " + state)
 
 	def handleError(self, error):
 		if "VLC is unable to open the MRL" in error:
@@ -560,6 +570,7 @@ class Radio():
 	class StreamMonitor(threading.Thread):
 		def __init__(self, parent):
 			threading.Thread.__init__(self)
+			self.name = "Stream Monitor loop"
 			self.parent = parent
 			self.running = True
 			self.stopCount = 0

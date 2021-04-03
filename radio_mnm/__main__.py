@@ -91,8 +91,11 @@ async def shutdown(loop, signal = None):
 async def main():
 	logger.info("Starting up")
 	import app
+	loop = asyncio.get_event_loop()
+	
+	# Create a aiohttp session to be used across the app
+	session = aiohttp.ClientSession(loop=loop)
 
-	# loop = asyncio.get_event_loop()
 	# loop.create_task(isLoopRunning())
 
 	# TODO: Maybe it would be an advantage to be able to start and stop the radio from here?
