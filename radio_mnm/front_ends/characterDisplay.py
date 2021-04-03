@@ -2,7 +2,7 @@ import logging
 logger = logging.getLogger("Radio_mnm")
 from config.config import config
 from handlers import pollingSwitch
-from handlers import rotaryPolling
+from handlers import rotaryInterrupt
 import handlers.button
 import threading
 import time
@@ -42,7 +42,7 @@ class CharacterDisplay():
 				assert type(props["GPIO"]["clk"]) == int, "NavigationRotary's clk pin is not an int. Please check your config.yml"
 				assert type(props["GPIO"]["data"]) == int, "NavigationRotary's data pin is not an int. Please check your config.yml"
 		
-				self.navigationRotary = rotaryPolling.Rotary(props["GPIO"]["clk"], props["GPIO"]["data"])
+				self.navigationRotary = rotaryInterrupt.Rotary(props["GPIO"]["clk"], props["GPIO"]["data"])
 				self.navigationRotary.addEventListener("left", self.delayBump, args=[-1])
 				self.navigationRotary.addEventListener("right", self.delayBump)
 
@@ -68,7 +68,7 @@ class CharacterDisplay():
 				assert type(props["GPIO"]["clk"]) == int, "VolumeRotary's clk pin is not an int. Please check your config.yml"
 				assert type(props["GPIO"]["data"]) == int, "VolumeRotary's data pin is not an int. Please check your config.yml"
 		
-				self.volumeRotary = rotaryPolling.Rotary(props["GPIO"]["clk"], props["GPIO"]["data"])
+				self.volumeRotary = rotaryInterrupt.Rotary(props["GPIO"]["clk"], props["GPIO"]["data"])
 				self.volumeRotary.addEventListener("left", self.volumeDownHandler)
 				self.volumeRotary.addEventListener("right", self.volumeUpHandler)
 
@@ -88,7 +88,7 @@ class CharacterDisplay():
 			if "powerButton" in config["components"]:
 				gpioPin = config["components"]["powerButton"]["GPIO"]
 
-				import handlers.interruptButton as button	
+				import handlers.interruptButton as button
 				self.powerButton = button.Button(gpioPin)
 
 				# Attach event listener
