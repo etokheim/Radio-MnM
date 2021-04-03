@@ -355,11 +355,12 @@ class Radio():
 				radioTable.update({ "channels": self.channels }, doc_ids=[1])
 				
 				self.serverUp = True
+			
 			else:
 					logger.error("Failed to fetch channels. HTTP error code: " + str(response.status))
 		
 		# Handle exceptions from failed requests
-		except asyncio.TimeoutError as exception:
+		except asyncio.TimeoutError:
 			logger.error("Request timed out while fetching channels.")
 
 			self.dispatch(self.events["notification"], args=[_("Failed to get\n\rnew channels!")])
