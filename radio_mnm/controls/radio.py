@@ -351,12 +351,12 @@ class Radio():
 					logger.debug("Successfully fetched channels (" + str(response.status) + ")")
 					self.channels = json["channels"]
 
-				# Add channels to the database for use in case the server goes down
-				radioTable.update({ "channels": self.channels }, doc_ids=[1])
+					# Add channels to the database for use in case the server goes down
+					radioTable.update({ "channels": self.channels }, doc_ids=[1])
 				
-				self.serverUp = True
+					self.serverUp = True
 			
-			else:
+				else:
 					logger.error("Failed to fetch channels. HTTP error code: " + str(response.status))
 		
 		# Handle exceptions from failed requests
@@ -365,7 +365,7 @@ class Radio():
 
 			self.dispatch(self.events["notification"], args=[_("Failed to get\n\rnew channels!")])
 
-				self.serverUp = False
+			self.serverUp = False
 
 			# TODO: Handle unregistered radios again
 			# elif status_code == 410:
@@ -421,20 +421,15 @@ class Radio():
 		self.volume = volume
 		self.dispatch(self.events["volume"], [{ "volume": volume }])
 		
-		# TODO: Temporary fix as async functions doesn't seem to work yet...
-		setVolumeTimer = threading.Timer(0, self.communicateNewVolumeLevel, args=[volume]) 
-		setVolumeTimer.start()
-		
 		# Setting the volume actually takes a sec, so we'll execute it asyncrhonously
 		# Method asyncio.create_subprocess_exec() works much the same way as Popen() but calling wait()
 		# and communicate() on the returned objects does not block the processor, so the Python
 		# interpreter can be used in other things while the external subprocess doesn't return.
 		# https://queirozf.com/entries/python-3-subprocess-examples
-		# self.loop.create_task(
-		# 	self.communicateNewVolumeLevel(volume)
-		# )
+		self.loop.create_task(self.communicateNewVolumeLevel(volume))
+		
 	
-	def communicateNewVolumeLevel(self, volume):
+	async def communicateNewVolumeLevel(self, volume):
 		try:
 			if "emulatedVolume" in config["audio"] and config["audio"]["emulatedVolume"]:
 				pass
@@ -489,13 +484,13 @@ class Radio():
 			async with session.get(config["apiServer"] + "/radio/api/1/listeningHistory", data=data, timeout = 3) as response:
 				print("Status:", response.status)
 				print("Content-type:", response.headers['content-type'])
-			
+
 				json = await response.json()
 				print("Body:", json)
 
 				if response.status == 200:
 					logger.debug("Successfully posted listening history (" + str(response.status) + ")")
-			else:
+				else:
 					logger.error("Couldn't post listening history: " + str(response.status))
 		
 		except asyncio.TimeoutError:
@@ -534,10 +529,10 @@ class Radio():
 
 				json = await response.json()
 				print("Body:", json)
-			
+
 				if response.state == 200:
 					logger.debug("Successfully posted state " + state + " (" + str(response.state) + ")")
-			else:
+				else:
 					logger.error("Couldn't post state: " + str(response.state))
 		
 		except aiohttp.ClientError as exception:
