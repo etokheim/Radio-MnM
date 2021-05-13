@@ -5,5 +5,5 @@ RPi.GPIO
 tinydb
 pyyaml
 asyncio
-adafruit_dht
+adafruit-circuitpython-dht
 aiohttp[speedups]
