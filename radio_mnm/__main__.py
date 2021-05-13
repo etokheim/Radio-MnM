@@ -10,6 +10,7 @@ from config.config import config
 import asyncio
 import signal
 import aiohttp
+import os
 
 # Set log level
 level = config["productionLogLevel"]
@@ -58,6 +59,8 @@ else:
 	
 	logger.addHandler(rotateHandler)
 
+radio = None
+
 async def isLoopRunning():
 	print("Is the loop still running?")
 	loop = asyncio.get_event_loop()
@@ -74,7 +77,6 @@ async def shutdown(loop, signal = None):
 	if signal:
 		logging.info(f"Received exit signal {signal.name}...")
 	
-	logging.info("Closing database connections")
 	logging.info("Nacking outstanding messages")
 	tasks = [t for t in asyncio.all_tasks() if t is not
 				asyncio.current_task()]
@@ -89,22 +91,97 @@ async def shutdown(loop, signal = None):
 	loop.stop()
 
 async def main():
-	logger.info("Starting up")
-	import app
+	global radio
 	loop = asyncio.get_event_loop()
+
+	# Local imports
+	from controls import radio
+
+	logger.info("Starting up")
 	
-	# Create a aiohttp session to be used across the app
-	session = aiohttp.ClientSession(loop=loop)
+	radio = radio.Radio()
 
-	# loop.create_task(isLoopRunning())
+	# Couldn't figure out how to put the error handling into the radio class.
+	# The problem was getting self into the logCallback function which is decorated
+	# by vlc. We need the radio object to get the instance and the handleError function.
+	# Temporary put it here. TODO: Fix that.
+	import vlc
+	import ctypes
 
-	# TODO: Maybe it would be an advantage to be able to start and stop the radio from here?
-	# app.run()
+	# Load the Windows ctypes library if Windows
+	if os.name == "nt":
+		libc = ctypes.cdll.msvcrt
+	else:
+		libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library('c'))
+
+	vsnprintf = libc.vsnprintf
+
+	vsnprintf.restype = ctypes.c_int
+	vsnprintf.argtypes = (
+		ctypes.c_char_p,
+		ctypes.c_size_t,
+		ctypes.c_char_p,
+		ctypes.c_void_p,
+	)
+
+	# Catch the VLC logs and output them to our logs aswell
+	@vlc.CallbackDecorators.LogCb
+	def logCallback(data, level, ctx, fmt, args):
+		# Skip if level is lower than error
+		# TODO: Try to solve as many warnings as possible
+		if level < 4:
+			return
+
+		# Format given fmt/args pair
+		BUF_LEN = 1024
+		outBuf = ctypes.create_string_buffer(BUF_LEN)
+		vsnprintf(outBuf, BUF_LEN, fmt, args)
+
+		# Transform to ascii string
+		log = outBuf.raw.decode('ascii').strip().strip('\x00')
+
+		# Handle any errors
+		if level > 3:
+			shouldLog = radio.handleError(log)
+
+			# If noisy error, then don't log it
+			if not shouldLog:
+				return
+
+		# Output vlc logs to our log
+		if level == 5:
+			logger.critical(log)
+		elif level == 4:
+			logger.error(log)
+		elif level == 3:
+			logger.warning(log)
+		elif level == 2:
+			logger.info(log)
+
+	radio.instance.log_set(logCallback, None)
+
+	while True:
+		await asyncio.sleep(1000)
+
+
+		# Create a aiohttp session to be used across the app
+		# session = aiohttp.ClientSession(loop=loop)
+
+		# loop.create_task(isLoopRunning())
+
+		# TODO: Maybe it would be an advantage to be able to start and stop the radio from here?
+		# app.run()
 
 if __name__ == "__main__":
 	loop = asyncio.get_event_loop()
+	
 	# May want to catch other signals too
-	# signals = (signal.SIGHUP, signal.SIGTERM, signal.SIGINT)
+	# signals = (
+	# 	signal.SIGHUP,		# Hangup detected on controlling terminal or death of controlling process.
+	# 	signal.SIGTERM,		# Termination signal.
+	# 	signal.SIGINT		# Keyboard interrupt (Signal Interrupt). Default action is to raise KeyboardInterrupt.
+	# )
+
 	# for signal in signals:
 	# 	loop.add_signal_handler(
 	# 		signal, lambda signal=signal: asyncio.create_task(shutdown(loop, signal=signal)))
@@ -113,13 +190,15 @@ if __name__ == "__main__":
 
 	try:
 		# 
-		loop.create_task(main())
-		loop.run_forever()
-		# asyncio.run(main())
-	except Exception as exception:
-		# exception = sys.exc_info()[0]
-		print("-----------e")
-		logger.error(exception)
+		# loop.create_task(main())
+		# loop.run_forever()
+		asyncio.run(main(), debug=True)
+	except KeyboardInterrupt:
+		logger.warning("Keyboard interrupt detected. Shutting down gracefully.")
+	# except Exception as exception:
+	# 	# exception = sys.exc_info()[0]
+	# 	print("-----------e")
+	# 	logger.error(exception)
 	finally:
 		loop.close()
 		logger.info("Successfully shut down the radio")
