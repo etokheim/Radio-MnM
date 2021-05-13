@@ -32,15 +32,16 @@ class Dht22():
 			await self.getTemp()
 			await asyncio.sleep(2)
 
+	# For some reason getting the temperature and humidity (which for looks like populated variables) takes a lot of time.
+	# Usually about 300ms, which is far to long to be blocking the event loop. We therefor get it with an executor instead.
+	def getData(self):
+		return self.sensorDht.temperature, self.sensorDht.humidity
+
 	async def getTemp(self):
 		try:
-			temperature = self.sensorDht.temperature
-			humidity = self.sensorDht.humidity
+			temperature, humidity = await self.loop.run_in_executor(None, self.getData)
 
 			if humidity is not None and temperature is not None:
-				# print("Temp={0:0.1f}*C  Humidity={1:0.1f}%".format(temperature, humidity))
-
-				# TODO: Getting the temperature and humidity takes freezes the thread for too long – about 300ms
 				self.temperature = temperature
 				self.humidity = humidity
 				self.lastUpdateTime = int(time.time() * 1000)
