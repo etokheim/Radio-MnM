@@ -97,7 +97,7 @@ class CharacterDisplay():
 			if "dht22" in config["components"]:
 				props = config["components"]["dht22"]
 				assert type(props["GPIO"]) == int, "The DHT22's GPIO pin is not an int. Please check your config.yml"
-				import components.dht22 as dht22
+				import components.dht22Interrupt as dht22
 				self.dht22 = dht22.Dht22(radio, config["components"]["dht22"]["GPIO"])
 
 				self.dht22.addEventListener("update", self.handleDht22Update)
@@ -344,9 +344,16 @@ class CharacterDisplay():
 		if self.radio.on:
 			self.radio.setVolume(self.radio.volume + 10)
 
+	# TODO: Couldn't figure out how to use handleDelayBump directly as a callback for the eventlistener. It
+	# would end up like this create_task, args=[self.handleDelayBump(-1)], but that wouldn't work as it
+	# executes delayBump immediately (I guess). What we need is to be able to pass args to args... Which is
+	# kinda ugly.
+	# 	Maybe the cleanest way would be to use two separate functions; delayPreviousBump and delayNextBump?
 	def delayBump(self, bumps = 1):
-		if not self.radio.on:
+		self.radio.loop.create_task(self.handleDelayBump(bumps))
 
+	async def handleDelayBump(self, bumps = 1):
+		if not self.radio.on:
 			return
 
 		self.hoveredChannel = self.getHoveredChannelByOffset(bumps)
