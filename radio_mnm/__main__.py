@@ -37,7 +37,7 @@ if config["debug"]:
 	streamHandler = logging.StreamHandler()
 
 	# If we later want to include logger name: " - %(name)s"
-	formatter = logging.Formatter("%(levelname)s	│ %(message)s")
+	formatter = logging.Formatter("%(levelname)s	| %(message)s")
 
 	streamHandler.setFormatter(formatter)
 	logger.setLevel(logging.DEBUG)
@@ -52,7 +52,7 @@ else:
 	)
 	
 	# If we later want to include logger name: " - %(name)s"
-	formatter = logging.Formatter("%(asctime)s - %(levelname)s	│ %(message)s")
+	formatter = logging.Formatter("%(asctime)s - %(levelname)s	| %(message)s")
 
 	rotateHandler.setFormatter(formatter)
 	logger.setLevel(productionLogLevel)
@@ -160,20 +160,17 @@ async def main():
 
 	radio.instance.log_set(logCallback, None)
 
-	while True:
-		await asyncio.sleep(1000)
+	# Create a aiohttp session to be used across the app
+	# session = aiohttp.ClientSession(loop=loop)
 
+	# loop.create_task(isLoopRunning())
 
-		# Create a aiohttp session to be used across the app
-		# session = aiohttp.ClientSession(loop=loop)
-
-		# loop.create_task(isLoopRunning())
-
-		# TODO: Maybe it would be an advantage to be able to start and stop the radio from here?
-		# app.run()
+	# TODO: Maybe it would be an advantage to be able to start and stop the radio from here?
+	# app.run()
 
 if __name__ == "__main__":
 	loop = asyncio.get_event_loop()
+	loop.set_debug(enabled=True)
 	
 	# May want to catch other signals too
 	# signals = (
@@ -190,9 +187,9 @@ if __name__ == "__main__":
 
 	try:
 		# 
-		# loop.create_task(main())
-		# loop.run_forever()
-		asyncio.run(main(), debug=True)
+		loop.create_task(main())
+		loop.run_forever()
+		# asyncio.run(main(), debug=True)
 	except KeyboardInterrupt:
 		logger.warning("Keyboard interrupt detected. Shutting down gracefully.")
 	# except Exception as exception:
